@@ -1,0 +1,130 @@
+{
+  "date": "2026-10-23",
+  "method": "实际 runWorld 调度与持久化路径；本地结构化 Provider 测试响应，不调用付费 API",
+  "simulatedHours": 24,
+  "characters": 5,
+  "seeds": [42, 2026, 8901],
+  "unlimitedUsage": true,
+  "sceneDailyBudget": 0,
+  "conditions": "相同人物、关系、日程；场景关闭以单独校准网聊；人物 initiative=.9 replyChance=.95 phoneHabit=1 topicIntervalMinutes=30，00～23 时清醒，无工作抑制",
+  "samples": [
+    {
+      "activity": "quiet",
+      "samples": [
+        {
+          "seed": 42,
+          "messages": 40,
+          "initiations": 20,
+          "replies": 0,
+          "direct": 4,
+          "group": 2,
+          "actorRatio": 1,
+          "averageIntervalMinutes": 36,
+          "apiRequests": 24
+        },
+        {
+          "seed": 2026,
+          "messages": 34,
+          "initiations": 17,
+          "replies": 0,
+          "direct": 4,
+          "group": 1,
+          "actorRatio": 1,
+          "averageIntervalMinutes": 42.35294117647059,
+          "apiRequests": 21
+        },
+        {
+          "seed": 8901,
+          "messages": 42,
+          "initiations": 21,
+          "replies": 0,
+          "direct": 4,
+          "group": 1,
+          "actorRatio": 1,
+          "averageIntervalMinutes": 34.285714285714285,
+          "apiRequests": 25
+        }
+      ],
+      "mean": 38.666666666666664
+    },
+    {
+      "activity": "standard",
+      "samples": [
+        {
+          "seed": 42,
+          "messages": 112,
+          "initiations": 46,
+          "replies": 10,
+          "direct": 4,
+          "group": 2,
+          "actorRatio": 1,
+          "averageIntervalMinutes": 12.857142857142858,
+          "apiRequests": 60
+        },
+        {
+          "seed": 2026,
+          "messages": 114,
+          "initiations": 49,
+          "replies": 8,
+          "direct": 4,
+          "group": 2,
+          "actorRatio": 1,
+          "averageIntervalMinutes": 12.631578947368421,
+          "apiRequests": 61
+        },
+        {
+          "seed": 8901,
+          "messages": 104,
+          "initiations": 43,
+          "replies": 9,
+          "direct": 4,
+          "group": 2,
+          "actorRatio": 1,
+          "averageIntervalMinutes": 13.846153846153847,
+          "apiRequests": 56
+        }
+      ],
+      "mean": 110
+    },
+    {
+      "activity": "lively",
+      "samples": [
+        {
+          "seed": 42,
+          "messages": 214,
+          "initiations": 66,
+          "replies": 41,
+          "direct": 4,
+          "group": 2,
+          "actorRatio": 1,
+          "averageIntervalMinutes": 6.728971962616822,
+          "apiRequests": 111
+        },
+        {
+          "seed": 2026,
+          "messages": 222,
+          "initiations": 73,
+          "replies": 38,
+          "direct": 4,
+          "group": 2,
+          "actorRatio": 1,
+          "averageIntervalMinutes": 6.486486486486487,
+          "apiRequests": 115
+        },
+        {
+          "seed": 8901,
+          "messages": 240,
+          "initiations": 71,
+          "replies": 49,
+          "direct": 4,
+          "group": 2,
+          "actorRatio": 1,
+          "averageIntervalMinutes": 6,
+          "apiRequests": 124
+        }
+      ],
+      "mean": 225.33333333333334
+    }
+  ],
+  "relativeToQuiet": [1.0, 2.844827586206897, 5.8275862068965525]
+}
