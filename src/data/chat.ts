@@ -2,6 +2,7 @@ import { db, type AquariumDB } from './db';
 import { clockTarget } from '../core/time';
 import { foregroundStart } from '../core/clock-presence';
 import { uid, type Message } from '../core/types';
+import { isSupportedReaction } from '../core/reaction-emojis';
 export async function conversationAvailable(conversation: string | import('../core/types').Conversation, d: AquariumDB = db) {
   const c = typeof conversation === 'string' ? await d.conversations.get(conversation) : conversation;
   if (!c || c.kind === 'notes') return false;
@@ -69,7 +70,7 @@ export async function toggleReaction(
   emoji: string,
   d: AquariumDB = db,
 ) {
-  if (!['👍', '❤️', '😂', '😮', '😢', '🎉', '👀', '🙏'].includes(emoji))
+  if (!isSupportedReaction(emoji))
     throw new Error('不支持此回应');
   return d.transaction('rw', d.reactions, d.messages, d.conversations, d.checkpoints, async () => {
     const m = await d.messages.get(messageId);

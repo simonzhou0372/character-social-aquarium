@@ -5,6 +5,7 @@ import { toggleReaction } from '../data/chat';
 import type { Message } from '../core/types';
 import { Button, Modal, Avatar, Status } from './ui';
 import { formatWorldTime } from '../core/calendar';
+import { ReactionPicker } from './ReactionPicker';
 export function MessageDetails({
   message: m,
   identity,
@@ -27,6 +28,7 @@ export function MessageDetails({
   );
   const [open, setOpen] = useState<'reads' | 'reactions'>(),
     [emojiOpen, setEmojiOpen] = useState(false),
+    [reacting, setReacting] = useState(false),
     [error, setError] = useState('');
   const world = useLiveQuery(
     () => (data?.conversation ? db.worlds.get(data.conversation.worldId) : undefined),
@@ -45,9 +47,16 @@ export function MessageDetails({
         data?.cursors.find((r) => r.kind === 'character' && r.readerId === id && r.seq >= m.seq));
   const count = readers.filter(read).length;
   return (
-    <div className="chat-tools">
-      <Button onClick={onReply}>回复</Button>
-      <Button disabled={identity === 'observer'} onClick={() => setEmojiOpen(!emojiOpen)}>
+    <div className="chat-tools message-actions">
+      <Button className="message-action" onClick={onReply}>
+        回复
+      </Button>
+      <Button
+        className="message-action"
+        disabled={identity === 'observer'}
+        aria-expanded={emojiOpen}
+        onClick={() => setEmojiOpen(!emojiOpen)}
+      >
         回应
       </Button>
       <button className="text-button read-receipt" onClick={() => setOpen('reads')}>
@@ -59,19 +68,23 @@ export function MessageDetails({
         </button>
       ))}
       {emojiOpen && (
-        <div>
-          {['👍', '❤️', '😂', '😮', '😢', '🎉', '👀', '🙏'].map((emoji) => (
-            <button
-              className="reaction"
-              key={emoji}
-              onClick={() =>
-                void toggleReaction(m.id, identity, emoji).catch((e) => setError(String(e)))
-              }
-            >
-              {emoji}
-            </button>
-          ))}
-        </div>
+        <ReactionPicker
+          busy={reacting}
+          onClose={() => setEmojiOpen(false)}
+          onSelect={async (emoji) => {
+            if (reacting) return;
+            setReacting(true);
+            setError('');
+            try {
+              await toggleReaction(m.id, identity, emoji);
+              setEmojiOpen(false);
+            } catch (e) {
+              setError(String(e));
+            } finally {
+              setReacting(false);
+            }
+          }}
+        />
       )}
       {error && <Status error>{error}</Status>}
       {open && (

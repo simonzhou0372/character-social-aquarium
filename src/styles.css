@@ -16,6 +16,7 @@
   --lime: #daed83;
   --accent: #bfd35d;
   --sidebar: 244px;
+  --font-min: 12px;
 }
 * {
   box-sizing: border-box;
@@ -86,7 +87,7 @@ p {
   font-size: 13px;
 }
 small {
-  font-size: 11px;
+  font-size: var(--font-min);
 }
 .button {
   display: inline-flex;
@@ -155,7 +156,7 @@ small {
   color: #7b8073;
 }
 .eyebrow {
-  font-size: 10px;
+  font-size: var(--font-min);
   letter-spacing: 1.5px;
   font-weight: 700;
   color: #818678;
@@ -202,11 +203,11 @@ small {
   white-space: nowrap;
 }
 .brand b span {
-  font-size: 10px;
+  font-size: var(--font-min);
   letter-spacing: 0.6px;
 }
 .brand small {
-  font-size: 10px;
+  font-size: var(--font-min);
   letter-spacing: 2px;
   color: #85897c;
 }
@@ -218,7 +219,7 @@ small {
   margin-bottom: 30px;
 }
 .sidebar-world > span {
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #898e7f;
 }
 .sidebar-world > div {
@@ -233,14 +234,14 @@ small {
 .sidebar-world .input {
   border: 0;
   background: transparent;
-  font-size: 11px;
+  font-size: var(--font-min);
   padding: 5px 0;
   min-width: 0;
   margin: 0;
   font-weight: 700;
 }
 .nav-label {
-  font-size: 9px;
+  font-size: var(--font-min);
   letter-spacing: 1.6px;
   color: #939887;
   margin: 0 10px 14px;
@@ -280,7 +281,7 @@ small {
   flex: 0;
 }
 .nav-unread {
-  font-size: 10px;
+  font-size: var(--font-min);
   background: var(--ink);
   color: #f3f6e8;
   border-radius: 5px;
@@ -300,24 +301,24 @@ small {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 11px;
+  font-size: var(--font-min);
 }
 .speed {
   margin-left: auto;
-  font-size: 10px;
+  font-size: var(--font-min);
   border: 1px solid #d5d9cb;
   padding: 1px 4px;
   border-radius: 3px;
 }
 .world-control p {
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #8b907f;
   margin: 9px 0 14px;
 }
 .world-control .button {
   width: 100%;
   min-height: 33px;
-  font-size: 11px;
+  font-size: var(--font-min);
 }
 .status-dot,
 .state-line i {
@@ -365,11 +366,11 @@ small {
 }
 .sidebar-user strong {
   display: block;
-  font-size: 11px;
+  font-size: var(--font-min);
 }
 .sidebar-user small {
   display: block;
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #8c927f;
   margin-top: 3px;
 }
@@ -393,7 +394,7 @@ small {
 .breadcrumb {
   display: flex;
   gap: 14px;
-  font-size: 11px;
+  font-size: var(--font-min);
   color: #8a8f80;
 }
 .breadcrumb > span {
@@ -412,7 +413,7 @@ small {
   display: flex;
   gap: 6px;
   align-items: center;
-  font-size: 9px;
+  font-size: var(--font-min);
   letter-spacing: 1px;
   font-weight: 600;
 }
@@ -423,7 +424,7 @@ small {
   border-radius: 50%;
 }
 .version {
-  font-size: 9px;
+  font-size: var(--font-min);
   font-weight: 600;
   letter-spacing: 1px;
   color: #939889;
@@ -434,7 +435,7 @@ small {
   gap: 8px;
   background: #eef1dd;
   padding: 8px 34px;
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #797f61;
   border-bottom: 1px solid #dce2cb;
 }
@@ -445,7 +446,7 @@ small {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 10px;
+  font-size: var(--font-min);
   font-weight: 700;
   color: #526329;
   white-space: nowrap;
@@ -492,7 +493,7 @@ small {
   line-height: 1.2;
 }
 .world-clock span {
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #929686;
   display: block;
   margin-top: 5px;
@@ -518,7 +519,7 @@ small {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #67724c;
   margin-bottom: 20px;
 }
@@ -527,7 +528,7 @@ small {
   align-items: center;
   gap: 5px;
   font-weight: 700;
-  font-size: 8px;
+  font-size: var(--font-min);
   letter-spacing: 0.7px;
   border: 1px solid #9ca987;
   padding: 4px 7px;
@@ -553,7 +554,7 @@ small {
   letter-spacing: 0.5px;
 }
 .hero-copy p {
-  font-size: 11px;
+  font-size: var(--font-min);
   color: #7e876b;
   max-width: 320px;
   line-height: 1.9;
@@ -574,7 +575,7 @@ small {
 .hero-bottom {
   display: flex;
   justify-content: space-between;
-  font-size: 7px;
+  font-size: var(--font-min);
   letter-spacing: 1.6px;
   margin-top: auto;
   padding-top: 25px;
@@ -599,7 +600,7 @@ small {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 8px;
+  font-size: var(--font-min);
   letter-spacing: 0.6px;
   border: 1px solid #727d62;
   background: #f1eed3;
@@ -612,7 +613,7 @@ small {
   position: absolute;
   right: 16px;
   bottom: 18px;
-  font-size: 7px;
+  font-size: var(--font-min);
   color: #50665a;
   letter-spacing: 0.6px;
   line-height: 1.8;
@@ -638,7 +639,7 @@ small {
   margin-bottom: 12px;
 }
 .stat-top > span {
-  font-size: 8px;
+  font-size: var(--font-min);
   letter-spacing: 1px;
   color: #a3a994;
 }
@@ -653,12 +654,12 @@ small {
   line-height: 1.1;
 }
 .stat-card > div > span:not(.stat-top span) {
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #727a64;
 }
 .stat-card small {
   display: block;
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #a1a790;
   margin-top: 12px;
 }
@@ -681,15 +682,15 @@ small {
 .section-title p {
   margin: 6px 0 0;
   color: #858b7b;
-  font-size: 11px;
+  font-size: var(--font-min);
 }
 .section-title .eyebrow {
-  font-size: 8px;
+  font-size: var(--font-min);
   margin-bottom: 7px;
   letter-spacing: 1.3px;
 }
 .section-count {
-  font-size: 11px;
+  font-size: var(--font-min);
   border: 1px solid #cdd4bf;
   margin-left: 10px;
   border-radius: 4px;
@@ -760,12 +761,12 @@ small {
 }
 .person-tile > span {
   display: block;
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #7e876e;
 }
 .person-tile > small {
   display: block;
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #a3aa95;
   margin-top: 3px;
 }
@@ -782,7 +783,7 @@ small {
   align-self: start;
   height: 116px;
   color: #8a9674;
-  font-size: 10px;
+  font-size: var(--font-min);
 }
 .add-person-tile span {
   text-align: center;
@@ -827,16 +828,16 @@ small {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 11px;
+  font-size: var(--font-min);
   margin-bottom: 4px;
 }
 .home-conversation time {
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #a5ac97;
   font-weight: 400;
 }
 .home-conversation p {
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #8c9580;
   margin: 0;
   white-space: nowrap;
@@ -862,7 +863,7 @@ small {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #a0a98e;
   border-top: 1px solid #e3e8d7;
   padding-top: 14px;
@@ -890,13 +891,13 @@ small {
   flex-shrink: 0;
 }
 .mini-event strong {
-  font-size: 10px;
+  font-size: var(--font-min);
   font-weight: 500;
   display: block;
   line-height: 1.6;
 }
 .mini-event small {
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #a4ac96;
   display: block;
   margin-top: 4px;
@@ -904,7 +905,7 @@ small {
 .home-footer {
   display: flex;
   justify-content: space-between;
-  font-size: 8px;
+  font-size: var(--font-min);
   color: #a0a98e;
   letter-spacing: 1px;
   border-top: 1px solid #e0e5d6;
@@ -996,7 +997,7 @@ small {
 }
 .tag {
   display: inline-flex;
-  font-size: 10px;
+  font-size: var(--font-min);
   line-height: 1.7;
   background: #eaf0d9;
   border: 1px solid #d8e0c6;
@@ -1065,7 +1066,7 @@ small {
   max-height: 300px;
   overflow: auto;
   font-family: inherit;
-  font-size: 11px;
+  font-size: var(--font-min);
   line-height: 1.9;
 }
 .notice {
@@ -1159,7 +1160,7 @@ small {
   position: absolute;
   top: 15px;
   left: 15px;
-  font-size: 10px;
+  font-size: var(--font-min);
   font-weight: 700;
   letter-spacing: 1.7px;
   z-index: 2;
@@ -1168,7 +1169,7 @@ small {
   position: absolute;
   right: 12px;
   bottom: 12px;
-  font-size: 9px;
+  font-size: var(--font-min);
   background: #ffffff88;
   border: 1px solid #ffffff55;
   border-radius: 4px;
@@ -1182,13 +1183,13 @@ small {
   flex-wrap: wrap;
 }
 .character-card-body p {
-  font-size: 11px;
+  font-size: var(--font-min);
   color: #859176;
   min-height: 60px;
   margin-bottom: 15px;
 }
 .tiny-status {
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #859176;
   white-space: nowrap;
 }
@@ -1198,7 +1199,7 @@ small {
   flex-wrap: wrap;
 }
 .tags > span {
-  font-size: 8px;
+  font-size: var(--font-min);
   background: #eef2e4;
   border-radius: 3px;
   padding: 3px 6px;
@@ -1221,11 +1222,11 @@ small {
   padding-top: 18px;
 }
 .editor-avatar small {
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #8e9d7a;
 }
 .editor-avatar .button {
-  font-size: 10px;
+  font-size: var(--font-min);
   padding: 8px;
 }
 .check-list {
@@ -1320,7 +1321,7 @@ small {
   );
 }
 .world-cover > span {
-  font-size: 9px;
+  font-size: var(--font-min);
   letter-spacing: 3px;
   position: absolute;
   top: 18px;
@@ -1348,7 +1349,7 @@ small {
 }
 .group-card p {
   color: #84956f;
-  font-size: 11px;
+  font-size: var(--font-min);
   min-height: 40px;
 }
 .group-symbol {
@@ -1367,7 +1368,7 @@ small {
   margin-bottom: 0;
 }
 .group-card .button {
-  font-size: 10px;
+  font-size: var(--font-min);
   padding: 8px 10px;
 }
 .knowledge-entry {
@@ -1382,7 +1383,7 @@ small {
 .knowledge-entry p {
   margin: 0;
   color: #899978;
-  font-size: 11px;
+  font-size: var(--font-min);
 }
 .network-panel {
   border: 1px solid #d0dbc0;
@@ -1398,7 +1399,7 @@ small {
   position: absolute;
   top: 18px;
   left: 20px;
-  font-size: 9px;
+  font-size: var(--font-min);
   letter-spacing: 1px;
   color: #91a078;
 }
@@ -1444,7 +1445,7 @@ small {
   gap: 12px;
   align-items: center;
   text-align: left;
-  font-size: 11px;
+  font-size: var(--font-min);
 }
 .relation-row > span:not(.avatar):last-of-type {
   margin-left: auto;
@@ -1497,7 +1498,7 @@ small {
   padding-top: 3px;
 }
 .life-log-event time small {
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #a1af8c;
   display: block;
   font-weight: 400;
@@ -1516,7 +1517,7 @@ small {
   flex-shrink: 0;
 }
 .event-place {
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #99a784;
 }
 .life-log-event h4 {
@@ -1528,7 +1529,7 @@ small {
   margin: 10px 0 0;
 }
 .event-duration {
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #9caa87;
   margin-left: auto;
   white-space: nowrap;
@@ -1622,14 +1623,14 @@ small {
   margin-top: 4px;
 }
 .key-note p {
-  font-size: 10px;
+  font-size: var(--font-min);
   margin: 0;
 }
 .usage-strip {
   display: flex;
   gap: 10px;
   align-items: center;
-  font-size: 11px;
+  font-size: var(--font-min);
   color: #82976b;
   margin: 22px 0;
 }
@@ -1654,7 +1655,7 @@ small {
 }
 .prompt-entry small {
   display: block;
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #92a27d;
   margin-top: 5px;
 }
@@ -1687,7 +1688,7 @@ small {
   font-size: 14px;
 }
 .activity-presets span {
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #8e9e7b;
 }
 .data-stats {
@@ -1696,7 +1697,7 @@ small {
   border-block: 1px solid #dbe5cd;
   padding: 22px 0;
   margin: 25px 0;
-  font-size: 11px;
+  font-size: var(--font-min);
   color: #93a47d;
 }
 .data-stats b {
@@ -1720,7 +1721,7 @@ small {
   margin-bottom: 7px;
 }
 .settings-heading p {
-  font-size: 11px;
+  font-size: var(--font-min);
   margin: 0;
   color: #8b9a74;
 }
@@ -1730,7 +1731,7 @@ small {
 }
 .version-pill {
   margin-left: auto;
-  font-size: 10px;
+  font-size: var(--font-min);
   white-space: nowrap;
   color: #82956b;
   border: 1px solid #d0dfbd;
@@ -1740,7 +1741,7 @@ small {
 .prompt-priority {
   display: flex;
   gap: 14px;
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #8b9d76;
   margin: 22px 0;
   flex-wrap: wrap;
@@ -1783,19 +1784,19 @@ small {
   margin-bottom: 6px;
 }
 .prompt-card p {
-  font-size: 10px;
+  font-size: var(--font-min);
   line-height: 1.7;
   color: #96a782;
   margin: 0;
 }
 .prompt-card .toggle-label {
-  font-size: 10px;
+  font-size: var(--font-min);
 }
 .prompt-card .toggle-label > span {
   display: none;
 }
 .prompt-card textarea {
-  font-size: 11px;
+  font-size: var(--font-min);
   min-height: 300px;
   background: #fcfff7;
   line-height: 1.9;
@@ -1804,7 +1805,7 @@ small {
   display: flex;
   justify-content: space-between;
   gap: 7px;
-  font-size: 8px;
+  font-size: var(--font-min);
   color: #97a985;
   flex-wrap: wrap;
   margin: 10px 0;
@@ -1818,7 +1819,7 @@ small {
   gap: 10px;
 }
 .prompt-card .button {
-  font-size: 10px;
+  font-size: var(--font-min);
   padding: 8px 11px;
   min-height: 34px;
 }
@@ -1835,10 +1836,10 @@ small {
   margin: 25px 0;
 }
 .rules-panel .muted {
-  font-size: 10px;
+  font-size: var(--font-min);
 }
 .local-note {
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #9aac86;
   text-align: center;
   padding: 8px 10px;
@@ -1873,25 +1874,25 @@ small {
   font-size: 15px;
 }
 .chat-list-title .eyebrow {
-  font-size: 8px;
+  font-size: var(--font-min);
 }
 .conversation-list .search-box {
   margin-bottom: 18px;
-  font-size: 10px;
+  font-size: var(--font-min);
   padding: 9px;
 }
 .conversation-list .search-box input {
-  font-size: 10px;
+  font-size: var(--font-min);
 }
 .list-filter {
   display: flex;
   justify-content: space-between;
   padding: 0 8px 15px;
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #94a27f;
 }
 .list-filter b {
-  font-size: 9px;
+  font-size: var(--font-min);
   font-weight: 400;
 }
 .conversation-item {
@@ -1921,17 +1922,17 @@ small {
   align-items: center;
 }
 .conversation-item strong {
-  font-size: 11px;
+  font-size: var(--font-min);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .conversation-item time {
-  font-size: 8px;
+  font-size: var(--font-min);
   color: #a3b28f;
 }
 .conversation-item p {
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #94a37f;
   white-space: nowrap;
   overflow: hidden;
@@ -1944,7 +1945,7 @@ small {
   height: 43px;
 }
 .unread-count {
-  font-size: 8px;
+  font-size: var(--font-min);
   background: #647e38;
   color: white;
   border-radius: 4px;
@@ -1956,7 +1957,7 @@ small {
 .chat-list-note {
   display: flex;
   gap: 7px;
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #9eb088;
   margin: 35px 8px 0;
   align-items: center;
@@ -1982,7 +1983,7 @@ small {
   margin-bottom: 5px;
 }
 .chat-header > div > span {
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #93a67d;
 }
 .chat-header-avatars {
@@ -1994,7 +1995,7 @@ small {
   border-radius: 50%;
 }
 .observer-banner {
-  font-size: 9px;
+  font-size: var(--font-min);
   padding: 10px 24px;
   color: #91a47a;
   display: flex;
@@ -2015,7 +2016,7 @@ small {
   align-items: center;
   gap: 15px;
   justify-content: center;
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #a9b999;
   margin: 20px 0 28px;
 }
@@ -2039,14 +2040,15 @@ small {
 }
 .message-label {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 9px;
   margin-bottom: 7px;
-  font-size: 8px;
+  font-size: var(--font-min);
   color: #b1bda4;
 }
 .message-label strong {
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #7b8e64;
   font-weight: 500;
 }
@@ -2076,20 +2078,20 @@ small {
   text-align: right;
 }
 .read-receipt {
-  font-size: 8px;
+  font-size: var(--font-min);
   color: #b0bea0;
   display: block;
   margin-top: 5px;
 }
 .demo-label {
-  font-size: 7px;
+  font-size: var(--font-min);
   border: 1px solid #dbe4ce;
   border-radius: 3px;
   padding: 0 3px;
   color: #a1af8f;
 }
 .unread-divider {
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #8ba55b;
   text-align: center;
   border-top: 1px dashed #cbdcb2;
@@ -2113,13 +2115,13 @@ small {
   padding: 3px 4px;
   background: none;
   border: 0;
-  font-size: 9px;
+  font-size: var(--font-min);
   min-height: 25px;
   max-width: 180px;
 }
 .composer-identity > span {
   margin-left: auto;
-  font-size: 8px;
+  font-size: var(--font-min);
   color: #b4c2a5;
 }
 .composer-input {
@@ -2137,7 +2139,7 @@ small {
   min-width: 0;
   border: 0;
   background: none;
-  font-size: 11px;
+  font-size: var(--font-min);
   line-height: 1.8;
   height: 40px;
   padding: 8px;
@@ -2148,7 +2150,7 @@ small {
   min-height: 32px;
 }
 .composer > small {
-  font-size: 8px;
+  font-size: var(--font-min);
   color: #aebb9d;
   margin-top: 7px;
   display: block;
@@ -2159,7 +2161,7 @@ small {
   padding: 25px 18px;
 }
 .chat-context > .eyebrow {
-  font-size: 8px;
+  font-size: var(--font-min);
   line-height: 1.8;
 }
 .chat-context > h3 {
@@ -2174,12 +2176,12 @@ small {
   padding: 16px 0;
 }
 .context-person strong {
-  font-size: 10px;
+  font-size: var(--font-min);
   display: block;
   margin-bottom: 6px;
 }
 .state-line {
-  font-size: 9px;
+  font-size: var(--font-min);
   display: flex;
   gap: 5px;
   align-items: center;
@@ -2190,7 +2192,7 @@ small {
   height: 5px;
 }
 .context-person small {
-  font-size: 8px;
+  font-size: var(--font-min);
   color: #adba9e;
   display: block;
   margin-top: 5px;
@@ -2204,12 +2206,12 @@ small {
   transform: rotate(-2deg);
 }
 .context-note span {
-  font-size: 7px;
+  font-size: var(--font-min);
   letter-spacing: 1px;
   color: #8fa573;
 }
 .context-note p {
-  font-size: 10px;
+  font-size: var(--font-min);
   margin: 10px 0 0;
   color: #93a77c;
   line-height: 1.9;
@@ -2218,12 +2220,12 @@ small {
   padding: 0 15px;
 }
 .chat-error .notice {
-  font-size: 10px;
+  font-size: var(--font-min);
   padding: 8px;
   margin: 0 0 8px;
 }
 .typing-indicator {
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #91a877;
   margin: 20px 0;
 }
@@ -2247,7 +2249,7 @@ small {
   color: #7b9162;
 }
 .empty p {
-  font-size: 11px;
+  font-size: var(--font-min);
   margin: 0;
   max-width: 340px;
 }
@@ -2270,7 +2272,7 @@ small {
   margin-bottom: 25px;
 }
 .welcome-art span {
-  font-size: 11px;
+  font-size: var(--font-min);
   letter-spacing: 3px;
   font-weight: 700;
 }
@@ -2283,7 +2285,7 @@ small {
 .onboarding-steps span {
   border: 1px solid #ccd9b8;
   border-radius: 4px;
-  font-size: 10px;
+  font-size: var(--font-min);
   padding: 8px 10px;
   background: #edf4df;
 }
@@ -2334,7 +2336,7 @@ small {
   font-size: 13px;
 }
 .recovery-screen > small {
-  font-size: 10px;
+  font-size: var(--font-min);
   margin-top: 20px;
   color: #8ca16e;
 }
@@ -2424,7 +2426,7 @@ small {
     font-size: 20px;
   }
   .brand b span {
-    font-size: 8px;
+    font-size: var(--font-min);
   }
   .main-content {
     padding: 25px;
@@ -2445,13 +2447,13 @@ small {
     gap: 6px;
   }
   .stat-card > div > span {
-    font-size: 9px !important;
+    font-size: var(--font-min) !important;
   }
   .stat-card b {
     font-size: 28px;
   }
   .stat-card small {
-    font-size: 8px;
+    font-size: var(--font-min);
   }
   .hero-copy h2 {
     font-size: 29px;
@@ -2536,7 +2538,7 @@ small {
     display: none;
   }
   .brand small {
-    font-size: 8px;
+    font-size: var(--font-min);
   }
   .main-content {
     padding: 24px 20px;
@@ -2558,14 +2560,14 @@ small {
     flex-wrap: wrap;
   }
   .hero-copy p {
-    font-size: 10px;
+    font-size: var(--font-min);
   }
   .art-sticker {
-    font-size: 6px;
+    font-size: var(--font-min);
     right: 8px;
   }
   .hero-bottom {
-    font-size: 6px;
+    font-size: var(--font-min);
   }
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -2580,7 +2582,7 @@ small {
     display: none;
   }
   .stat-card > div > span {
-    font-size: 10px !important;
+    font-size: var(--font-min) !important;
   }
   .home-bottom {
     grid-template-columns: 1fr;
@@ -2611,7 +2613,7 @@ small {
     margin-left: 7px;
   }
   .page-heading .button {
-    font-size: 10px;
+    font-size: var(--font-min);
     padding: 8px 10px;
   }
   .chat-layout {
@@ -2649,12 +2651,13 @@ small {
     grid-template-columns: 120px minmax(0, 1fr);
   }
   .editor-avatar .button {
-    font-size: 8px;
+    font-size: var(--font-min);
   }
 }
 @media (max-width: 760px) {
   :root {
     --sidebar: 244px;
+    --font-min: 12px;
   }
   .sidebar {
     transform: translateX(-100%);
@@ -2711,18 +2714,18 @@ small {
     display: none;
   }
   .breadcrumb {
-    font-size: 10px;
+    font-size: var(--font-min);
     gap: 8px;
   }
   .local-badge {
-    font-size: 8px;
+    font-size: var(--font-min);
   }
   .main-content {
     padding: 25px 17px 18px;
   }
   .demo-banner {
     padding: 8px 17px;
-    font-size: 9px;
+    font-size: var(--font-min);
     gap: 6px;
     align-items: start;
     line-height: 1.7;
@@ -2735,7 +2738,7 @@ small {
     max-width: 80%;
   }
   .demo-banner button {
-    font-size: 9px;
+    font-size: var(--font-min);
     flex-shrink: 0;
     padding: 0;
     align-self: center;
@@ -2755,11 +2758,11 @@ small {
     margin-left: 8px;
   }
   .eyebrow {
-    font-size: 8px;
+    font-size: var(--font-min);
     letter-spacing: 1.2px;
   }
   .page-heading p {
-    font-size: 10px;
+    font-size: var(--font-min);
   }
   .world-hero {
     grid-template-columns: 1fr;
@@ -2779,12 +2782,12 @@ small {
     letter-spacing: 0.6px;
   }
   .hero-copy p {
-    font-size: 11px;
+    font-size: var(--font-min);
     max-width: 90%;
     margin-bottom: 15px;
   }
   .hero-bottom {
-    font-size: 7px;
+    font-size: var(--font-min);
     padding-top: 20px;
   }
   .hero-art {
@@ -2793,10 +2796,10 @@ small {
   .art-sticker {
     top: 15px;
     right: 16px;
-    font-size: 7px;
+    font-size: var(--font-min);
   }
   .hero-coordinate {
-    font-size: 6px;
+    font-size: var(--font-min);
   }
   .stats-grid {
     gap: 10px;
@@ -2819,16 +2822,16 @@ small {
     flex-wrap: wrap;
   }
   .stat-card > div > span {
-    font-size: 9px !important;
+    font-size: var(--font-min) !important;
   }
   .section-title h2 {
     font-size: 17px;
   }
   .section-title .text-button {
-    font-size: 10px;
+    font-size: var(--font-min);
   }
   .section-title .eyebrow {
-    font-size: 7px;
+    font-size: var(--font-min);
   }
   .people-strip {
     gap: 12px;
@@ -2839,10 +2842,10 @@ small {
     flex: 0 0 106px;
   }
   .person-tile > strong {
-    font-size: 11px;
+    font-size: var(--font-min);
   }
   .person-tile > span {
-    font-size: 9px;
+    font-size: var(--font-min);
   }
   .person-portrait {
     height: 125px;
@@ -2861,7 +2864,7 @@ small {
   }
   .home-footer {
     margin-top: 22px;
-    font-size: 6px;
+    font-size: var(--font-min);
     letter-spacing: 0.5px;
   }
   .mobile-bottom-nav {
@@ -2886,7 +2889,7 @@ small {
     border: 0;
     background: none;
     color: #97a780;
-    font-size: 9px;
+    font-size: var(--font-min);
     min-width: 55px;
   }
   .mobile-bottom-nav button.active {
@@ -2926,12 +2929,12 @@ small {
     left: 8px;
   }
   .card-index {
-    font-size: 8px;
+    font-size: var(--font-min);
     left: 11px;
     top: 12px;
   }
   .character-source {
-    font-size: 7px;
+    font-size: var(--font-min);
     padding: 2px 5px;
     right: 8px;
     bottom: 8px;
@@ -2946,10 +2949,10 @@ small {
     font-size: 13px;
   }
   .tiny-status {
-    font-size: 8px;
+    font-size: var(--font-min);
   }
   .character-card-body p {
-    font-size: 9px;
+    font-size: var(--font-min);
     line-height: 1.8;
     min-height: 66px;
   }
@@ -2962,7 +2965,7 @@ small {
   }
   .character-card-body .button {
     padding: 7px;
-    font-size: 9px;
+    font-size: var(--font-min);
     min-height: 32px;
   }
   .character-card-body .button svg {
@@ -2988,7 +2991,7 @@ small {
     font-size: 14px;
   }
   .knowledge-entry p {
-    font-size: 9px;
+    font-size: var(--font-min);
   }
   .world-cover {
     height: 165px;
@@ -2997,7 +3000,7 @@ small {
     font-size: 55px;
   }
   .network-caption {
-    font-size: 6px;
+    font-size: var(--font-min);
     left: 12px;
     top: 10px;
   }
@@ -3012,18 +3015,18 @@ small {
   }
   .relation-row {
     padding: 10px;
-    font-size: 10px;
+    font-size: var(--font-min);
     gap: 8px;
   }
   .relation-row .tag {
-    font-size: 8px;
+    font-size: var(--font-min);
   }
   .relation-row .avatar {
     width: 28px !important;
     height: 28px !important;
   }
   .relation-row > span:not(.avatar):last-of-type {
-    font-size: 9px;
+    font-size: var(--font-min);
     margin-left: 0;
   }
   .timeline-toolbar {
@@ -3034,7 +3037,7 @@ small {
     min-height: 35px;
   }
   .timeline-toolbar .input {
-    font-size: 11px;
+    font-size: var(--font-min);
     padding: 8px;
     min-height: 35px;
   }
@@ -3048,7 +3051,7 @@ small {
     gap: 7px;
   }
   .filters > .input {
-    font-size: 10px;
+    font-size: var(--font-min);
     min-width: 90px;
     max-width: calc(50% - 7px);
     flex: 1;
@@ -3061,7 +3064,7 @@ small {
     font-size: 12px;
   }
   .timeline-panel .tag {
-    font-size: 8px;
+    font-size: var(--font-min);
   }
   .life-log-event {
     gap: 13px;
@@ -3074,18 +3077,18 @@ small {
     font-size: 12px;
   }
   .life-log-event h4 {
-    font-size: 10px;
+    font-size: var(--font-min);
     line-height: 1.9;
   }
   .event-place,
   .event-duration {
-    font-size: 8px;
+    font-size: var(--font-min);
   }
   .event-duration {
     display: none;
   }
   .life-log-event time small {
-    font-size: 8px;
+    font-size: var(--font-min);
   }
   .life-log-event .avatar {
     width: 24px !important;
@@ -3096,7 +3099,7 @@ small {
     margin-bottom: 20px;
   }
   .settings-tabs button {
-    font-size: 11px;
+    font-size: var(--font-min);
     gap: 5px;
     padding-bottom: 12px;
   }
@@ -3111,7 +3114,7 @@ small {
     display: none;
   }
   .api-panel .section-title p {
-    font-size: 10px;
+    font-size: var(--font-min);
   }
   .settings-heading {
     padding: 20px;
@@ -3121,7 +3124,7 @@ small {
     line-height: 1.5;
   }
   .settings-heading p {
-    font-size: 10px;
+    font-size: var(--font-min);
     line-height: 1.9;
   }
   .settings-heading > svg {
@@ -3131,16 +3134,16 @@ small {
     gap: 7px;
   }
   .prompt-manager > .toolbar .button {
-    font-size: 10px;
+    font-size: var(--font-min);
     padding: 8px 9px;
     min-height: 35px;
   }
   .prompt-manager .version-pill {
-    font-size: 9px;
+    font-size: var(--font-min);
     margin-left: 0;
   }
   .prompt-priority {
-    font-size: 8px;
+    font-size: var(--font-min);
     gap: 8px;
   }
   .prompt-card {
@@ -3150,7 +3153,7 @@ small {
     font-size: 13px;
   }
   .prompt-card p {
-    font-size: 10px;
+    font-size: var(--font-min);
   }
   .prompt-card textarea {
     font-size: 12px;
@@ -3158,7 +3161,7 @@ small {
     min-height: 320px;
   }
   .prompt-meta {
-    font-size: 8px;
+    font-size: var(--font-min);
     gap: 8px;
   }
   .prompt-grid {
@@ -3179,10 +3182,10 @@ small {
     margin-top: 20px;
   }
   .rules-panel .field > .field-label {
-    font-size: 11px;
+    font-size: var(--font-min);
   }
   .rules-panel .tag {
-    font-size: 8px;
+    font-size: var(--font-min);
   }
   .activity-presets {
     gap: 10px;
@@ -3194,12 +3197,12 @@ small {
     font-size: 12px;
   }
   .activity-presets span {
-    font-size: 8px;
+    font-size: var(--font-min);
   }
   .data-stats {
     gap: 15px;
     justify-content: space-between;
-    font-size: 9px;
+    font-size: var(--font-min);
   }
   .data-stats b {
     font-size: 22px;
@@ -3223,7 +3226,7 @@ small {
     line-height: 1.6;
   }
   .modal .field > .field-label {
-    font-size: 11px;
+    font-size: var(--font-min);
   }
   .modal .input {
     font-size: 13px;
@@ -3235,7 +3238,7 @@ small {
     gap: 10px;
   }
   .modal .toolbar .button {
-    font-size: 11px;
+    font-size: var(--font-min);
     padding: 10px 12px;
   }
   .character-editor {
@@ -3253,7 +3256,7 @@ small {
     height: 70px !important;
   }
   .editor-avatar .button {
-    font-size: 10px;
+    font-size: var(--font-min);
   }
   .editor-avatar small {
     width: 100%;
@@ -3272,14 +3275,14 @@ small {
     gap: 20px;
   }
   .welcome-art span {
-    font-size: 8px;
+    font-size: var(--font-min);
     letter-spacing: 2px;
   }
   .onboarding-steps {
     gap: 7px;
   }
   .onboarding-steps span {
-    font-size: 8px;
+    font-size: var(--font-min);
     padding: 7px;
   }
   .chat-layout {
@@ -3303,14 +3306,14 @@ small {
     font-size: 13px;
   }
   .conversation-item time {
-    font-size: 9px;
+    font-size: var(--font-min);
   }
   .conversation-item p {
-    font-size: 11px;
+    font-size: var(--font-min);
     max-width: 240px;
   }
   .conversation-item .unread-count {
-    font-size: 9px;
+    font-size: var(--font-min);
     bottom: 17px;
   }
   .chat-list-title h2 {
@@ -3346,17 +3349,17 @@ small {
   }
   .observer-banner {
     padding: 10px 17px;
-    font-size: 9px;
+    font-size: var(--font-min);
   }
   .message-feed {
     padding: 5px 17px 15px;
   }
   .message-label {
-    font-size: 8px;
+    font-size: var(--font-min);
     gap: 7px;
   }
   .message-label strong {
-    font-size: 10px;
+    font-size: var(--font-min);
   }
   .message-bubble {
     font-size: 12px;
@@ -3376,14 +3379,14 @@ small {
     padding: 8px 15px 12px;
   }
   .composer-identity .input {
-    font-size: 10px;
+    font-size: var(--font-min);
     max-width: 220px;
   }
   .composer-input textarea {
     font-size: 12px;
   }
   .composer > small {
-    font-size: 7px;
+    font-size: var(--font-min);
   }
   .chat-header-avatars {
     display: none;
@@ -3398,21 +3401,21 @@ small {
     font-size: 35px;
   }
   .recovery-screen > p {
-    font-size: 10px;
+    font-size: var(--font-min);
   }
   .recovery-screen small {
-    font-size: 9px;
+    font-size: var(--font-min);
   }
   .recovery-counts {
     font-size: 12px;
     gap: 20px;
   }
   .usage-strip {
-    font-size: 9px;
+    font-size: var(--font-min);
     line-height: 1.8;
   }
   .local-note {
-    font-size: 9px;
+    font-size: var(--font-min);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -3459,7 +3462,7 @@ small {
   display: block;
   margin-top: 5px;
   color: #7f8b72;
-  font-size: 10px;
+  font-size: var(--font-min);
 }
 .time-controls {
   margin-top: 24px;
@@ -3498,7 +3501,7 @@ small {
   font-size: 13px;
 }
 .time-mode-options span {
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #7c8c67;
 }
 .rewind-controls {
@@ -3520,7 +3523,7 @@ small {
   color: inherit;
 }
 .time-controls .muted {
-  font-size: 11px;
+  font-size: var(--font-min);
 }
 .time-controls .field {
   max-width: 650px;
@@ -3539,10 +3542,10 @@ small {
     height: 34px !important;
   }
   .world-character-list strong {
-    font-size: 11px;
+    font-size: var(--font-min);
   }
   .world-character-list small {
-    font-size: 8px;
+    font-size: var(--font-min);
   }
   .time-mode-options {
     gap: 10px;
@@ -3554,13 +3557,13 @@ small {
     font-size: 12px;
   }
   .time-mode-options span {
-    font-size: 9px;
+    font-size: var(--font-min);
   }
   .rewind-controls {
     gap: 9px;
   }
   .time-controls .muted {
-    font-size: 10px;
+    font-size: var(--font-min);
   }
 }
 .creation-assistant {
@@ -3580,7 +3583,7 @@ small {
   gap: 7px;
 }
 .creation-assistant .field > .field-label {
-  font-size: 11px;
+  font-size: var(--font-min);
 }
 .creation-draft {
   border-top: 1px solid #c9d7b8;
@@ -3610,11 +3613,11 @@ small {
   margin-bottom: 15px;
 }
 .draft-group p {
-  font-size: 11px;
+  font-size: var(--font-min);
   margin: 6px 0;
 }
 .draft-group small {
-  font-size: 10px;
+  font-size: var(--font-min);
   color: #788c60;
 }
 .group-member-picker > label {
@@ -3628,7 +3631,7 @@ small {
 }
 .group-member-picker small {
   margin-left: auto;
-  font-size: 9px;
+  font-size: var(--font-min);
   color: #7d9069;
 }
 .group-member-picker .outside-world {
@@ -3640,10 +3643,10 @@ small {
     padding: 13px;
   }
   .creation-assistant .tag {
-    font-size: 8px;
+    font-size: var(--font-min);
   }
   .group-member-picker small {
-    font-size: 8px;
+    font-size: var(--font-min);
   }
   .group-member-picker > label {
     padding: 8px;
@@ -3676,7 +3679,7 @@ small {
   font-variant-numeric: tabular-nums;
 }
 .world-hud small {
-  font-size: 11px;
+  font-size: var(--font-min);
 }
 .world-hud select {
   width: 100px;
@@ -3743,7 +3746,7 @@ small {
 }
 .scene-record small,
 .scene-record time {
-  font-size: 11px;
+  font-size: var(--font-min);
   font-weight: 400;
   color: #626a59;
 }
@@ -3804,7 +3807,7 @@ small {
     padding: 8px;
   }
   .world-hud small {
-    font-size: 10px;
+    font-size: var(--font-min);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -3848,6 +3851,90 @@ img.world-cover {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+.message-actions {
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+}
+.message-actions > .message-action {
+  min-height: 28px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 18px;
+  gap: 4px;
+}
+.message-actions .read-receipt {
+  font-size: var(--font-min);
+  line-height: 1.5;
+}
+.reaction-picker {
+  flex-basis: 100%;
+  min-width: 0;
+  max-width: 340px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+}
+.reaction-picker-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+.reaction-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 8px 0;
+}
+.reaction-categories button {
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  padding: 4px 6px;
+  font-size: 12px;
+  line-height: 18px;
+}
+.reaction-categories button[aria-pressed='true'] {
+  border-color: #bfc9aa;
+  background: #edf1df;
+}
+.reaction-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+  gap: 3px;
+  max-height: 216px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.reaction-emoji {
+  min-width: 0;
+  min-height: 32px;
+  padding: 3px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 21px;
+  line-height: 1.2;
+}
+.reaction-emoji:hover:not(:disabled) {
+  border-color: #bfc9aa;
+  background: #edf1df;
+}
+@media (max-width: 760px) {
+  .message-actions > .message-action {
+    min-height: 32px;
+  }
+  .reaction-emoji-grid {
+    grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  }
+  .reaction-emoji {
+    min-height: 36px;
+  }
 }
 .quoted-message {
   border-left: 3px solid #9eaf78;
