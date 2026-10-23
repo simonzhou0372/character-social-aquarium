@@ -117,6 +117,8 @@ export default function App() {
   useEffect(() => {
     seed()
       .then(async () => {
+        const { ensureTouhouPresets } = await import('./data/presets/touhou');
+        await ensureTouhouPresets();
         setReady(true);
         const s = await db.settings.get('app');
         if (!s?.onboarded) setOnboarding(true);

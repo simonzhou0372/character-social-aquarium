@@ -1,4 +1,5 @@
 import { RecycleButton } from '../components/RecycleButton';
+import { PresetDetails } from '../components/PresetDetails';
 import {
   ObservationManager,
   ObservationSummary,
@@ -187,6 +188,18 @@ export function Worlds({
         />
       </div>
       {pageError && <Status error>{pageError}</Status>}
+      {worlds?.some((w) => w.provenance) && (
+        <section className="panel preset-intro">
+          <h3>内置大型世界：东方Project</h3>
+          <p>
+            原设资料已在本地就绪。幻想乡与 PC-98 旧作分开保存，默认暂停、选择性观察，不会自动消耗
+            API。可在“切换世界”或下方世界卡片进入；编辑世界可搜索地点与查阅出处。
+          </p>
+          <p>
+            角色档案只整理已确认身份与能力；资料分组不是虚构社团，原作未确认的恋爱与家谱保持未知。已有自定义内容不会被预设更新覆盖。
+          </p>
+        </section>
+      )}
       <div className="world-grid">
         {worlds?.map((w) => (
           <article className={`world-card ${w.id === worldId ? 'selected' : ''}`} key={w.id}>
@@ -200,6 +213,7 @@ export function Worlds({
                 {members?.filter((m) => m.worldId === w.id).length} 位角色
               </span>
               <h2>{w.name}</h2>
+              {w.provenance && <span className="tag">内置原设资料 · v{w.presetVersion ?? 1}</span>}
               <p>{w.description}</p>
               <div className="toolbar">
                 <RecycleButton kind="worlds" id={w.id} name={w.name} />
@@ -376,6 +390,7 @@ export function Worlds({
       </section>
       {edit && (
         <Modal title="世界观设定" onClose={() => setEdit(undefined)}>
+          <PresetDetails provenance={edit.provenance} locations={edit.locationDetails} />
           <Toggle
             label="允许人物设定随经历自然变化"
             checked={edit.evolutionSettings?.enabled ?? false}
@@ -615,6 +630,7 @@ export function Worlds({
       )}
       {group && (
         <Modal title="团体与成员" onClose={() => setGroup(undefined)}>
+          <PresetDetails provenance={group.provenance} />
           <Field label="团体模式">
             <select
               value={group.entityMode ?? 'interactive'}

@@ -1,4 +1,5 @@
 import { RecycleButton } from '../components/RecycleButton';
+import { PresetDetails } from '../components/PresetDetails';
 import { EvolutionPanel } from '../components/EvolutionPanel';
 import { useObservation } from '../components/ObservationManager';
 import { AvatarUpload } from '../components/AvatarUpload';
@@ -74,6 +75,7 @@ export function CharacterEditor({
           <AvatarUpload value={c.avatar} name={c.name} onChange={(avatar) => patch({ avatar })} />
         </div>
         <div className="editor-main">
+          <PresetDetails provenance={c.provenance} />
           <div className="form-grid">
             <Field label="角色名称">
               <Input

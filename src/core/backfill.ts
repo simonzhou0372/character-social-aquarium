@@ -1,4 +1,5 @@
 import { persistDialogue } from '../ai/orchestrator';
+import { locationAccessFor } from './simulation';
 import { db, withWorldLock, type AquariumDB } from '../data/db';
 import { worldTime } from './calendar';
 import { DAY, type ActivityEvent, type Conversation } from './types';
@@ -69,6 +70,12 @@ export async function processBackfill(worldId: string, d: AquariumDB = db) {
           if (!participants.length) continue;
           const chars = await d.characters.where('id').anyOf(participants).toArray();
           if (chars.some((c) => c.entityMode === 'background')) continue;
+          const backfillWorld = (await d.worlds.get(worldId))!;
+          const accesses = chars.map((c) => locationAccessFor(c, backfillWorld));
+          const availablePlaces = backfillWorld.locations.filter((name) =>
+            accesses.every((a) => !a || a.usual.includes(name)),
+          );
+          if (accesses.some(Boolean) && !availablePlaces.length) continue;
           const blocks = occupied
             .filter((e) => e.participants.some((id) => participants.includes(id)))
             .sort((a, b) => a.start - b.start);
@@ -90,9 +97,10 @@ export async function processBackfill(worldId: string, d: AquariumDB = db) {
             end: at + duration,
             type: participants.length > 1 ? 'social' : 'out',
             participants,
-            location:
-              occupied.find((e) => e.participants.some((id) => participants.includes(id)))
-                ?.location ?? '日常活动地点',
+            location: accesses.some(Boolean)
+              ? availablePlaces[0]
+              : (occupied.find((e) => e.participants.some((id) => participants.includes(id)))
+                  ?.location ?? '日常活动地点'),
             description:
               participants.length > 1
                 ? `${chars.map((c) => c.name).join('、')}有过一次简短的共同交流。`

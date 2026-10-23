@@ -39,6 +39,16 @@ export interface Plan {
   seed: number;
   socialCandidates: string[];
 }
+/** A bundled profile's geography belongs to that preset, not every AU sharing its character. */
+export function locationAccessFor(c: Character, world: World) {
+  if (
+    c.provenance &&
+    (c.provenance.catalogId !== world.provenance?.catalogId ||
+      (c.provenance.continuity === 'pc98') !== (world.provenance?.continuity === 'pc98'))
+  )
+    return undefined;
+  return c.locationAccess;
+}
 function planHour(
   world: World,
   characters: Character[],
@@ -59,8 +69,13 @@ function planHour(
     const scheduled = scheduledType(c, hour);
     const type =
       scheduled === 'rest' && roll.value < (0.12 * (end - start)) / HOUR ? 'out' : scheduled;
-    const location =
-      type === 'sleep'
+    const access = locationAccessFor(c, world);
+    const allowed = access?.usual.filter((name) => world.locations.includes(name));
+    const location = access
+      ? (type === 'out' || type === 'meal') && allowed?.length
+        ? allowed[Math.floor(roll.value * 1000) % allowed.length]
+        : access.home
+      : type === 'sleep'
         ? '家'
         : type === 'work'
           ? world.locations.find((x) => /排练/.test(x)) && /乐队|鼓|键盘/.test(c.bio)
@@ -126,9 +141,17 @@ function planHour(
           : [];
       const pair = [...new Set([a, relation.to, ...companions])],
         id = `joint:${world.id}:${start}:${a}`;
+      const sharedPlaces = world.locations.filter((name) =>
+        pair.every((id) => {
+          const person = characters.find((c) => c.id === id);
+          const access = person && locationAccessFor(person, world);
+          return !access || access.usual.includes(name);
+        }),
+      );
+      if (!sharedPlaces.length) return { events, states, seed, socialCandidates };
       for (let i = events.length - 1; i >= 0; i--)
         if (pair.includes(events[i].participants[0])) events.splice(i, 1);
-      const location = world.locations[Math.floor(roll.value * 20) % world.locations.length];
+      const location = sharedPlaces[Math.floor(roll.value * 20) % sharedPlaces.length];
       events.push({
         id,
         worldId: world.id,

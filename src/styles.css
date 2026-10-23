@@ -4045,6 +4045,35 @@ img.world-cover {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 16px;
 }
+.preset-details {
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+}
+.preset-details summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.preset-details p,
+.preset-details li {
+  margin-top: 10px;
+}
+.preset-details a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.preset-location-list {
+  max-height: 400px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.preset-location-list article {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.preset-location-list .tag {
+  margin: 5px;
+  white-space: normal;
+}
 .report-source {
   padding: 12px 0;
   border-bottom: 1px solid var(--line);

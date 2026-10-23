@@ -1,4 +1,5 @@
 import { RelationshipAssistant } from '../components/RelationshipAssistant';
+import { PresetDetails } from '../components/PresetDetails';
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus, ArrowRight, Lock, Network } from 'lucide-react';
@@ -110,6 +111,11 @@ export function Relationships({ worldId }: { worldId: string }) {
           ))}
         </Select>
       </div>
+      {chars.length > 30 && (
+        <p className="muted">
+          大型世界可先按团体筛选，再高亮某位角色；点击关系可查看有向事实与出处。原设资料中的数值仅用于调度，不是原作好感度。
+        </p>
+      )}
       <div className="network-panel">
         <span className="network-caption">SOCIAL CONSTELLATION · 点击人物或连线</span>
         {chars.length ? (
@@ -219,13 +225,16 @@ export function Relationships({ worldId }: { worldId: string }) {
             <ArrowRight size={16} />
             <strong>{chars.find((c) => c.id === r.to)?.name}</strong>
             <span className="tag">{r.label}</span>
-            <span>亲近 {r.closeness}</span>
+            <span>
+              {r.provenance ? '调度权重（非原设数值）' : '亲近'} {r.closeness}
+            </span>
             {r.locked && <Lock size={14} />}
           </button>
         ))}
       </div>
       {edit && (
         <Modal title="编辑有向关系" onClose={() => setEdit(undefined)}>
+          <PresetDetails provenance={edit.provenance} />
           <RelationshipAssistant worldId={worldId} focusIds={[edit.from, edit.to]} />
           <div className="form-grid">
             {(['from', 'to'] as const).map((k, i) => (

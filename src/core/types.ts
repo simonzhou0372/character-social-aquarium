@@ -14,7 +14,17 @@ import { PromptConfigSchema } from '../ai/prompts';
 const id = z.string().min(1).max(160),
   text = z.string().max(8000),
   time = z.number().finite().nonnegative();
+export const ProvenanceSchema = z.object({
+  catalogId: z.string().max(80),
+  sourceIds: z.array(z.string().max(80)).max(80),
+  note: z.string().max(2000),
+  continuity: z.enum(['windows', 'pc98', 'reference']),
+});
 export const CharacterSchema = z.object({
+  provenance: ProvenanceSchema.optional(),
+  locationAccess: z
+    .object({ home: z.string().max(100), usual: z.array(z.string().max(100)).min(1).max(20) })
+    .optional(),
   deletedAt: time.optional(),
   id,
   name: z.string().min(1).max(60),
@@ -47,6 +57,20 @@ export const CharacterSchema = z.object({
 });
 export type Character = z.infer<typeof CharacterSchema>;
 export const WorldSchema = z.object({
+  provenance: ProvenanceSchema.optional(),
+  presetVersion: z.number().int().positive().optional(),
+  locationDetails: z
+    .array(
+      z.object({
+        name: z.string().max(100),
+        region: z.string().max(100),
+        description: z.string().max(1000),
+        sourceIds: z.array(z.string().max(80)),
+        access: z.enum(['local', 'restricted', 'external', 'legacy']),
+      }),
+    )
+    .max(200)
+    .optional(),
   deletedAt: time.optional(),
   evolutionSettings: z.object({ enabled: z.boolean(), rules: z.string().max(4000) }).optional(),
   reportSettings: ReportSettingsSchema.optional(),
@@ -64,7 +88,7 @@ export const WorldSchema = z.object({
   name: z.string().min(1).max(80),
   description: text,
   rules: text,
-  locations: z.array(z.string().max(100)).min(1).max(30),
+  locations: z.array(z.string().max(100)).min(1).max(200),
   era: z.string().min(1).max(80).optional(),
   calendarSystem: z.literal('gregorian').optional(),
   initialDate: WorldDateTimeSchema.optional(),
@@ -93,6 +117,7 @@ export const MembershipSchema = z.object({
 });
 export type Membership = z.infer<typeof MembershipSchema>;
 export const GroupSchema = z.object({
+  provenance: ProvenanceSchema.optional(),
   deletedAt: time.optional(),
   id,
   entityMode: z.enum(['interactive', 'background']).optional(),
@@ -113,6 +138,7 @@ export const GroupMemberSchema = z.object({
 });
 export type GroupMember = z.infer<typeof GroupMemberSchema>;
 export const RelationshipSchema = z.object({
+  provenance: ProvenanceSchema.optional(),
   generationMetadata: z
     .object({ origin: z.literal('ai'), uncertain: z.boolean(), at: time })
     .optional(),
@@ -256,6 +282,7 @@ export const CheckpointSchema = z.object({
 });
 export type Checkpoint = z.infer<typeof CheckpointSchema>;
 export const SettingsSchema = z.object({
+  installedPresets: z.record(z.number().int().positive()).optional(),
   id: z.literal('app'),
   worldId: z.string().max(160),
   activity: z.enum(['quiet', 'standard', 'lively']),

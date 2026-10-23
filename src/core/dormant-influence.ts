@@ -1,6 +1,6 @@
 import type { AquariumDB } from '../data/db';
 import { worldTime, dayOrdinal } from './calendar';
-import { scheduledType } from './simulation';
+import { scheduledType, locationAccessFor } from './simulation';
 import type { ActivityEvent, World, Relationship, RuntimeState } from './types';
 import type { Plan } from './simulation';
 import type { resolveObservation } from './selective-observation';
@@ -36,6 +36,8 @@ export async function dormantInfluence(
     return;
   const base = plan.events.find((e) => e.participants.includes(relation.from) && e.phone > 0.3);
   if (!base) return;
+  const access = locationAccessFor(dormant, world);
+  if (access && !access.usual.includes(base.location)) return;
   const participants = [...base.participants, dormant.id];
   // CP / group-only focus requires the relevant partner or another group member to actually attend.
   if (!scope.allowsEvent({ participants })) return;

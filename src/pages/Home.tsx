@@ -93,7 +93,13 @@ export function Home({
               <i />
               {data?.cp?.paused ? 'WORLD ON PAUSE' : 'WORLD IS ALIVE'}
             </span>
-            <span>原创演示世界</span>
+            <span>
+              {data?.world?.provenance
+                ? '内置原设资料 · 模拟非正史'
+                : data?.world?.id === 'w-harbor'
+                  ? '原创演示世界'
+                  : '自定义世界'}
+            </span>
           </div>
           <h2>
             {data?.world?.name.split(' · ')[0] ?? '你的世界'}

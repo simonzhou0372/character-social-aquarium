@@ -46,6 +46,9 @@ function stripDecorative(value: unknown): unknown {
               'majorEventSettings',
               'evolutionSettings',
               'reportSettings',
+              'locationDetails',
+              'provenance',
+              'presetVersion',
             ].includes(k),
         )
         .map(([k, v]) => [k, stripDecorative(v)]),
