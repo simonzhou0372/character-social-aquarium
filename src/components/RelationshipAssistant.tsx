@@ -13,7 +13,7 @@ export function RelationshipAssistant({
 }) {
   const data = useLiveQuery(
     async () => ({
-      chars: await db.characters.toArray(),
+      chars: await db.characters.filter((entity) => !entity.deletedAt).toArray(),
       members: await db.memberships.where('worldId').equals(worldId).toArray(),
       groups: await db.groups.filter((g) => g.worldIds.includes(worldId)).toArray(),
       gm: await db.groupMembers.where('worldId').equals(worldId).toArray(),
@@ -45,6 +45,10 @@ export function RelationshipAssistant({
         undefined,
         abort.current.signal,
       );
+      if (generated.warnings.length)
+        setNotice(
+          `保留 ${generated.length} 条有效建议，跳过 ${generated.warnings.length} 条端点不明确的建议。`,
+        );
       setDrafts((old) =>
         replacePair
           ? [...old.filter((r) => !(ids.includes(r.from) && ids.includes(r.to))), ...generated]

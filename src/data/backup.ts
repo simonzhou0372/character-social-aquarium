@@ -107,7 +107,12 @@ export function validateBackup(input: unknown): Backup {
   b.conversations.forEach((x) =>
     assert(
       worlds.has(x.worldId) &&
-        x.participants.every((c) => member(x.worldId, c)) &&
+        (x.kind === 'notes'
+          ? x.participants.length === 1 &&
+            x.participants[0] === 'user' &&
+            !x.groupId &&
+            !x.controlledId
+          : x.participants.every((c) => member(x.worldId, c))) &&
         (!x.groupId ||
           b.groups.some((g) => g.id === x.groupId && g.worldIds.includes(x.worldId))) &&
         (!x.controlledId || x.participants.includes(x.controlledId)),
@@ -276,7 +281,12 @@ export function validateBackup(input: unknown): Backup {
     ),
   );
   b.checkpoints.forEach((x) => assert(worlds.has(x.id), '模拟检查点'));
-  b.settings.forEach((x) => assert(worlds.has(x.worldId), '默认世界'));
+  b.settings.forEach((x) =>
+    assert(
+      worlds.has(x.worldId) || (x.worldId === '' && b.worlds.every((w) => !!w.deletedAt)),
+      '默认世界',
+    ),
+  );
   b.observationConfigs.forEach((c) =>
     assert(
       worlds.has(c.id) &&

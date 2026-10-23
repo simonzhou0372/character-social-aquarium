@@ -23,6 +23,14 @@ export async function processBackfill(worldId: string, d: AquariumDB = db) {
         .and((j) => ['pending', 'running', 'waiting', 'failed'].includes(j.status))
         .first();
       if (!job) return;
+      const actors = await d.characters.bulkGet(job.characterIds);
+      if (actors.some((c) => !c || c.deletedAt)) {
+        await d.backfillJobs.update(job.id, {
+          status: 'paused',
+          error: '对象已移入回收站，回溯已挂起',
+        });
+        return;
+      }
       const scope = await resolveObservation(worldId, d),
         currentKeys = observationKeys(scope.config);
       if (job.targets.some((t) => scope.config.mode !== 'full' && !currentKeys.includes(t))) {

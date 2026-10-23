@@ -1,3 +1,4 @@
+import { conversationAvailable } from '../data/chat';
 import { evolvedCharacter, historicalCharacter } from '../core/selective-observation';
 import { completedField } from './structured';
 import { validateMessageExtras } from '../data/chat';
@@ -310,6 +311,8 @@ export async function generateDialogue(
   signal?: AbortSignal,
   current?: { state: unknown; event: unknown },
 ) {
+  if (!(await conversationAvailable(c, d)))
+    throw new ProviderError('identity', '会话对象不可用或已移入回收站');
   if (c.groupId && (await d.groups.get(c.groupId))?.entityMode === 'background')
     throw new ProviderError('identity', '背景团体不参与聊天');
   if (c.controlledId === speakerId || !c.participants.includes(speakerId))
@@ -403,6 +406,7 @@ export async function persistDialogue(
 ) {
   const c = await d.conversations.get(conversationId);
   if (!c || c.controlledId === speakerId) return [];
+  if (await d.messages.get(`${prefix}:0`)) return [];
   const existing = await d.messages.where('conversationId').equals(conversationId).sortBy('seq');
   const last = existing.at(-1);
   let seq = last?.seq ?? 0;
@@ -458,6 +462,8 @@ export async function sendUserMessage(
   d: AquariumDB = db,
   extras: Partial<Message> = {},
 ) {
+  if (!(await conversationAvailable(conversationId, d)))
+    throw new Error('会话对象不可用或已移入回收站');
   if (identity !== 'user' && (await d.characters.get(identity))?.entityMode === 'background')
     throw new Error('请先将背景人物转为可互动角色');
   if (!text.trim() || Array.from(text).length > 2000)
@@ -515,7 +521,7 @@ export async function sendUserMessage(
 }
 export async function replyToUser(conversationId: string, d: AquariumDB = db) {
   const c = await d.conversations.get(conversationId);
-  if (!c) return;
+  if (!c || c.kind === 'notes' || !(await conversationAvailable(c.id, d))) return;
   const provider = await liveProvider(d);
   const snapshot = await getPrompts(d);
   const cp = await d.checkpoints.get(c.worldId);
@@ -539,22 +545,38 @@ export async function replyToUser(conversationId: string, d: AquariumDB = db) {
   if (!candidate) return;
   const at = Math.max(cp?.simTime ?? Date.now(), (last.at(-1)?.simAt ?? 0) + 1000);
   const generated = await generateDialogue(d, c, candidate, at, snapshot, provider);
-  await d.transaction('rw', d.messages, d.conversations, d.usage, d.settings, async () => {
-    const latest = await d.messages.where('conversationId').equals(c.id).sortBy('seq');
-    if (latest.at(-1)?.id !== last.at(-1)?.id) return;
-    await persistDialogue(
-      d,
-      c.id,
-      candidate,
-      generated.messages,
-      at,
-      'ai',
-      uid('reply'),
-      undefined,
-      generated.offsets,
-      generated,
-    );
-  });
+  await d.transaction(
+    'rw',
+    [
+      d.messages,
+      d.conversations,
+      d.usage,
+      d.settings,
+      d.characters,
+      d.groups,
+      d.worlds,
+      d.checkpoints,
+    ],
+    async () => {
+      if (!(await conversationAvailable(c.id, d))) return;
+      const current = await d.checkpoints.get(c.worldId);
+      if ((current?.controlVersion ?? 0) !== (cp?.controlVersion ?? 0)) return;
+      const latest = await d.messages.where('conversationId').equals(c.id).sortBy('seq');
+      if (latest.at(-1)?.id !== last.at(-1)?.id) return;
+      await persistDialogue(
+        d,
+        c.id,
+        candidate,
+        generated.messages,
+        at,
+        'ai',
+        uid('reply'),
+        undefined,
+        generated.offsets,
+        generated,
+      );
+    },
+  );
 }
 export async function generateProfile(input: unknown, d: AquariumDB = db, provider?: Provider) {
   const snap = await getPrompts(d);
@@ -641,7 +663,7 @@ export async function consolidateMemory(
   provider?: Provider,
 ) {
   const c = await d.conversations.get(conversationId);
-  if (!c) return;
+  if (!c || c.kind === 'notes' || !(await conversationAvailable(c.id, d))) return;
   const snapshot = await getPrompts(d);
   const history = await d.messages.where('conversationId').equals(c.id).sortBy('seq');
   if (history.length < 4) throw new Error('至少有 4 条消息后再整理记忆。');

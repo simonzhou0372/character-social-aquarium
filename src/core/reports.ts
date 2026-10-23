@@ -48,7 +48,7 @@ export function reportPeriod(world: World, type: ReportType, at: number) {
 export async function archiveReports(worldId: string, d: AquariumDB = db) {
   const world = await d.worlds.get(worldId),
     cp = await d.checkpoints.get(worldId);
-  if (!world || !cp || cp.paused) return;
+  if (!world || world.deletedAt || !cp || cp.paused) return;
   await d.transaction('rw', d.worldReports, d.reportCursors, d.checkpoints, async () => {
     const latest = await d.checkpoints.get(worldId);
     if (!latest || latest.paused || latest.controlVersion !== cp.controlVersion) return;
@@ -150,6 +150,7 @@ export async function generateReport(id: string, d: AquariumDB = db, provider?: 
   return withWorldLock('report:' + id, async () => {
     const report = await d.worldReports.get(id);
     if (!report) throw new Error('报告不存在');
+    if ((await d.worlds.get(report.worldId))?.deletedAt) throw new Error('世界已移入回收站');
     const cp = await d.checkpoints.get(report.worldId);
     if (!cp || cp.paused) throw new Error('世界已暂停，恢复运行后可生成新报告；已有报告可正常查看');
     const world = (await d.worlds.get(report.worldId))!,

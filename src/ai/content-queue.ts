@@ -34,7 +34,20 @@ export async function drainContent(worldId: string, d: AquariumDB = db, provider
         .sortBy('at');
       for (const job of jobs.slice(0, 12)) {
         const cp = await d.checkpoints.get(worldId);
-        if (!cp || cp.paused || task.signal.aborted) return;
+        if (!cp || cp.paused || task.signal.aborted || (await d.worlds.get(worldId))?.deletedAt)
+          return;
+        const actors = await d.characters.bulkGet(job.event.participants);
+        if (
+          actors.some((c) => !c || c.deletedAt) ||
+          (job.conversation?.groupId && (await d.groups.get(job.conversation.groupId))?.deletedAt)
+        ) {
+          await d.contentJobs.update(job.id, {
+            status: 'failed',
+            attempts: 3,
+            error: '对象已移入回收站，生成已挂起',
+          });
+          continue;
+        }
         const version = cp.controlVersion ?? 0;
         const focus = await resolveObservation(worldId, d);
         if (

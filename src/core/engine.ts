@@ -63,6 +63,7 @@ export async function setRunning(
   mode: 'demo' | 'live',
   d: AquariumDB = db,
 ) {
+  if (running && (await d.worlds.get(worldId))?.deletedAt) throw new Error('世界已移入回收站');
   if (!running) {
     cancelWorld(worldId);
     cancelWorld('content:' + worldId);
@@ -106,7 +107,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
         ? cp.recoveryKind !== 'foreground'
         : elapsed > 15 * 60 * 1000;
       const calendarWorld = await d.worlds.get(worldId);
-      if (!calendarWorld) return;
+      if (!calendarWorld || calendarWorld.deletedAt) return;
       const limit = calendarLimit(calendarWorld);
       if (cp.simTime >= limit) {
         await d.checkpoints.update(worldId, { paused: true });
@@ -153,6 +154,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
         }
       } else snapshot = await getPrompts(d);
       const observation = await resolveObservation(worldId, d);
+      const discovered = await discoverDirectConversations(worldId, cp.simTime, d);
       const runStart = cp.simTime;
       const cachedCharacters = await d.characters
         .where('id')
@@ -163,6 +165,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
         .filter(
           (g) =>
             g.worldIds.includes(worldId) &&
+            !g.deletedAt &&
             g.entityMode !== 'background' &&
             (observation.config.mode === 'full' ||
               observation.config.groupIds.includes(g.id) ||
@@ -171,8 +174,8 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               )),
         )
         .toArray();
-      const cachedActiveRelations = cachedRelations.filter(
-        (r) => observation.activeIds.has(r.from) && observation.activeIds.has(r.to),
+      const cachedActiveRelations = cachedRelations.filter((r) =>
+        observation.activeIds.has(r.from),
       );
       const cachedMembers = observation.members.filter((m) =>
         observation.activeIds.has(m.characterId),
@@ -207,6 +210,17 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             .toArray(),
         ]);
         const controlled = new Set(allConvs.map((c) => c.controlledId).filter(Boolean));
+        for (const c of discovered)
+          if (
+            !allConvs.some(
+              (old) =>
+                old.id === c.id ||
+                (old.kind === 'direct' &&
+                  old.participants.length === 2 &&
+                  c.participants.every((id) => old.participants.includes(id))),
+            )
+          )
+            allConvs.push(c);
         const characters = all
           .filter(
             (c) => c.entityMode !== 'background' && members.some((m) => m.characterId === c.id),
@@ -314,7 +328,8 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             )
               continue;
             const actor = await d.characters.get(recipient);
-            if (actor && actor.entityMode !== 'background') characters.push(actor);
+            if (actor && !actor.deletedAt && actor.entityMode !== 'background')
+              characters.push(actor);
             if (characters.length >= cachedCharacters.length + 2) break;
           }
         }
@@ -717,7 +732,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               .where('id')
               .anyOf(characters.map((c) => c.id))
               .toArray();
-            if (activeNow.some((c) => c.entityMode === 'background')) return false;
+            if (activeNow.some((c) => c.deletedAt || c.entityMode === 'background')) return false;
             if (
               chosen?.c.groupId &&
               (await d.groups.get(chosen.c.groupId))?.entityMode === 'background'
@@ -1012,9 +1027,56 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
     }
   });
 }
+/** Discover bounded, known contacts without requiring a UI-created conversation. */
+export async function discoverDirectConversations(worldId: string, at: number, d: AquariumDB = db) {
+  const scope = await resolveObservation(worldId, d);
+  const pairs: string[][] = [];
+  const relations = await d.relationships.where('worldId').equals(worldId).toArray();
+  for (const edge of relations)
+    if (scope.activeIds.has(edge.from) || scope.activeIds.has(edge.to))
+      pairs.push([edge.from, edge.to]);
+  pairs.push(...scope.config.pairs);
+  const groups = await d.groups
+    .filter((g) => !g.deletedAt && g.entityMode !== 'background' && g.worldIds.includes(worldId))
+    .toArray();
+  for (const group of groups) {
+    const ids = scope.gm.filter((m) => m.groupId === group.id).map((m) => m.characterId);
+    for (let i = 0; i < ids.length; i++)
+      if (scope.activeIds.has(ids[i]))
+        for (let step = 1; step <= Math.min(2, ids.length - 1); step++)
+          pairs.push([ids[i], ids[(i + step) % ids.length]]);
+  }
+  const chars = new Map(
+    (await d.characters.bulkGet([...new Set(pairs.flat())]))
+      .filter((c) => !!c && !c.deletedAt && c.entityMode !== 'background')
+      .map((c) => [c!.id, c!]),
+  );
+  const memberIds = new Set(scope.members.map((m) => m.characterId));
+  const found = new Map<string, Conversation>();
+  for (const pair of pairs) {
+    const participants = [...new Set(pair)].sort();
+    if (
+      participants.length !== 2 ||
+      !participants.every((id) => chars.has(id) && memberIds.has(id)) ||
+      !scope.allowsConversation({ kind: 'direct', participants } as Conversation)
+    )
+      continue;
+    const id = await directConversationId(worldId, participants[0], participants[1]);
+    found.set(id, {
+      id,
+      worldId,
+      kind: 'direct',
+      participants,
+      name: participants.map((id) => chars.get(id)!.name).join(' & '),
+      createdAt: at,
+      lastAt: 0,
+    });
+  }
+  return [...found.values()];
+}
 export async function createDirect(worldId: string, a: string, b: string, d: AquariumDB = db) {
   const selected = await d.characters.where('id').anyOf([a, b]).toArray();
-  if (selected.some((c) => c.entityMode === 'background'))
+  if (selected.some((c) => c.deletedAt || c.entityMode === 'background'))
     throw new Error('背景人物不参与聊天，请先启用互动能力');
   if (a === b) throw new Error('请选择两位不同角色');
   const ids = [a, b].sort();

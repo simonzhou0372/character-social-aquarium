@@ -2,6 +2,67 @@ import { db, type AquariumDB } from './db';
 import { clockTarget } from '../core/time';
 import { foregroundStart } from '../core/clock-presence';
 import { uid, type Message } from '../core/types';
+export async function conversationAvailable(conversation: string | import('../core/types').Conversation, d: AquariumDB = db) {
+  const c = typeof conversation === 'string' ? await d.conversations.get(conversation) : conversation;
+  if (!c || c.kind === 'notes') return false;
+  const world = await d.worlds.get(c.worldId);
+  if (!world || world.deletedAt) return false;
+  if (c.groupId && (await d.groups.get(c.groupId))?.deletedAt) return false;
+  const chars = await d.characters.bulkGet(c.participants);
+  return chars.every((c) => !!c && !c.deletedAt && c.entityMode !== 'background');
+}
+export async function ensureNotes(worldId: string, d: AquariumDB = db) {
+  const world = await d.worlds.get(worldId);
+  if (!world || world.deletedAt) throw new Error('当前世界不可用');
+  return d.transaction('rw', d.conversations, async () => {
+    const old = await d.conversations
+      .where('worldId')
+      .equals(worldId)
+      .and((c) => c.kind === 'notes')
+      .first();
+    if (old) return old.id;
+    const id = uid('notes');
+    await d.conversations.add({
+      id,
+      worldId,
+      kind: 'notes',
+      participants: ['user'],
+      name: '我的备忘',
+      createdAt: Date.now(),
+      lastAt: 0,
+    });
+    return id;
+  });
+}
+export async function saveNote(
+  conversationId: string,
+  text: string,
+  replyToMessageId?: string,
+  d: AquariumDB = db,
+) {
+  if (!text.trim() || Array.from(text).length > 2000) throw new Error('备注须为 1～2000 字');
+  return d.transaction('rw', [d.conversations, d.messages, d.worlds], async () => {
+    const c = await d.conversations.get(conversationId);
+    if (!c || c.kind !== 'notes' || (await d.worlds.get(c.worldId))?.deletedAt)
+      throw new Error('备忘会话不可用');
+    if (replyToMessageId && (await d.messages.get(replyToMessageId))?.conversationId !== c.id)
+      throw new Error('引用消息不属于当前备忘');
+    const last = await d.messages.where('conversationId').equals(c.id).sortBy('seq');
+    const at = Math.max(Date.now(), last.at(-1)?.simAt ?? 0);
+    await d.messages.add({
+      id: uid('note'),
+      conversationId: c.id,
+      senderId: 'user',
+      text: text.trim(),
+      seq: (last.at(-1)?.seq ?? 0) + 1,
+      realAt: at,
+      simAt: at,
+      source: 'user',
+      replyToMessageId,
+    });
+    await d.conversations.update(c.id, { lastAt: at });
+  });
+}
 export async function toggleReaction(
   messageId: string,
   actorId: string,

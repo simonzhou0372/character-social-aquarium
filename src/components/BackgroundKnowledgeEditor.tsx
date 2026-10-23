@@ -6,7 +6,7 @@ import { BackgroundKnowledgeSchema, uid, type BackgroundKnowledge } from '../cor
 export function BackgroundKnowledgeEditor({ worldId }: { worldId: string }) {
   const data = useLiveQuery(
     async () => ({
-      chars: await db.characters.toArray(),
+      chars: await db.characters.filter((entity) => !entity.deletedAt).toArray(),
       members: await db.memberships.where('worldId').equals(worldId).toArray(),
       groups: await db.groups.filter((g) => g.worldIds.includes(worldId)).toArray(),
       knowledge: await db.backgroundKnowledge.where('worldId').equals(worldId).toArray(),

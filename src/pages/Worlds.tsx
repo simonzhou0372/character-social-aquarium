@@ -1,3 +1,4 @@
+import { RecycleButton } from '../components/RecycleButton';
 import {
   ObservationManager,
   ObservationSummary,
@@ -51,9 +52,9 @@ export function Worlds({
 }) {
   const observation = useObservation(worldId);
   const [observeOpen, setObserveOpen] = useState(false);
-  const worlds = useLiveQuery(() => db.worlds.toArray(), []),
-    groups = useLiveQuery(() => db.groups.toArray(), []),
-    chars = useLiveQuery(() => db.characters.toArray(), []),
+  const worlds = useLiveQuery(() => db.worlds.filter((entity) => !entity.deletedAt).toArray(), []),
+    groups = useLiveQuery(() => db.groups.filter((entity) => !entity.deletedAt).toArray(), []),
+    chars = useLiveQuery(() => db.characters.filter((entity) => !entity.deletedAt).toArray(), []),
     members = useLiveQuery(() => db.memberships.toArray(), []),
     gm = useLiveQuery(() => db.groupMembers.toArray(), []);
   const [edit, setEdit] = useState<World>(),
@@ -201,6 +202,7 @@ export function Worlds({
               <h2>{w.name}</h2>
               <p>{w.description}</p>
               <div className="toolbar">
+                <RecycleButton kind="worlds" id={w.id} name={w.name} />
                 <Button onClick={() => onSelect(w.id)}>
                   {w.id === worldId ? '当前世界' : '进入世界'}
                   <ArrowUpRight size={15} />
@@ -358,6 +360,7 @@ export function Worlds({
                 >
                   成员 / 编辑
                 </Button>
+                <RecycleButton kind="groups" id={g.id} name={g.name} />
               </div>
             </article>
           ))}

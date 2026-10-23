@@ -1,5 +1,5 @@
 import type { Message } from '../core/types';
-import { recordObserved } from '../data/chat';
+import { ensureNotes, saveNote, recordObserved } from '../data/chat';
 import { GifLibrary } from '../components/GifLibrary';
 import { GifImage } from '../components/GifImage';
 import { MessageDetails } from '../components/MessageDetails';
@@ -55,6 +55,8 @@ export function Chats({
     [windowEnd, setWindowEnd] = useState<number>(),
     [jumpId, setJumpId] = useState('');
   const [editingConversation, setEditingConversation] = useState(false);
+  const [holdReading, setHoldReading] = useState(false),
+    [heldIds, setHeldIds] = useState<string[]>([]);
   const [search, setSearch] = useState(''),
     [text, setText] = useState(''),
     [identity, setIdentity] = useState('observer'),
@@ -76,8 +78,12 @@ export function Chats({
     data?.messages
       .filter((m) => m.conversationId === selectedId)
       .sort((a, b) => a.simAt - b.simAt || a.seq - b.seq) ?? [];
-  const end = windowEnd ?? messages.length;
-  const visible = messages.slice(Math.max(0, end - limit), end);
+  const readingMessages = holdReading ? messages.filter((m) => heldIds.includes(m.id)) : messages;
+  const end = windowEnd ?? readingMessages.length;
+  const visible = readingMessages.slice(Math.max(0, end - limit), end);
+  useEffect(() => {
+    if (worldId) void ensureNotes(worldId).catch((e) => setError(String(e)));
+  }, [worldId]);
   useEffect(() => {
     initialCursor.current = undefined;
     bottom.current = false;
@@ -89,13 +95,14 @@ export function Chats({
     setError('');
     setRetryable(false);
     setText('');
-    setIdentity(convo?.controlledId ?? 'observer');
+    setHoldReading(false);
+    setIdentity(convo?.kind === 'notes' ? 'user' : (convo?.controlledId ?? 'observer'));
   }, [selectedId]);
   useEffect(() => {
     if (!data || !convo) return;
     if (initialCursor.current === undefined)
       initialCursor.current = data.cursors.find((c) => c.id === `observer:${selectedId}`)?.seq ?? 0;
-    if (bottom.current) {
+    if (bottom.current && !holdReading) {
       feed.current?.scrollTo({ top: feed.current.scrollHeight });
     }
   }, [selectedId, messages.length, data?.cursors.length]);
@@ -172,18 +179,21 @@ export function Chats({
     setRetryable(false);
     let sent = false;
     try {
-      await sendUserMessage(convo.id, text, identity, db, {
-        replyToMessageId: reply?.id,
-        mentions,
-      });
+      if (convo.kind === 'notes') await saveNote(convo.id, text, reply?.id);
+      else
+        await sendUserMessage(convo.id, text, identity, db, {
+          replyToMessageId: reply?.id,
+          mentions,
+        });
       setReply(undefined);
       setMentions([]);
       setMentionQuery(undefined);
       setWindowEnd(undefined);
       sent = true;
+      setHoldReading(false);
       setText('');
       bottom.current = true;
-      await replyToUser(convo.id);
+      if (convo.kind !== 'notes') await replyToUser(convo.id);
     } catch (e) {
       setRetryable(sent);
       setError(e instanceof Error ? e.message : '发送失败');
@@ -202,7 +212,7 @@ export function Chats({
         setError('会话已经有了新消息，可以继续观察。');
         return;
       }
-      await replyToUser(convo.id);
+      if (convo.kind !== 'notes') await replyToUser(convo.id);
       setRetryable(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : '重试失败');
@@ -243,12 +253,18 @@ export function Chats({
           .filter(
             (c) =>
               (!c.groupId ||
-                data.groups.find((g) => g.id === c.groupId)?.entityMode !== 'background') &&
-              c.participants.some((id) =>
-                data.chars.some((x) => x.id === id && x.entityMode !== 'background'),
-              ),
+                data.groups.some(
+                  (g) => g.id === c.groupId && !g.deletedAt && g.entityMode !== 'background',
+                )) &&
+              (c.kind === 'notes' ||
+                c.participants.every((id) =>
+                  data.chars.some(
+                    (x) => x.id === id && !x.deletedAt && x.entityMode !== 'background',
+                  ),
+                )),
           )
           .filter((c) => c.name.includes(search))
+          .sort((a, b) => Number(b.kind === 'notes') - Number(a.kind === 'notes'))
           .map((c) => {
             const last = data.messages
               .filter((m) => m.conversationId === c.id)
@@ -261,7 +277,11 @@ export function Chats({
                 className={`conversation-item ${selectedId === c.id ? 'active' : ''}`}
                 onClick={() => onSelect(c.id)}
               >
-                {c.avatar ? (
+                {c.kind === 'notes' ? (
+                  <Avatar
+                    character={{ name: data.settings?.nickname, avatar: data.settings?.userAvatar }}
+                  />
+                ) : c.avatar ? (
                   <Avatar character={{ name: c.name, avatar: c.avatar }} />
                 ) : c.kind === 'group' ? (
                   <span className="group-avatar">
@@ -276,9 +296,16 @@ export function Chats({
                 <div>
                   <div>
                     <strong>{c.name}</strong>
-                    <time>{last ? time(last.simAt) : ''}</time>
+                    <time>
+                      {last ? (c.kind === 'notes' ? fmtTime(last.realAt) : time(last.simAt)) : ''}
+                    </time>
                   </div>
-                  <p>{last?.text ?? '还没有消息，等一次自然的开场。'}</p>
+                  <p>
+                    {last?.text ??
+                      (c.kind === 'notes'
+                        ? '给自己写点备注，仅本地保存，不发给 AI。'
+                        : '还没有消息，等一次自然的开场。')}
+                  </p>
                 </div>
                 {count > 0 && <span className="unread-count">{count > 99 ? '99+' : count}</span>}
               </button>
@@ -304,7 +331,9 @@ export function Chats({
                 <h2>{convo.name}</h2>
                 <Button onClick={() => setEditingConversation(true)}>编辑名称 / 图片</Button>
                 <span>
-                  {convo.participants.length} 位角色 · {convo.kind === 'group' ? '群聊' : '私聊'}
+                  {convo.kind === 'notes'
+                    ? '只属于你的备注 · 使用现实时间，不调用 AI'
+                    : `${convo.participants.length} 位角色 · ${convo.kind === 'group' ? '群聊' : '私聊'}`}
                 </span>
               </div>
               <div className="chat-header-avatars">
@@ -315,6 +344,7 @@ export function Chats({
               <Button
                 variant="ghost"
                 aria-label="整理长期记忆"
+                disabled={convo.kind === 'notes'}
                 onClick={async () => {
                   try {
                     await consolidateMemory(convo.id);
@@ -328,9 +358,20 @@ export function Chats({
               </Button>
             </header>
             <div className="chat-tools">
+              <Button
+                onClick={() => {
+                  setHeldIds(messages.map((m) => m.id));
+                  setHoldReading(!holdReading);
+                }}
+              >
+                {holdReading
+                  ? `继续显示新消息（${messages.filter((m) => !heldIds.includes(m.id)).length}）`
+                  : '暂停跟随新消息'}
+              </Button>
               <Button onClick={firstUnread}>跳转到第一条未读</Button>
               <Button
                 onClick={() => {
+                  setHoldReading(false);
                   setWindowEnd(undefined);
                   setLimit(100);
                   bottom.current = true;
@@ -345,11 +386,13 @@ export function Chats({
             <div className="observer-banner">
               <Eye size={15} />
               <span>
-                {identity === 'observer'
-                  ? '观察模式 · 你正悄悄看着他们的日常'
-                  : identity === 'user'
-                    ? `以「${data?.settings?.nickname}」参与`
-                    : `正在扮演「${data?.chars.find((c) => c.id === identity)?.name}」，AI 已让出该角色`}
+                {convo.kind === 'notes'
+                  ? '我的备忘 · 不进入角色记忆，不发送到模型'
+                  : identity === 'observer'
+                    ? '观察模式 · 你正悄悄看着他们的日常'
+                    : identity === 'user'
+                      ? `以「${data?.settings?.nickname}」参与`
+                      : `正在扮演「${data?.chars.find((c) => c.id === identity)?.name}」，AI 已让出该角色`}
               </span>
             </div>
             <div
@@ -370,8 +413,10 @@ export function Chats({
                   isUser =
                     identity === 'observer' ? m.senderId === 'user' : m.senderId === identity,
                   prev = visible[i - 1],
-                  day = date(m.simAt),
-                  newDay = !prev || date(prev.simAt) !== day,
+                  day = convo.kind === 'notes' ? fmtDate(m.realAt) : date(m.simAt),
+                  newDay =
+                    !prev ||
+                    (convo.kind === 'notes' ? fmtDate(prev.realAt) : date(prev.simAt)) !== day,
                   cursor = initialCursor.current ?? 0,
                   readBy =
                     data?.cursors.filter(
@@ -405,7 +450,7 @@ export function Chats({
                       <div className="message-content">
                         <div className="message-label">
                           <strong>{c?.name ?? data?.settings?.nickname}</strong>
-                          <time>{time(m.simAt)}</time>
+                          <time>{convo.kind === 'notes' ? fmtTime(m.realAt) : time(m.simAt)}</time>
                           {m.source === 'demo' && <span className="demo-label">演示</span>}
                           {m.backfilled && <span>补全记录</span>}
                           {m.source === 'user' && <span>用户控制</span>}
@@ -503,7 +548,9 @@ export function Chats({
                 </div>
               )}
               <div className="chat-tools">
-                <Button onClick={() => setGifOpen(true)}>GIF 表情</Button>
+                <Button disabled={convo.kind === 'notes'} onClick={() => setGifOpen(true)}>
+                  GIF 表情
+                </Button>
                 {convo.kind === 'group' && (
                   <Button
                     disabled={identity === 'observer'}
@@ -553,16 +600,19 @@ export function Chats({
                 <UserRound size={16} />
                 <Select
                   aria-label="聊天身份"
+                  disabled={convo.kind === 'notes'}
                   value={identity}
                   onChange={(e) => void switchIdentity(e.target.value)}
                 >
                   <option value="observer">只观察，不参与</option>
                   <option value="user">作为 {data?.settings?.nickname} 参与</option>
-                  {convo.participants.map((id) => (
-                    <option key={id} value={id}>
-                      扮演 {data?.chars.find((c) => c.id === id)?.name}
-                    </option>
-                  ))}
+                  {convo.participants
+                    .filter((id) => id !== 'user')
+                    .map((id) => (
+                      <option key={id} value={id}>
+                        扮演 {data?.chars.find((c) => c.id === id)?.name}
+                      </option>
+                    ))}
                 </Select>
                 <span>历史消息的身份不会改变</span>
               </div>
@@ -667,6 +717,7 @@ export function Chats({
               {data?.chars
                 .filter(
                   (c) =>
+                    !c.deletedAt &&
                     c.entityMode !== 'background' &&
                     data.members.some((m) => m.characterId === c.id),
                 )

@@ -23,9 +23,23 @@ export function observationKeys(c: ObservationConfig) {
 }
 export async function resolveObservation(worldId: string, d: AquariumDB = db) {
   const config = (await d.observationConfigs.get(worldId)) ?? fullObservation(worldId);
-  const members = await d.memberships.where('worldId').equals(worldId).toArray();
-  const gm = await d.groupMembers.where('worldId').equals(worldId).toArray();
-  const fullIds = new Set(config.characterIds),
+  const deleted = new Set(
+    (await d.characters.where('deletedAt').above(0).primaryKeys()).map(String),
+  );
+  const deletedGroups = new Set(
+    (await d.groups.where('deletedAt').above(0).primaryKeys()).map(String),
+  );
+  const members = await d.memberships
+    .where('worldId')
+    .equals(worldId)
+    .and((m) => !deleted.has(m.characterId))
+    .toArray();
+  const gm = await d.groupMembers
+    .where('worldId')
+    .equals(worldId)
+    .and((m) => !deleted.has(m.characterId) && !deletedGroups.has(m.groupId))
+    .toArray();
+  const fullIds = new Set(config.characterIds.filter((id) => !deleted.has(id))),
     groupSets = config.groupIds.map(
       (id) => new Set(gm.filter((m) => m.groupId === id).map((m) => m.characterId)),
     );
@@ -37,13 +51,16 @@ export async function resolveObservation(worldId: string, d: AquariumDB = db) {
     (await d.characters.where('entityMode').equals('background').primaryKeys()).map(String),
   );
   const interactiveCount = members.filter((m) => !backgroundIds.has(m.characterId)).length;
-  const activeIds = new Set(ids.filter((id) => !backgroundIds.has(id)));
+  const activeIds = new Set(ids.filter((id) => !backgroundIds.has(id) && !deleted.has(id)));
   const allowsConversation = (c: Conversation) =>
-    config.mode === 'full' ||
-    c.participants.some((id) => fullIds.has(id)) ||
-    (!!c.groupId && config.groupIds.includes(c.groupId)) ||
-    (c.kind === 'direct' &&
-      config.pairs.some((pair) => pair.every((id) => c.participants.includes(id))));
+    c.kind !== 'notes' &&
+    !c.participants.some((id) => deleted.has(id)) &&
+    (!c.groupId || !deletedGroups.has(c.groupId)) &&
+    (config.mode === 'full' ||
+      c.participants.some((id) => fullIds.has(id)) ||
+      (!!c.groupId && config.groupIds.includes(c.groupId)) ||
+      (c.kind === 'direct' &&
+        config.pairs.some((pair) => pair.every((id) => c.participants.includes(id)))));
   const allowsEvent = (e: Pick<ActivityEvent, 'participants'>) =>
     config.mode === 'full' ||
     e.participants.some((id) => fullIds.has(id)) ||

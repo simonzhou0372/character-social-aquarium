@@ -1,3 +1,4 @@
+import { RecycleButton } from '../components/RecycleButton';
 import { EvolutionPanel } from '../components/EvolutionPanel';
 import { useObservation } from '../components/ObservationManager';
 import { AvatarUpload } from '../components/AvatarUpload';
@@ -23,7 +24,7 @@ export function CharacterEditor({
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
     [suggestion, setSuggestion] = useState<Awaited<ReturnType<typeof generateProfile>>>();
-  const worlds = useLiveQuery(() => db.worlds.toArray(), []);
+  const worlds = useLiveQuery(() => db.worlds.filter((entity) => !entity.deletedAt).toArray(), []);
   const memberships = useLiveQuery(
     () => db.memberships.where('characterId').equals(c.id).toArray(),
     [c.id],
@@ -300,6 +301,14 @@ export function CharacterEditor({
           </details>
           {error && <Status error>{error}</Status>}
           <div className="modal-actions">
+            {character && (
+              <RecycleButton
+                kind="characters"
+                id={character.id}
+                name={character.name}
+                onDone={onClose}
+              />
+            )}
             <Button onClick={onClose}>取消</Button>
             <Button variant="primary" onClick={save}>
               <Save size={16} />
@@ -338,7 +347,7 @@ export function CharacterEditor({
 }
 export function Characters({ worldId, onChat }: { worldId: string; onChat: (id: string) => void }) {
   const observation = useObservation(worldId);
-  const all = useLiveQuery(() => db.characters.toArray(), []),
+  const all = useLiveQuery(() => db.characters.filter((entity) => !entity.deletedAt).toArray(), []),
     states = useLiveQuery(() => db.states.where('worldId').equals(worldId).toArray(), [worldId]),
     memberships = useLiveQuery(
       () => db.memberships.where('worldId').equals(worldId).toArray(),

@@ -6,7 +6,7 @@ import { liveProvider } from '../ai/orchestrator';
 export async function maintainWorld(worldId: string, d: AquariumDB = db) {
   return withWorldLock('maintenance:' + worldId, async () => {
     const cp = await d.checkpoints.get(worldId);
-    if (!cp || cp.paused) return;
+    if (!cp || cp.paused || (await d.worlds.get(worldId))?.deletedAt) return;
     await processBackfill(worldId, d);
     await processReports(worldId, d);
     const world = await d.worlds.get(worldId);

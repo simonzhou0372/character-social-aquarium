@@ -27,7 +27,12 @@ export async function dormantInfluence(
     .sort((a, b) => b.closeness - a.closeness)[0];
   if (!relation) return;
   const dormant = await d.characters.get(relation.to);
-  if (!dormant || dormant.entityMode === 'background' || scheduledType(dormant, 18) === 'sleep')
+  if (
+    !dormant ||
+    dormant.deletedAt ||
+    dormant.entityMode === 'background' ||
+    scheduledType(dormant, 18) === 'sleep'
+  )
     return;
   const base = plan.events.find((e) => e.participants.includes(relation.from) && e.phone > 0.3);
   if (!base) return;

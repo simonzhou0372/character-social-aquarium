@@ -63,7 +63,7 @@ export function ObservationManager({ worldId }: { worldId: string }) {
   const data = useLiveQuery(
     async () => ({
       scope: await resolveObservation(worldId),
-      chars: await db.characters.toArray(),
+      chars: await db.characters.filter((entity) => !entity.deletedAt).toArray(),
       groups: await db.groups.filter((g) => g.worldIds.includes(worldId)).toArray(),
       jobs: await db.backfillJobs.where('worldId').equals(worldId).toArray(),
       world: await db.worlds.get(worldId),

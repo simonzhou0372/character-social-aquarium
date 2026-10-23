@@ -1,3 +1,4 @@
+import { RecycleBin } from './pages/RecycleBin';
 import { maintainWorld } from './core/world-maintenance';
 import { WorldReports } from './pages/WorldReports';
 import { ObservationManager } from './components/ObservationManager';
@@ -52,6 +53,7 @@ const navigation = [
   { id: 'relationships', label: '关系网络', sub: 'CONNECTIONS', icon: Network },
   { id: 'majorEvents', label: '重大事件', sub: 'WORLD EVENTS', icon: Globe2 },
   { id: 'reports', label: '世界报告', sub: 'REPORTS', icon: BookOpen },
+  { id: 'recycle', label: '回收站', sub: 'RECYCLE BIN', icon: Globe2 },
   { id: 'timeline', label: '生活时间轴', sub: 'LIFE LOG', icon: Clock3 },
 ];
 export class ErrorBoundary extends Component<{ children: ReactNode }, { error: string }> {
@@ -102,7 +104,7 @@ export default function App() {
     }
     return {
       settings,
-      worlds: await db.worlds.toArray(),
+      worlds: await db.worlds.filter((w) => !w.deletedAt).toArray(),
       cp: settings ? await db.checkpoints.get(settings.worldId) : undefined,
       profile: await db.profiles.get('api'),
       unread,
@@ -134,7 +136,7 @@ export default function App() {
       const startedAt = Date.now();
       const activeSince = document.hidden || !navigator.onLine ? undefined : foregroundSince;
       try {
-        const worlds = await db.worlds.toArray();
+        const worlds = await db.worlds.filter((w) => !w.deletedAt).toArray();
         for (const world of worlds) {
           const cp = await db.checkpoints.get(world.id);
           if (!cp || cp.paused) continue;
@@ -437,6 +439,7 @@ export default function App() {
             {page === 'chats' && (
               <Chats worldId={worldId} selectedId={selectedChat} onSelect={setSelectedChat} />
             )}{' '}
+            {page === 'recycle' && <RecycleBin />}
             {page === 'relationships' && <Relationships worldId={worldId} />}{' '}
             {page === 'majorEvents' && <MajorEvents worldId={worldId} onOpen={setSelectedMajor} />}
             {page === 'scenes' && <Scenes worldId={worldId} />}{' '}

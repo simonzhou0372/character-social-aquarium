@@ -20,10 +20,10 @@ import { CharacterEditor } from './Characters';
 export function Relationships({ worldId }: { worldId: string }) {
   const data = useLiveQuery(
     async () => ({
-      chars: await db.characters.toArray(),
+      chars: await db.characters.filter((entity) => !entity.deletedAt).toArray(),
       members: await db.memberships.where('worldId').equals(worldId).toArray(),
       relations: await db.relationships.where('worldId').equals(worldId).toArray(),
-      groups: await db.groups.toArray(),
+      groups: await db.groups.filter((entity) => !entity.deletedAt).toArray(),
       gm: await db.groupMembers.where('worldId').equals(worldId).toArray(),
     }),
     [worldId],

@@ -195,6 +195,11 @@ export class AquariumDB extends Dexie {
       events: 'id,worldId,start,end,[worldId+start],[worldId+end],*participants',
       scenes: 'id,worldId,eventId,start,[worldId+start],*participants',
     });
+    this.version(11).stores({
+      worlds: 'id,deletedAt',
+      characters: 'id,name,entityMode,deletedAt',
+      groups: 'id,*worldIds,deletedAt',
+    });
   }
 }
 export const db = new AquariumDB();

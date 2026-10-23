@@ -168,7 +168,7 @@ export function Scenes({ worldId }: { worldId: string }) {
         )
         .toArray(),
       scenes: await db.scenes.toArray(),
-      worlds: await db.worlds.toArray(),
+      worlds: await db.worlds.filter((w) => !w.deletedAt).toArray(),
       chars: await db.characters.toArray(),
       groups: await db.groups.toArray(),
       gm: await db.groupMembers.toArray(),

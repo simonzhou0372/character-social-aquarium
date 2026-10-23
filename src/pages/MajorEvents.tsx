@@ -167,7 +167,7 @@ export function MajorEvents({
     async () => ({
       events: await db.majorEvents.toArray(),
       notifications: await db.notifications.toArray(),
-      worlds: await db.worlds.toArray(),
+      worlds: await db.worlds.filter((w) => !w.deletedAt).toArray(),
     }),
     [],
   );

@@ -15,6 +15,7 @@ const id = z.string().min(1).max(160),
   text = z.string().max(8000),
   time = z.number().finite().nonnegative();
 export const CharacterSchema = z.object({
+  deletedAt: time.optional(),
   id,
   name: z.string().min(1).max(60),
   gender: z.string().max(200).optional(),
@@ -46,6 +47,7 @@ export const CharacterSchema = z.object({
 });
 export type Character = z.infer<typeof CharacterSchema>;
 export const WorldSchema = z.object({
+  deletedAt: time.optional(),
   evolutionSettings: z.object({ enabled: z.boolean(), rules: z.string().max(4000) }).optional(),
   reportSettings: ReportSettingsSchema.optional(),
   majorEventSettings: z
@@ -91,6 +93,7 @@ export const MembershipSchema = z.object({
 });
 export type Membership = z.infer<typeof MembershipSchema>;
 export const GroupSchema = z.object({
+  deletedAt: time.optional(),
   id,
   entityMode: z.enum(['interactive', 'background']).optional(),
   fame: z.number().min(0).max(100).optional(),
@@ -138,7 +141,7 @@ export const ConversationSchema = z.object({
   worldId: id,
   groupId: id.optional(),
   name: text,
-  kind: z.enum(['direct', 'group']),
+  kind: z.enum(['direct', 'group', 'notes']),
   participantJoinedAt: z.record(time).optional(),
   participants: z.array(id).min(1).max(50),
   createdAt: time,
@@ -254,7 +257,7 @@ export const CheckpointSchema = z.object({
 export type Checkpoint = z.infer<typeof CheckpointSchema>;
 export const SettingsSchema = z.object({
   id: z.literal('app'),
-  worldId: id,
+  worldId: z.string().max(160),
   activity: z.enum(['quiet', 'standard', 'lively']),
   dailyRequests: z.number().int().min(1).max(5000),
   dailyTokens: z.number().int().min(1000).max(10000000),

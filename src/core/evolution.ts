@@ -22,13 +22,14 @@ export async function applyEvolution(worldId: string, input: unknown, d: Aquariu
     [d.worlds, d.memberships, d.characters, d.events, d.checkpoints, d.evolutionRecords],
     async () => {
       const world = await d.worlds.get(worldId);
-      if (!world?.evolutionSettings?.enabled) throw new Error('此世界关闭了人物演化');
+      if (world?.deletedAt || !world?.evolutionSettings?.enabled)
+        throw new Error('此世界关闭了人物演化');
       const m = await d.memberships
           .where('[worldId+characterId]')
           .equals([worldId, p.characterId])
           .first(),
         character = await d.characters.get(p.characterId);
-      if (!m || !character || !m.evolutionFields?.includes(p.field))
+      if (!m || !character || character.deletedAt || !m.evolutionFields?.includes(p.field))
         throw new Error('此字段已锁定或角色不属于此世界');
       const checkpoint = await d.checkpoints.get(worldId);
       const sources = await d.events.bulkGet(p.sourceEventIds);
@@ -135,7 +136,7 @@ export async function evaluateEvolution(worldId: string, d: AquariumDB = db, pro
   return withWorldLock('evolution:' + worldId, async () => {
     const world = await d.worlds.get(worldId),
       cp = await d.checkpoints.get(worldId);
-    if (!world?.evolutionSettings?.enabled || !cp || cp.paused) return;
+    if (world?.deletedAt || !world?.evolutionSettings?.enabled || !cp || cp.paused) return;
     const cursor = await d.evolutionCursors.get(worldId),
       since = cursor?.lastAt ?? world.calendarAnchor?.tick ?? cp.simTime;
     if (cp.simTime - since < 7 * DAY) return;

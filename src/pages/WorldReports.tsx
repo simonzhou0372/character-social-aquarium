@@ -21,7 +21,7 @@ export function WorldReports({
 }) {
   const data = useLiveQuery(
     async () => ({
-      worlds: await db.worlds.toArray(),
+      worlds: await db.worlds.filter((w) => !w.deletedAt).toArray(),
       reports: await db.worldReports.toArray(),
       chars: await db.characters.toArray(),
     }),
