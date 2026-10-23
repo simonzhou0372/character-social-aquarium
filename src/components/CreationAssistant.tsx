@@ -48,7 +48,14 @@ export function CreationAssistant({
           setBusy(true);
           setError('');
           try {
-            setDraft(await generateCreationDraft(kind, known, constraints, existingNames));
+            setDraft(
+              await generateCreationDraft(
+                kind,
+                { ...(known as object), previousDraft: draft },
+                constraints,
+                existingNames,
+              ),
+            );
           } catch (e) {
             setError(e instanceof Error ? e.message : '草稿生成失败');
           } finally {
@@ -63,10 +70,16 @@ export function CreationAssistant({
             ? '生成世界观、团体和角色草稿'
             : '生成团体和角色草稿'}
       </Button>
-      {error && <Status error>{error}</Status>}
+      {error && <Status error>{error} · 已有草稿保留，可继续手动编辑。</Status>}
+      {draft?.partial && <p className="muted">再次生成会保留已完成草稿，并请求修复失败部分。</p>}
       {draft && (
         <div className="creation-draft">
           <Status>{draft.uncertain}</Status>
+          {draft.issues?.map((issue, i) => (
+            <Status key={i} error>
+              {issue.path}：{issue.reason}
+            </Status>
+          ))}
           {draft.world && (
             <>
               <h4>{draft.world.name}</h4>
@@ -94,6 +107,13 @@ export function CreationAssistant({
                   }
                 />
               </Field>
+              <Button
+                onClick={() => {
+                  onApply({ ...draft, characters: [c], groups: [], issues: [] });
+                }}
+              >
+                采用这个角色草稿
+              </Button>
               {(['bio', 'personality', 'style', 'habits'] as const).map((k, index) => (
                 <Field key={k} label={['简介', '性格', '口吻', '生活习惯'][index]}>
                   <Textarea

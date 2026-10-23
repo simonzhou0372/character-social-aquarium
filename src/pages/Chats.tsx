@@ -1,3 +1,10 @@
+import type { Message } from '../core/types';
+import { recordObserved } from '../data/chat';
+import { GifLibrary } from '../components/GifLibrary';
+import { GifImage } from '../components/GifImage';
+import { MessageDetails } from '../components/MessageDetails';
+import { CharacterEditor } from './Characters';
+import { ConversationEditor } from '../components/ConversationEditor';
 import { formatWorldClock, calendarDate } from '../core/calendar';
 import { useEffect, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -39,6 +46,15 @@ export function Chats({
     }),
     [worldId],
   );
+  const [gifOpen, setGifOpen] = useState(false),
+    [reply, setReply] = useState<Message>(),
+    [mentions, setMentions] = useState<NonNullable<Message['mentions']>>([]),
+    [mentionQuery, setMentionQuery] = useState<string>(),
+    [mentionStart, setMentionStart] = useState(0),
+    [viewCharacter, setViewCharacter] = useState(''),
+    [windowEnd, setWindowEnd] = useState<number>(),
+    [jumpId, setJumpId] = useState('');
+  const [editingConversation, setEditingConversation] = useState(false);
   const [search, setSearch] = useState(''),
     [text, setText] = useState(''),
     [identity, setIdentity] = useState('observer'),
@@ -57,12 +73,18 @@ export function Chats({
   const date = (at: number) =>
     data?.world ? `${data.world.era ?? 'AD'} ${calendarDate(data.world, at)}` : fmtDate(at, tz);
   const messages =
-    data?.messages.filter((m) => m.conversationId === selectedId).sort((a, b) => a.seq - b.seq) ??
-    [];
-  const visible = messages.slice(-limit);
+    data?.messages
+      .filter((m) => m.conversationId === selectedId)
+      .sort((a, b) => a.simAt - b.simAt || a.seq - b.seq) ?? [];
+  const end = windowEnd ?? messages.length;
+  const visible = messages.slice(Math.max(0, end - limit), end);
   useEffect(() => {
     initialCursor.current = undefined;
-    bottom.current = true;
+    bottom.current = false;
+    setWindowEnd(undefined);
+    setReply(undefined);
+    setMentions([]);
+    setMentionQuery(undefined);
     setLimit(100);
     setError('');
     setRetryable(false);
@@ -75,23 +97,69 @@ export function Chats({
       initialCursor.current = data.cursors.find((c) => c.id === `observer:${selectedId}`)?.seq ?? 0;
     if (bottom.current) {
       feed.current?.scrollTo({ top: feed.current.scrollHeight });
-      void markRead();
     }
   }, [selectedId, messages.length, data?.cursors.length]);
   async function markRead() {
-    if (!convo || !messages.length || document.hidden) return;
-    const last = messages.at(-1)!;
-    await db.cursors.put({
-      id: `observer:${selectedId}`,
-      conversationId: selectedId,
-      readerId: 'observer',
-      kind: 'observer',
-      seq: last.seq,
-      at: Date.now(),
-    });
+    if (!convo || document.hidden || !feed.current) return;
+    const rect = feed.current.getBoundingClientRect();
+    const ids = [...feed.current.querySelectorAll<HTMLElement>('[data-message-id]')]
+      .filter((el) => {
+        const r = el.getBoundingClientRect();
+        return r.bottom > rect.top + 10 && r.top < rect.bottom - 10;
+      })
+      .map((el) => el.dataset.messageId!);
+    if (ids.length) await recordObserved(convo.id, ids);
+  }
+  useEffect(() => {
+    const timer = setTimeout(() => void markRead(), 180);
+    return () => clearTimeout(timer);
+  }, [selectedId, visible[0]?.id, visible.at(-1)?.id]);
+  useEffect(() => {
+    if (jumpId) {
+      requestAnimationFrame(() => {
+        feed.current
+          ?.querySelector(`[data-message-id="${CSS.escape(jumpId)}"]`)
+          ?.scrollIntoView({ block: 'center' });
+      });
+    }
+  }, [jumpId, visible[0]?.id]);
+  function jump(id: string) {
+    const i = messages.findIndex((m) => m.id === id);
+    if (i < 0) {
+      setError('原消息已删除或无法访问');
+      return;
+    }
+    setWindowEnd(Math.min(messages.length, i + 80));
+    setLimit(160);
+    bottom.current = false;
+    setJumpId(id);
+  }
+  function firstUnread() {
+    const cursor = initialCursor.current ?? 0;
+    const m = messages.find((m) => m.seq > cursor);
+    if (m) jump(m.id);
+  }
+  async function sendGif(id: string) {
+    if (!convo || identity === 'observer') return;
+    try {
+      await sendUserMessage(convo.id, '[GIF]', identity, db, {
+        gifAssetId: id,
+        replyToMessageId: reply?.id,
+      });
+      setGifOpen(false);
+      setReply(undefined);
+      bottom.current = true;
+      setWindowEnd(undefined);
+    } catch (e) {
+      setError(String(e));
+    }
   }
   async function switchIdentity(id: string) {
     setIdentity(id);
+    setText('');
+    setReply(undefined);
+    setMentions([]);
+    setMentionQuery(undefined);
     if (convo)
       await db.conversations.update(convo.id, {
         controlledId: id === 'observer' || id === 'user' ? undefined : id,
@@ -104,7 +172,14 @@ export function Chats({
     setRetryable(false);
     let sent = false;
     try {
-      await sendUserMessage(convo.id, text, identity);
+      await sendUserMessage(convo.id, text, identity, db, {
+        replyToMessageId: reply?.id,
+        mentions,
+      });
+      setReply(undefined);
+      setMentions([]);
+      setMentionQuery(undefined);
+      setWindowEnd(undefined);
       sent = true;
       setText('');
       bottom.current = true;
@@ -177,7 +252,7 @@ export function Chats({
           .map((c) => {
             const last = data.messages
               .filter((m) => m.conversationId === c.id)
-              .sort((a, b) => a.seq - b.seq)
+              .sort((a, b) => a.simAt - b.simAt || a.seq - b.seq)
               .at(-1);
             const count = unread(c.id);
             return (
@@ -186,7 +261,9 @@ export function Chats({
                 className={`conversation-item ${selectedId === c.id ? 'active' : ''}`}
                 onClick={() => onSelect(c.id)}
               >
-                {c.kind === 'group' ? (
+                {c.avatar ? (
+                  <Avatar character={{ name: c.name, avatar: c.avatar }} />
+                ) : c.kind === 'group' ? (
                   <span className="group-avatar">
                     <Users size={24} />
                   </span>
@@ -225,6 +302,7 @@ export function Chats({
               </button>
               <div>
                 <h2>{convo.name}</h2>
+                <Button onClick={() => setEditingConversation(true)}>编辑名称 / 图片</Button>
                 <span>
                   {convo.participants.length} 位角色 · {convo.kind === 'group' ? '群聊' : '私聊'}
                 </span>
@@ -249,6 +327,21 @@ export function Chats({
                 <BookOpen size={18} />
               </Button>
             </header>
+            <div className="chat-tools">
+              <Button onClick={firstUnread}>跳转到第一条未读</Button>
+              <Button
+                onClick={() => {
+                  setWindowEnd(undefined);
+                  setLimit(100);
+                  bottom.current = true;
+                  requestAnimationFrame(() =>
+                    feed.current?.scrollTo({ top: feed.current.scrollHeight }),
+                  );
+                }}
+              >
+                回到最新消息
+              </Button>
+            </div>
             <div className="observer-banner">
               <Eye size={15} />
               <span>
@@ -266,7 +359,7 @@ export function Chats({
                 const f = feed.current;
                 if (!f) return;
                 bottom.current = f.scrollHeight - f.scrollTop - f.clientHeight < 48;
-                if (bottom.current) void markRead();
+                void markRead();
               }}
             >
               {messages.length > limit && (
@@ -274,7 +367,8 @@ export function Chats({
               )}
               {visible.map((m, i) => {
                 const c = data?.chars.find((c) => c.id === m.senderId),
-                  isUser = m.source === 'user',
+                  isUser =
+                    identity === 'observer' ? m.senderId === 'user' : m.senderId === identity,
                   prev = visible[i - 1],
                   day = date(m.simAt),
                   newDay = !prev || date(prev.simAt) !== day,
@@ -290,10 +384,14 @@ export function Chats({
                 return (
                   <div key={m.id}>
                     {newDay && <div className="date-divider">{day}</div>}
-                    {m.seq > cursor && (!prev || prev.seq <= cursor) && (
+                    {m.seq === cursor + 1 && (
                       <div className="unread-divider">以下是尚未阅读的消息</div>
                     )}
-                    <div className={`message ${isUser ? 'self' : ''}`}>
+                    <div
+                      data-message-id={m.id}
+                      data-seq={m.seq}
+                      className={`message ${isUser ? 'self' : ''} ${jumpId === m.id ? 'highlight' : ''}`}
+                    >
                       <Avatar
                         character={
                           c ?? {
@@ -309,12 +407,64 @@ export function Chats({
                           <strong>{c?.name ?? data?.settings?.nickname}</strong>
                           <time>{time(m.simAt)}</time>
                           {m.source === 'demo' && <span className="demo-label">演示</span>}
-                          {isUser && <span>用户控制</span>}
+                          {m.backfilled && <span>补全记录</span>}
+                          {m.source === 'user' && <span>用户控制</span>}
                         </div>
-                        <div className="message-bubble">{m.text}</div>
-                        <span className="read-receipt">
-                          {readBy ? `${readBy} 人已读` : '尚未被角色阅读'}
-                        </span>
+                        {m.replyToMessageId && (
+                          <div className="quoted-message" onClick={() => jump(m.replyToMessageId!)}>
+                            {(() => {
+                              const original = messages.find((o) => o.id === m.replyToMessageId);
+                              return original
+                                ? `${data?.chars.find((c) => c.id === original.senderId)?.name ?? data?.settings?.nickname}：${original.text.slice(0, 100)}`
+                                : '原消息已删除或无法访问';
+                            })()}
+                          </div>
+                        )}
+                        <div className="message-bubble">
+                          {m.gifAssetId ? (
+                            <GifImage
+                              assetId={m.gifAssetId}
+                              autoplay={data?.settings?.gifAutoplay}
+                            />
+                          ) : (
+                            <>
+                              {(() => {
+                                const nodes: React.ReactNode[] = [];
+                                let end = 0;
+                                for (const mention of [...(m.mentions ?? [])].sort(
+                                  (a, b) => a.start - b.start,
+                                )) {
+                                  if (
+                                    mention.start < end ||
+                                    m.text.slice(mention.start, mention.end) !== mention.label
+                                  )
+                                    continue;
+                                  nodes.push(
+                                    m.text.slice(end, mention.start),
+                                    <button
+                                      className="mention"
+                                      key={mention.start}
+                                      onClick={() => setViewCharacter(mention.characterId)}
+                                    >
+                                      {' '}
+                                      @
+                                      {data?.chars.find((c) => c.id === mention.characterId)
+                                        ?.name ?? mention.label}{' '}
+                                    </button>,
+                                  );
+                                  end = mention.end;
+                                }
+                                nodes.push(m.text.slice(end));
+                                return nodes;
+                              })()}
+                            </>
+                          )}
+                        </div>
+                        <MessageDetails
+                          message={m}
+                          identity={identity}
+                          onReply={() => setReply(m)}
+                        />
                       </div>
                     </div>
                   </div>
@@ -343,6 +493,62 @@ export function Chats({
               </div>
             )}
             <footer className="composer">
+              {reply && (
+                <div className="quoted-message">
+                  回复{' '}
+                  {data?.chars.find((c) => c.id === reply.senderId)?.name ??
+                    data?.settings?.nickname}
+                  ：{reply.text.slice(0, 100)}
+                  <Button onClick={() => setReply(undefined)}>取消回复</Button>
+                </div>
+              )}
+              <div className="chat-tools">
+                <Button onClick={() => setGifOpen(true)}>GIF 表情</Button>
+                {convo.kind === 'group' && (
+                  <Button
+                    disabled={identity === 'observer'}
+                    onClick={() => {
+                      setMentionStart(text.length);
+                      setText(text + '@');
+                      setMentionQuery('');
+                    }}
+                  >
+                    @ 提及成员
+                  </Button>
+                )}
+              </div>
+              {mentionQuery !== undefined && convo.kind === 'group' && (
+                <div className="check-list">
+                  {data?.chars
+                    .filter(
+                      (c) =>
+                        convo.participants.includes(c.id) &&
+                        c.name.toLowerCase().includes(mentionQuery.toLowerCase()),
+                    )
+                    .map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => {
+                          const label = '@' + c.name;
+                          setText(text.slice(0, mentionStart) + label + ' ');
+                          setMentions((ms) => [
+                            ...ms.filter((m) => m.end <= mentionStart),
+                            {
+                              characterId: c.id,
+                              start: mentionStart,
+                              end: mentionStart + label.length,
+                              label,
+                            },
+                          ]);
+                          setMentionQuery(undefined);
+                        }}
+                      >
+                        <Avatar character={c} size={24} />
+                        {c.name}
+                      </button>
+                    ))}
+                </div>
+              )}
               <div className="composer-identity">
                 <UserRound size={16} />
                 <Select
@@ -369,7 +575,16 @@ export function Chats({
                   value={text}
                   maxLength={2000}
                   disabled={identity === 'observer'}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => {
+                    setText(e.target.value);
+                    const match = e.target.value
+                      .slice(0, e.target.selectionStart)
+                      .match(/@([^@\n]*)$/);
+                    if (match && convo.kind === 'group') {
+                      setMentionStart(e.target.selectionStart - match[0].length);
+                      setMentionQuery(match[1]);
+                    } else setMentionQuery(undefined);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
                       e.preventDefault();
@@ -421,6 +636,24 @@ export function Chats({
           <p>已读，不一定意味着回复。角色的生活不会因为聊天而停下。</p>
         </div>
       </aside>
+      {viewCharacter && data?.chars.find((c) => c.id === viewCharacter) && (
+        <CharacterEditor
+          character={data.chars.find((c) => c.id === viewCharacter)}
+          worldId={worldId}
+          onClose={() => setViewCharacter('')}
+        />
+      )}
+      {gifOpen && convo && (
+        <GifLibrary
+          conversation={convo}
+          identity={identity}
+          onSend={(id) => void sendGif(id)}
+          onClose={() => setGifOpen(false)}
+        />
+      )}
+      {editingConversation && convo && (
+        <ConversationEditor conversation={convo} onClose={() => setEditingConversation(false)} />
+      )}
       {newChat && (
         <Modal title="打开一扇双人窗口" onClose={() => setNewChat(false)}>
           {[0, 1].map((i) => (

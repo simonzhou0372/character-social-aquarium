@@ -298,15 +298,15 @@ test('foreground acceleration stops while offline and does not multiply offline 
 }) => {
   await enter(page);
   const start = await page.evaluate(async () => {
-    const p = '/src/data/db.ts';
-    const { db } = await import(p);
+    const dp = '/src/data/db.ts',
+      tp = '/src/core/time.ts',
+      ep = '/src/core/engine.ts';
+    const { db } = await import(dp),
+      { configureTime } = await import(tp),
+      { setRunning } = await import(ep);
     const cp = await db.checkpoints.get('w-harbor');
-    await db.checkpoints.update('w-harbor', {
-      paused: false,
-      timeMode: 'god',
-      speed: 3600,
-      realTime: Date.now(),
-    });
+    await configureTime(cp.id, 'god', 3600);
+    await setRunning(cp.id, true, 'demo');
     return cp.simTime;
   });
   await expect
@@ -320,22 +320,32 @@ test('foreground acceleration stops while offline and does not multiply offline 
     )
     .toBeGreaterThan(start + 1800000);
   await page.evaluate(async () => {
-    const p = '/src/data/db.ts';
-    await (await import(p)).db.checkpoints.update('w-harbor', { paused: true });
+    const ep = '/src/core/engine.ts';
+    await (await import(ep)).setRunning('w-harbor', false, 'demo');
   });
   await context.setOffline(true);
   const offlineStart = await page.evaluate(async () => {
-    const p = '/src/data/db.ts';
-    const { db } = await import(p);
-    const cp = await db.checkpoints.get('w-harbor');
-    await db.checkpoints.update('w-harbor', { paused: false, realTime: Date.now() });
-    return cp.simTime;
+    const dp = '/src/data/db.ts',
+      ep = '/src/core/engine.ts',
+      tp = '/src/core/time.ts',
+      fp = '/src/core/clock-presence.ts';
+    const { db } = await import(dp),
+      { clockTarget } = await import(tp),
+      { foregroundStart } = await import(fp);
+    await (await import(ep)).setRunning('w-harbor', true, 'demo');
+    return clockTarget(await db.checkpoints.get('w-harbor'), Date.now(), foregroundStart());
   });
   await page.waitForTimeout(2200);
   const after = await page.evaluate(async () => {
-    const p = '/src/data/db.ts';
-    return (await (await import(p)).db.checkpoints.get('w-harbor')).simTime;
+    const dp = '/src/data/db.ts',
+      tp = '/src/core/time.ts',
+      fp = '/src/core/clock-presence.ts';
+    const { db } = await import(dp),
+      { clockTarget } = await import(tp),
+      { foregroundStart } = await import(fp);
+    return clockTarget(await db.checkpoints.get('w-harbor'), Date.now(), foregroundStart());
   });
-  expect(after).toBe(offlineStart);
+  expect(after - offlineStart).toBeGreaterThanOrEqual(2000);
+  expect(after - offlineStart).toBeLessThan(10000);
   await context.setOffline(false);
 });

@@ -43,6 +43,15 @@ export function validateEndpoint(baseUrl: string) {
   return u.toString().replace(/\/$/, '');
 }
 export function apiError(status: number, body = ''): ProviderError {
+  if (
+    status === 400 &&
+    /response_format|json_schema|structured.output/i.test(body) &&
+    /unsupported|not.support|invalid|not.available/i.test(body)
+  )
+    return new ProviderError(
+      'unsupported-format',
+      '当前模型不支持所选结构化模式，请在AI高级设置改为兼容JSON文本模式。',
+    );
   if (status === 401) return new ProviderError('invalid', '密钥无效或已失效，请检查 API 设置。');
   if (status === 403) return new ProviderError('permission', '当前密钥没有访问该模型的权限。');
   if (status === 429)
@@ -112,7 +121,12 @@ export class CompatibleProvider implements Provider {
         messages,
         temperature: 0.65,
         max_tokens: options?.maxOutputTokens ?? 1400,
-        ...(messages[0]?.content.includes('输出契约')
+        ...((this.profile.structuredOutputMode === 'json' ||
+          (this.profile.structuredOutputMode !== 'off' &&
+            ['api.openai.com', 'api.deepseek.com'].includes(
+              new URL(this.profile.baseUrl).hostname,
+            ))) &&
+        messages[0]?.content.includes('输出契约')
           ? { response_format: { type: 'json_object' } }
           : {}),
       },
@@ -161,5 +175,5 @@ export class MockProvider implements Provider {
   }
 }
 export function dialogueContract(speakerId: string, snapshot: PromptConfig) {
-  return `只返回 JSON 对象 {"speakerId":"${speakerId}","messages":["短消息"],"offsets":[0]}。messages 是字符串数组，不按换行或列表拆分。每批最多 ${snapshot.rules.allowConsecutive ? snapshot.rules.maxMessages : 1} 条，每条最多 ${snapshot.rules.hardLimit} 个 Unicode 字符。${snapshot.rules.allowSilence ? '允许 messages=[] 表示沉默。' : `非空时至少 ${snapshot.rules.allowConsecutive ? snapshot.rules.minMessages : 1} 条。`} offsets 为相同长度的非负秒偏移，递增且不超过 60。不得生成其他角色的消息，不得修改事实或关系。`;
+  return `只返回 JSON 对象 {"speakerId":"${speakerId}","messages":["短消息"],"offsets":[0]}。messages 是字符串数组，不按换行或列表拆分。每批最多 ${snapshot.rules.allowConsecutive ? snapshot.rules.maxMessages : 1} 条，每条最多 ${snapshot.rules.hardLimit} 个 Unicode 字符。${snapshot.rules.allowSilence ? '允许 messages=[] 表示沉默。' : `非空时至少 ${snapshot.rules.allowConsecutive ? snapshot.rules.minMessages : 1} 条。`} offsets 为相同长度的非负秒偏移，递增且不超过 60。不得生成其他角色的消息，不得修改事实或关系。可选 replyToMessageId 只可引用当前历史中的原消息ID；可选 gifAssetId 只可选择 availableGifs 中授权ID，可附带简短文字。`;
 }

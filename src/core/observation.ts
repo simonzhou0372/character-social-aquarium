@@ -33,6 +33,7 @@ export function featuredEvent(e: ActivityEvent, hasScene = false) {
     hasScene ||
     e.participants.length > 1 ||
     e.type === 'social' ||
+    e.type === 'major' ||
     e.type === 'out' ||
     /失眠|约定|冲突|意外|演出|约会|聚会|重要|告白/.test(e.description)
   );
@@ -44,7 +45,7 @@ export function timelineMatches(e: ActivityEvent, view: TimelineView, hasScene =
     case 'featured':
       return featuredEvent(e, hasScene);
     case 'social':
-      return e.type === 'social' || hasScene;
+      return e.type === 'social' || e.type === 'major' || hasScene;
     case 'shared':
       return e.participants.length > 1;
     case 'personal':

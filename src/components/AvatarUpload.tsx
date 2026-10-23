@@ -4,10 +4,12 @@ export function AvatarUpload({
   value,
   onChange,
   name = '你',
+  cover = false,
 }: {
   value?: string;
   onChange: (value: string) => void;
   name?: string;
+  cover?: boolean;
 }) {
   const input = useRef<HTMLInputElement>(null),
     canvas = useRef<HTMLCanvasElement>(null);
@@ -23,19 +25,21 @@ export function AvatarUpload({
       const c = canvas.current;
       if (!c) return;
       const ctx = c.getContext('2d')!;
-      c.width = 256;
-      c.height = 256;
-      const side = Math.min(image.width, image.height) / zoom;
+      c.width = cover ? 512 : 256;
+      c.height = cover ? 288 : 256;
+      const ratio = c.width / c.height;
+      const width = Math.min(image.width, image.height * ratio) / zoom,
+        height = width / ratio;
       ctx.drawImage(
         image,
-        (image.width - side) / 2,
-        (image.height - side) / 2,
-        side,
-        side,
+        (image.width - width) / 2,
+        (image.height - height) / 2,
+        width,
+        height,
         0,
         0,
-        256,
-        256,
+        c.width,
+        c.height,
       );
       setReady(true);
     };
@@ -45,7 +49,7 @@ export function AvatarUpload({
       image.onload = null;
       image.onerror = null;
     };
-  }, [crop, zoom]);
+  }, [crop, zoom, cover]);
   useEffect(
     () => () => {
       if (crop) URL.revokeObjectURL(crop);
@@ -88,9 +92,19 @@ export function AvatarUpload({
         void choose(e.dataTransfer.files[0]);
       }}
     >
-      <Avatar character={{ name, avatar: value, color: '#e7e9df' }} size={72} />
-      <Button onClick={() => input.current?.click()}>上传 / 更换头像</Button>
-      <Button onClick={() => onChange('')}>恢复默认头像</Button>
+      {cover && value ? (
+        <img
+          src={value}
+          alt="封面预览"
+          style={{ width: 160, aspectRatio: '16/9', objectFit: 'cover' }}
+        />
+      ) : (
+        <Avatar character={{ name, avatar: value, color: '#e7e9df' }} size={72} />
+      )}
+      <Button onClick={() => input.current?.click()}>
+        {cover ? '上传 / 更换封面' : '上传 / 更换头像'}
+      </Button>
+      <Button onClick={() => onChange('')}>{cover ? '恢复默认封面' : '恢复默认头像'}</Button>
       <small>也可以拖入图片；头像随本地备份保存。</small>
       <input
         ref={input}
@@ -104,12 +118,12 @@ export function AvatarUpload({
       />
       {error && <Status error>{error}</Status>}
       {crop && (
-        <Modal title="裁剪头像" onClose={() => setCrop('')}>
+        <Modal title={cover ? '裁剪封面' : '裁剪头像'} onClose={() => setCrop('')}>
           <canvas
             ref={canvas}
             width={256}
             height={256}
-            style={{ width: 'min(100%,256px)', borderRadius: '50%' }}
+            style={{ width: 'min(100%,256px)', borderRadius: cover ? '8px' : '50%' }}
           />
           <Field label="缩放">
             <Input
@@ -131,7 +145,7 @@ export function AvatarUpload({
               }
             }}
           >
-            保存头像
+            {cover ? '保存封面' : '保存头像'}
           </Button>
         </Modal>
       )}

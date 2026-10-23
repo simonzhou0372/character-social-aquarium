@@ -61,10 +61,10 @@ test('chat unread remains separate from virtual readers and roleplay messages pr
   await page.getByLabel('聊天身份').selectOption('c-nagi');
   await page.getByLabel('消息内容').fill('这句话是用户控制的夏生说的。');
   await page.getByRole('button', { name: '发送消息' }).click();
-  await expect(page.locator('.message.self .message-bubble')).toContainText(
+  await expect(page.locator('.message.self .message-bubble').last()).toContainText(
     '这句话是用户控制的夏生说的。',
   );
-  await expect(page.locator('.message.self .message-label')).toContainText('凪 夏生');
+  await expect(page.locator('.message.self .message-label').last()).toContainText('凪 夏生');
   await page.reload();
   await page.getByRole('button', { name: '聊天消息' }).click();
   await page.getByRole('button').filter({ hasText: '夏生 & 澪' }).click();
@@ -85,7 +85,7 @@ test('desktop management, navigation and screenshots', async ({ page }) => {
   await page.getByLabel('时间轴展示').selectOption('all');
   await expect(page.locator('.life-log-event').first()).toBeVisible();
   await prompts(page);
-  await expect(page.locator('.prompt-card')).toHaveCount(7);
+  await expect(page.locator('.prompt-card')).toHaveCount(8);
   await page.screenshot({ path: 'test-results/desktop-prompts.png', fullPage: true });
 });
 test('mobile single-column navigation, prompt editor, chat and no horizontal overflow', async ({
@@ -181,7 +181,7 @@ test('prompt import previews changes before replacement, global reset is confirm
   await page.getByRole('button', { name: '恢复全部默认' }).click();
   await expect(page.getByRole('dialog')).toContainText('自定义提示词');
   await page.getByRole('button', { name: '取消', exact: true }).click();
-  await expect(page.locator('.prompt-card')).toHaveCount(7);
+  await expect(page.locator('.prompt-card')).toHaveCount(8);
 });
 test('two tabs share persistence, exclusive work releases on close and recovery is idempotent', async ({
   page,

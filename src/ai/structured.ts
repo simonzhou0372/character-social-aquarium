@@ -144,3 +144,112 @@ export function repairDialogueJSON(raw: string): unknown {
   }
   return output;
 }
+
+/** Recover only fully closed original values from a truncated top-level object.
+ * Never closes a broken string or fabricates braces/field values. */
+export function completedField(raw: string, key: string): unknown {
+  let depth = 0,
+    quoted = false,
+    escape = false,
+    start = -1;
+  for (let i = 0; i < Math.min(raw.length, 100000); i++) {
+    const c = raw[i];
+    if (quoted) {
+      if (escape) escape = false;
+      else if (c === '\\') escape = true;
+      else if (c === '"') {
+        quoted = false;
+        if (depth === 1 && start >= 0) {
+          let name: unknown;
+          try {
+            name = JSON.parse(raw.slice(start, i + 1));
+          } catch {}
+          let j = i + 1;
+          while (/\s/.test(raw[j] ?? '') && j < raw.length) j++;
+          if (name === key && raw[j] === ':') {
+            j++;
+            while (/\s/.test(raw[j] ?? '') && j < raw.length) j++;
+            if (raw[j] === '"') {
+              let escaped = false;
+              for (let k = j + 1; k < raw.length; k++) {
+                if (escaped) {
+                  escaped = false;
+                  continue;
+                }
+                if (raw[k] === '\\') {
+                  escaped = true;
+                  continue;
+                }
+                if (raw[k] === '"') {
+                  try {
+                    return JSON.parse(raw.slice(j, k + 1));
+                  } catch {
+                    return;
+                  }
+                }
+              }
+              return;
+            }
+            if (raw[j] === '[') {
+              const items: unknown[] = [];
+              let itemStart = -1,
+                nested = 0,
+                inString = false,
+                escaped = false;
+              for (let k = j + 1; k < raw.length; k++) {
+                const x = raw[k];
+                if (inString) {
+                  if (escaped) escaped = false;
+                  else if (x === '\\') escaped = true;
+                  else if (x === '"') inString = false;
+                  continue;
+                }
+                if (x === '"') inString = true;
+                if (x === '{') {
+                  if (nested === 0) itemStart = k;
+                  nested++;
+                }
+                if (x === '}' && nested > 0 && --nested === 0) {
+                  try {
+                    items.push(JSON.parse(raw.slice(itemStart, k + 1)));
+                  } catch {}
+                }
+                if (x === ']' && nested === 0) break;
+              }
+              return items;
+            }
+            if (raw[j] === '{') {
+              let nesting = 0,
+                inString = false,
+                escaped = false;
+              for (let k = j; k < raw.length; k++) {
+                const x = raw[k];
+                if (inString) {
+                  if (escaped) escaped = false;
+                  else if (x === '\\') escaped = true;
+                  else if (x === '"') inString = false;
+                  continue;
+                }
+                if (x === '"') inString = true;
+                else if (x === '{') nesting++;
+                else if (x === '}' && --nesting === 0) {
+                  try {
+                    return JSON.parse(raw.slice(j, k + 1));
+                  } catch {
+                    return;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      continue;
+    }
+    if (c === '"') {
+      quoted = true;
+      start = i;
+    } else if (c === '{') depth++;
+    else if (c === '}') depth--;
+  }
+}

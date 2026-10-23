@@ -456,9 +456,9 @@ describe('observation noise and app usage limits', () => {
     snap.entries[0].customized = true;
     await d.promptConfigs.put(snap);
     const migrated = await getPrompts(d);
-    expect(migrated.entries).toHaveLength(7);
+    expect(migrated.entries).toHaveLength(8);
     expect(migrated.entries[0].content).toBe('用户专属规范');
-    expect(PromptConfigSchema.parse(snap).entries).toHaveLength(7);
+    expect(PromptConfigSchema.parse(snap).entries).toHaveLength(8);
     await savePrompt(d, 'inPerson', '新的线下规范', true);
     expect((await getPrompts(d)).entries.find((e) => e.key === 'inPerson')?.content).toBe(
       '新的线下规范',

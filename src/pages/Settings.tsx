@@ -1,3 +1,4 @@
+import { ObservationManager } from '../components/ObservationManager';
 import { AvatarUpload } from '../components/AvatarUpload';
 import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -151,6 +152,18 @@ export function ApiSettings({ onDone }: { onDone?: () => void }) {
             value={p.baseUrl}
             onChange={(e) => patch({ baseUrl: e.target.value, status: 'untested' })}
           />
+        </Field>
+        <Field label="结构化输出模式">
+          <Select
+            value={p.structuredOutputMode ?? 'auto'}
+            onChange={(e) =>
+              patch({ structuredOutputMode: e.target.value as 'auto' | 'json' | 'off' })
+            }
+          >
+            <option value="auto">自动兼容（未知接口使用JSON文本）</option>
+            <option value="json">服务商 JSON 模式</option>
+            <option value="off">兼容 JSON 文本模式</option>
+          </Select>
         </Field>
         <Field
           label="上下文输入预算（估算 Token）"
@@ -448,6 +461,7 @@ function DataSettings() {
 }
 export function Settings({ initialTab = 'api' }: { initialTab?: string }) {
   const [tab, setTab] = useState(initialTab);
+  const activeWorld = useLiveQuery(() => db.settings.get('app'), []);
   const usage = useLiveQuery(() => db.usage.toArray(), []);
   const lastContext = useLiveQuery(
     () =>
@@ -481,6 +495,7 @@ export function Settings({ initialTab = 'api' }: { initialTab?: string }) {
           ['api', 'AI 设置', Plug],
           ['prompts', '提示词管理', BookOpen],
           ['simulation', '模拟器', Sliders],
+          ['observation', '观察管理', EyeOff],
           ['data', '本地数据', Database],
         ].map(([key, title, Icon]) => (
           <button
@@ -538,6 +553,9 @@ export function Settings({ initialTab = 'api' }: { initialTab?: string }) {
       {tab === 'prompts' && <PromptManager />}
       {tab === 'simulation' && <SimulationSettings />}
       {tab === 'data' && <DataSettings />}
+      {tab === 'observation' && activeWorld && (
+        <ObservationManager key={activeWorld.worldId} worldId={activeWorld.worldId} />
+      )}
     </div>
   );
 }

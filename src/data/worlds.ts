@@ -1,3 +1,6 @@
+import { ObservationConfigSchema } from '../core/focus-types';
+import { clockTarget } from '../core/time';
+import { foregroundStart } from '../core/clock-presence';
 import { realLocalDate } from '../core/calendar';
 import { z } from 'zod';
 import { db, type AquariumDB } from './db';
@@ -15,6 +18,7 @@ import {
 import { newCharacter } from './seed';
 import { draftCharacter, type CharacterDraft } from '../ai/drafts';
 export const WorldPackageSchema = z.object({
+  observation: ObservationConfigSchema.optional(),
   backgroundKnowledge: z.array(BackgroundKnowledgeSchema).default([]),
   format: z.literal('aquarium-world'),
   version: z.literal(1),
@@ -34,6 +38,15 @@ export function validateWorldPackage(input: unknown) {
     if (!v) throw new Error('世界观包包含重复编号或无效成员引用');
   };
   assert(chars.size === p.characters.length && groups.size === p.groups.length);
+  if (p.observation)
+    assert(
+      p.observation.id === p.world.id &&
+        p.observation.characterIds.every((id) => chars.has(id)) &&
+        p.observation.groupIds.every((id) => groups.has(id)) &&
+        p.observation.pairs.every(
+          (pair) => pair[0] !== pair[1] && pair.every((id) => chars.has(id)),
+        ),
+    );
   assert(p.memberships.every((m) => m.worldId === p.world.id && chars.has(m.characterId)));
   assert(p.characters.every((c) => p.memberships.some((m) => m.characterId === c.id)));
   assert(p.groups.every((g) => g.worldIds.includes(p.world.id)));
@@ -68,12 +81,14 @@ export async function exportWorld(worldId: string, d: AquariumDB = db): Promise<
       d.groupMembers,
       d.relationships,
       d.backgroundKnowledge,
+      d.observationConfigs,
     ],
     async () => {
       const world = await d.worlds.get(worldId);
       if (!world) throw new Error('世界不存在');
       const memberships = await d.memberships.where('worldId').equals(worldId).toArray();
       return validateWorldPackage({
+        observation: await d.observationConfigs.get(worldId),
         backgroundKnowledge: await d.backgroundKnowledge.where('worldId').equals(worldId).toArray(),
         format: 'aquarium-world',
         version: 1,
@@ -172,6 +187,14 @@ export async function createWorld(
       });
       await addGroupConversation(g.id, g.name, g.members, parsed.id, d);
     }
+    await d.observationConfigs.put({
+      id: parsed.id,
+      mode: 'selective',
+      characterIds: characters.map((c) => c.id),
+      groupIds: [...chosenGroups.map((g) => g.id), ...newGroups.map((g) => g.id)],
+      pairs: [],
+      updatedAt: Date.now(),
+    });
     await addCheckpoint(parsed.id, d);
     await d.settings.update('app', { worldId: parsed.id });
     return parsed.id;
@@ -276,6 +299,17 @@ export async function importWorld(input: unknown, d: AquariumDB = db) {
         entityId: cIds.get(k.entityId) ?? gIds.get(k.entityId)!,
       })),
     );
+    if (p.observation)
+      await d.observationConfigs.put({
+        ...p.observation,
+        id,
+        characterIds: p.observation.characterIds.map((c) => cIds.get(c)!),
+        groupIds: p.observation.groupIds.map((g) => gIds.get(g)!),
+        pairs: p.observation.pairs.map(
+          (pair) => [cIds.get(pair[0])!, cIds.get(pair[1])!] as [string, string],
+        ),
+        updatedAt: Date.now(),
+      });
     await addCheckpoint(id, d);
     await d.settings.update('app', { worldId: id });
     return id;
@@ -359,9 +393,17 @@ export async function saveGroupMembers(
           .map((m) => m.senderId)
       : [];
     const chatParticipants = [...new Set([...interactive, ...historic])];
+    const cp = await d.checkpoints.get(worldId);
+    const joinedAt = cp ? clockTarget(cp, Date.now(), foregroundStart()) : Date.now();
     if (conv)
       await d.conversations.update(conv.id, {
-        name: g.name,
+        participantJoinedAt: {
+          ...conv.participantJoinedAt,
+          ...Object.fromEntries(
+            interactive.filter((id) => !conv.participants.includes(id)).map((id) => [id, joinedAt]),
+          ),
+        },
+        name: conv.titleMode === 'custom' ? conv.name : g.name,
         participants: chatParticipants.length ? chatParticipants : conv.participants,
         controlledId:
           conv.controlledId && participants.includes(conv.controlledId)

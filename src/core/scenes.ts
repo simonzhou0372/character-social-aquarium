@@ -8,7 +8,7 @@ export function sceneDialogueBudget(event: ActivityEvent) {
 export function validateScene(
   scene: InPersonScene,
   event: ActivityEvent,
-  maxDialogue = sceneDialogueBudget(event),
+  maxDialogue = 1280,
   allowMarkdown = false,
   enforceBehavior = true,
 ) {

@@ -1,3 +1,9 @@
+import { evolvedCharacter, historicalCharacter } from '../core/selective-observation';
+import { completedField } from './structured';
+import { validateMessageExtras } from '../data/chat';
+import { availableGifs } from '../data/gifs';
+import { clockTarget } from '../core/time';
+import { foregroundStart } from '../core/clock-presence';
 import {
   markdownPattern as markdown,
   servicePattern,
@@ -28,6 +34,8 @@ import {
 } from './provider';
 const DialogueSchema = z
   .object({
+    replyToMessageId: z.string().optional(),
+    gifAssetId: z.string().optional(),
     speakerId: z.string(),
     messages: z.array(z.string().min(1)).max(3),
     offsets: z.array(z.number().int().min(0).max(60)).max(3).optional(),
@@ -51,7 +59,7 @@ export function parseDialogue(raw: string, speakerId: string, snapshot: PromptCo
   if (
     r.speakerId !== speakerId ||
     r.messages.length > max ||
-    (!rules.allowSilence && r.messages.length < min) ||
+    (!rules.allowSilence && !r.gifAssetId && r.messages.length < min) ||
     (r.messages.length > 0 && r.messages.length < min)
   )
     throw new ProviderError('schema', '回复角色或消息数量不合法，本次生成未写入。');
@@ -73,6 +81,7 @@ export function parseDialogue(raw: string, speakerId: string, snapshot: PromptCo
     if (servicePattern.test(text) && snapshot.entries.find((e) => e.key === 'behavior')?.enabled)
       throw new ProviderError('format', '回复包含服务式套话，本次生成未写入。');
   }
+  if (r.gifAssetId && !r.messages.length) r.messages = ['[GIF]'];
   return r;
 }
 export function lexicalScore(text: string, query: string) {
@@ -100,7 +109,13 @@ export function retrieveMemories(
     }))
     .sort((a, b) => b.score - a.score)
     .slice(0, 6)
-    .map((x) => ({ content: x.m.content, knownBy: x.m.owners, at: x.m.at }));
+    .map((x) => ({
+      id: x.m.id,
+      eventId: x.m.eventId,
+      content: x.m.content,
+      knownBy: x.m.owners,
+      at: x.m.at,
+    }));
 }
 function dayKey(at: number) {
   return new Date(at).toISOString().slice(0, 10);
@@ -217,19 +232,29 @@ export async function dialogueContext(
       d.worlds.get(c.worldId),
       d.memberships.where('[worldId+characterId]').equals([c.worldId, speakerId]).first(),
       d.relationships.where('worldId').equals(c.worldId).toArray(),
-      d.memories.where('worldId').equals(c.worldId).toArray(),
+      d.memories
+        .where('owners')
+        .equals(speakerId)
+        .and((m) => m.worldId === c.worldId && m.at <= at)
+        .toArray(),
       d.messages.where('conversationId').equals(c.id).sortBy('seq'),
       d.states.get(`${c.worldId}:${speakerId}`),
       d.settings.get('app'),
     ]);
-  const recent = history.filter((m) => m.simAt <= at).slice(-18);
+  const recent = history
+    .filter((m) => m.simAt <= at && m.simAt >= (c.participantJoinedAt?.[speakerId] ?? 0))
+    .sort((a, b) => a.simAt - b.simAt || a.seq - b.seq)
+    .slice(-18);
   const aliases = await d.characters.where('id').anyOf(c.participants).toArray();
+  const effective = character
+    ? await historicalCharacter(d, character, membership, c.worldId, at)
+    : undefined;
   return {
     world,
     character: {
-      ...character,
+      ...effective,
       bio: membership?.bioOverride || character?.bio,
-      style: membership?.styleOverride || character?.style,
+      style: membership?.styleOverride || effective?.style,
       identity: membership?.identity,
     },
     relationships: relationships.filter(
@@ -250,6 +275,10 @@ export async function dialogueContext(
       text: m.text,
       at: m.simAt,
       source: m.source,
+      mentionCharacterIds: m.mentionCharacterIds,
+      replyToMessageId: m.replyToMessageId,
+      messageType: m.messageType,
+      gifAssetId: m.gifAssetId,
     })),
     state,
     input: {
@@ -257,7 +286,16 @@ export async function dialogueContext(
       user: { id: 'user', name: settings?.nickname, bio: settings?.userBio },
       simTime: at,
       localTime: world ? formatWorldTime(world, at) : '',
-      backgroundKnowledge: await knownBackground(d, c.worldId, speakerId),
+      availableGifs: (await availableGifs(c, speakerId, d)).slice(0, 16).map((a) => ({
+        id: a.id,
+        name: a.name,
+        tags: a.tags.slice(0, 4),
+        description: Array.from(a.description).slice(0, 160).join(''),
+      })),
+      replyContext: recent.at(-1)?.replyToMessageId
+        ? await d.messages.get(recent.at(-1)!.replyToMessageId!)
+        : undefined,
+      backgroundKnowledge: await knownBackground(d, c.worldId, speakerId, at),
     },
   };
 }
@@ -315,7 +353,7 @@ export async function generateDialogue(
   try {
     if (response.finishReason === 'length')
       throw new ProviderError('truncated', '模型输出额度不足，正在压缩后重试。');
-    return parseDialogue(response.content, speakerId, snapshot);
+    return await validateGenerated(d, c, at, parseDialogue(response.content, speakerId, snapshot));
   } catch (error) {
     if (!(error instanceof ProviderError) || !['json', 'schema', 'truncated'].includes(error.code))
       throw error;
@@ -348,7 +386,7 @@ export async function generateDialogue(
         'truncated',
         '已压缩上下文并重试一次，模型仍超出输出预算。你的消息已保留，可在 AI 高级设置调整输出预算后重试。',
       );
-    return parseDialogue(repaired.content, speakerId, snapshot);
+    return await validateGenerated(d, c, at, parseDialogue(repaired.content, speakerId, snapshot));
   }
 }
 export async function persistDialogue(
@@ -361,6 +399,7 @@ export async function persistDialogue(
   prefix: string,
   eventId?: string,
   offsets?: number[],
+  extras: Partial<Message> = {},
 ) {
   const c = await d.conversations.get(conversationId);
   if (!c || c.controlledId === speakerId) return [];
@@ -377,8 +416,12 @@ export async function persistDialogue(
     simAt: at + (offsets?.[i] ?? i * 2) * 1000,
     source,
     eventId,
+    backfilled: extras.backfilled,
+    replyToMessageId: extras.replyToMessageId,
+    gifAssetId: i === 0 ? extras.gifAssetId : undefined,
+    messageType: i === 0 && extras.gifAssetId ? 'gif' : 'text',
   }));
-  if (messages.some((m) => m.simAt < (last?.simAt ?? 0))) return [];
+  if (messages.some((m) => m.simAt < (last?.simAt ?? 0)) && !extras.backfilled) return [];
   if (!messages.length) return [];
   const day = dayKey(Date.now()),
     usage = (await d.usage.get(day)) ?? {
@@ -394,12 +437,18 @@ export async function persistDialogue(
   if (
     settings &&
     !settings.unlimitedUsage &&
+    source !== 'demo' &&
     usage.messages + messages.length > settings.dailyMessages
   )
     throw new ProviderError('budget', '今日消息生成上限已用完。');
   await d.messages.bulkAdd(messages);
-  await d.conversations.update(conversationId, { lastAt: messages.at(-1)!.simAt });
-  await d.usage.put({ ...usage, messages: usage.messages + messages.length });
+  await d.conversations.update(conversationId, {
+    lastAt: Math.max(c.lastAt, messages.at(-1)!.simAt),
+  });
+  await d.usage.put({
+    ...usage,
+    messages: usage.messages + (source === 'demo' ? 0 : messages.length),
+  });
   return messages;
 }
 export async function sendUserMessage(
@@ -407,6 +456,7 @@ export async function sendUserMessage(
   text: string,
   identity = 'user',
   d: AquariumDB = db,
+  extras: Partial<Message> = {},
 ) {
   if (identity !== 'user' && (await d.characters.get(identity))?.entityMode === 'background')
     throw new Error('请先将背景人物转为可互动角色');
@@ -415,25 +465,51 @@ export async function sendUserMessage(
   await withWorldLock(
     'interaction',
     () =>
-      d.transaction('rw', d.conversations, d.messages, d.checkpoints, d.cursors, async () => {
-        const c = await d.conversations.get(conversationId);
-        if (!c) throw new Error('会话不存在');
-        if (identity !== 'user' && c.controlledId !== identity) throw new Error('请先切换角色身份');
-        const last = await d.messages.where('conversationId').equals(c.id).sortBy('seq');
-        const cp = await d.checkpoints.get(c.worldId);
-        const at = Math.max(cp?.simTime ?? Date.now(), last.at(-1)?.simAt ?? 0);
-        await d.messages.add({
-          id: uid('user'),
-          conversationId,
-          senderId: identity,
-          text: text.trim(),
-          seq: (last.at(-1)?.seq ?? 0) + 1,
-          realAt: Date.now(),
-          simAt: at,
-          source: 'user',
-        });
-        await d.conversations.update(c.id, { lastAt: at });
-      }),
+      d.transaction(
+        'rw',
+        [
+          d.conversations,
+          d.messages,
+          d.checkpoints,
+          d.cursors,
+          d.gifAssets,
+          d.groups,
+          d.memberships,
+          d.groupMembers,
+        ],
+        async () => {
+          const c = await d.conversations.get(conversationId);
+          if (!c) throw new Error('会话不存在');
+          if (identity !== 'user' && c.controlledId !== identity)
+            throw new Error('请先切换角色身份');
+          const metadata = await validateMessageExtras(d, conversationId, text, extras);
+          if (
+            extras.gifAssetId &&
+            !(await availableGifs(c, identity, d)).some((a) => a.id === extras.gifAssetId)
+          )
+            throw new Error('无权使用此表情');
+          const last = await d.messages.where('conversationId').equals(c.id).sortBy('seq');
+          const cp = await d.checkpoints.get(c.worldId);
+          const at = Math.max(
+            cp ? clockTarget(cp, Date.now(), foregroundStart()) : Date.now(),
+            last.at(-1)?.simAt ?? 0,
+          );
+          await d.messages.add({
+            id: uid('user'),
+            conversationId,
+            senderId: identity,
+            text: text.trim(),
+            seq: (last.at(-1)?.seq ?? 0) + 1,
+            realAt: Date.now(),
+            simAt: at,
+            source: 'user',
+            ...metadata,
+            messageType: extras.gifAssetId ? 'gif' : 'text',
+            gifAssetId: extras.gifAssetId,
+          });
+          await d.conversations.update(c.id, { lastAt: at });
+        },
+      ),
     true,
   );
 }
@@ -453,7 +529,13 @@ export async function replyToUser(conversationId: string, d: AquariumDB = db) {
   );
   if (!eligible.length) throw new Error('大家现在不方便看手机，稍后会由模拟器决定是否回复。');
   const last = await d.messages.where('conversationId').equals(c.id).sortBy('seq');
-  const candidate = eligible.filter((id) => id !== last.at(-1)?.senderId)[0];
+  const candidate = eligible
+    .filter((id) => id !== last.at(-1)?.senderId)
+    .sort(
+      (a, b) =>
+        Number(last.at(-1)?.mentionCharacterIds?.includes(b)) -
+        Number(last.at(-1)?.mentionCharacterIds?.includes(a)),
+    )[0];
   if (!candidate) return;
   const at = Math.max(cp?.simTime ?? Date.now(), (last.at(-1)?.simAt ?? 0) + 1000);
   const generated = await generateDialogue(d, c, candidate, at, snapshot, provider);
@@ -470,6 +552,7 @@ export async function replyToUser(conversationId: string, d: AquariumDB = db) {
       uid('reply'),
       undefined,
       generated.offsets,
+      generated,
     );
   });
 }
@@ -489,16 +572,32 @@ export async function generateProfile(input: unknown, d: AquariumDB = db, provid
     'profile',
     snap,
   );
+  let raw: unknown;
+  try {
+    raw = parseStructuredJSON(r.content);
+  } catch {
+    const values = Object.fromEntries(
+      ['gender', 'bio', 'personality', 'style', 'habits', 'uncertain']
+        .map((key) => [key, completedField(r.content, key)])
+        .filter(([, value]) => typeof value === 'string'),
+    );
+    if (!Object.keys(values).length)
+      throw new Error('资料响应没有完整可用字段，已有表单保留，请重试或手动补充。');
+    raw = {
+      ...values,
+      uncertain: String(values.uncertain ?? '') + '（输出未完成，仅保留完整字段；其余待补充。）',
+    };
+  }
   return z
     .object({
       gender: z.string().max(200).optional(),
-      bio: z.string().max(3000),
-      personality: z.string().max(3000),
-      style: z.string().max(3000),
-      habits: z.string().max(3000),
-      uncertain: z.string().max(3000),
+      bio: z.string().max(3000).default(''),
+      personality: z.string().max(3000).default(''),
+      style: z.string().max(3000).default(''),
+      habits: z.string().max(3000).default(''),
+      uncertain: z.string().max(3000).default(''),
     })
-    .parse(parseStructuredJSON(r.content));
+    .parse(raw);
 }
 export async function describeEvent(
   d: AquariumDB,
@@ -584,11 +683,16 @@ export async function consolidateMemory(
   });
 }
 
-export async function knownBackground(d: AquariumDB, worldId: string, characterId: string) {
+export async function knownBackground(
+  d: AquariumDB,
+  worldId: string,
+  characterId: string,
+  at = Number.MAX_SAFE_INTEGER,
+) {
   const records = await d.backgroundKnowledge
     .where('worldId')
     .equals(worldId)
-    .and((k) => k.characterId === characterId && k.level !== 'unknown')
+    .and((k) => k.characterId === characterId && k.level !== 'unknown' && (k.knownAt ?? 0) <= at)
     .toArray();
   return Promise.all(
     records.map(async (k) => {
@@ -600,11 +704,29 @@ export async function knownBackground(d: AquariumDB, worldId: string, characterI
         information:
           k.level === 'name'
             ? []
-            : k.items.map((item) => ({
-                ...item,
-                kind: item.kind === 'falseRumor' ? 'rumor' : item.kind,
-              })),
+            : k.items
+                .filter((item) => (item.learnedAt ?? 0) <= at)
+                .map((item) => ({
+                  ...item,
+                  kind: item.kind === 'falseRumor' ? 'rumor' : item.kind,
+                })),
       };
     }),
   );
+}
+
+async function validateGenerated(
+  d: AquariumDB,
+  c: Conversation,
+  at: number,
+  r: ReturnType<typeof parseDialogue>,
+) {
+  if (r.replyToMessageId) {
+    const m = await d.messages.get(r.replyToMessageId);
+    if (!m || m.conversationId !== c.id || m.simAt > at)
+      throw new ProviderError('schema', '引用对象不存在或不在当前会话');
+  }
+  if (r.gifAssetId && !(await availableGifs(c, r.speakerId, d)).some((a) => a.id === r.gifAssetId))
+    throw new ProviderError('schema', '无权使用模型选择的GIF');
+  return r;
 }

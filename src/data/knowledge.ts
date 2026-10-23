@@ -8,6 +8,7 @@ export async function recordHeardInformation(
   text: string,
   listeners: string[],
   source: string,
+  learnedAt?: number,
 ) {
   if (speakerId === 'user' || !listeners.length) return;
   await d.transaction('rw', [d.backgroundKnowledge, d.characters, d.groups], async () => {
@@ -29,12 +30,13 @@ export async function recordHeardInformation(
         const items = [...(old?.items ?? [])];
         for (const item of spoken)
           if (!items.some((i) => i.kind === item.kind && i.content === item.content))
-            items.push({ ...item, source });
+            items.push({ ...item, source, learnedAt });
         const record: BackgroundKnowledge = {
           id: old?.id ?? uid('knowledge'),
           worldId,
           entityId: knowledge.entityId,
           characterId,
+          knownAt: old?.knownAt ?? learnedAt,
           level: !old || old.level === 'unknown' ? (spoken.length ? 'partial' : 'name') : old.level,
           items,
         };

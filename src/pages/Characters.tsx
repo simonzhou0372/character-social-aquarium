@@ -1,3 +1,5 @@
+import { EvolutionPanel } from '../components/EvolutionPanel';
+import { useObservation } from '../components/ObservationManager';
 import { AvatarUpload } from '../components/AvatarUpload';
 import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -155,6 +157,7 @@ export function CharacterEditor({
               ))}
             </div>
           </Field>
+          <EvolutionPanel worldId={worldId} characterId={c.id} />
           <details className="advanced">
             <summary>当前世界专属设定（不影响其他世界）</summary>
             <Field label="当前世界身份 / 简介覆盖">
@@ -334,6 +337,7 @@ export function CharacterEditor({
   );
 }
 export function Characters({ worldId, onChat }: { worldId: string; onChat: (id: string) => void }) {
+  const observation = useObservation(worldId);
   const all = useLiveQuery(() => db.characters.toArray(), []),
     states = useLiveQuery(() => db.states.where('worldId').equals(worldId).toArray(), [worldId]),
     memberships = useLiveQuery(
@@ -392,7 +396,13 @@ export function Characters({ worldId, onChat }: { worldId: string; onChat: (id: 
               </div>
               <p>
                 {c.gender || '性别未设定'} ·{' '}
-                {c.entityMode === 'background' ? '背景人物' : '可互动角色'}
+                {c.entityMode === 'background'
+                  ? '背景人物'
+                  : observation?.jobs.some((j) => j.characterIds.includes(c.id))
+                    ? '历史补全中'
+                    : observation?.activeIds.has(c.id)
+                      ? '正在观察'
+                      : '静默'}
               </p>
               <p>{c.bio || '故事等待你来写下。'}</p>
               <div className="tags">

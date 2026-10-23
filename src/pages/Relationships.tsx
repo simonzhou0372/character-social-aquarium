@@ -1,3 +1,4 @@
+import { RelationshipAssistant } from '../components/RelationshipAssistant';
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus, ArrowRight, Lock, Network } from 'lucide-react';
@@ -84,6 +85,7 @@ export function Relationships({ worldId }: { worldId: string }) {
           添加关系
         </Button>
       </div>
+      <RelationshipAssistant worldId={worldId} />
       <div className="toolbar">
         <Select aria-label="关系团体筛选" value={group} onChange={(e) => setGroup(e.target.value)}>
           <option value="">全部团体</option>
@@ -224,6 +226,7 @@ export function Relationships({ worldId }: { worldId: string }) {
       </div>
       {edit && (
         <Modal title="编辑有向关系" onClose={() => setEdit(undefined)}>
+          <RelationshipAssistant worldId={worldId} focusIds={[edit.from, edit.to]} />
           <div className="form-grid">
             {(['from', 'to'] as const).map((k, i) => (
               <Field key={k} label={i ? '对方' : '出发角色'}>

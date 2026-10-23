@@ -1,3 +1,11 @@
+import { maintainWorld } from './core/world-maintenance';
+import { WorldReports } from './pages/WorldReports';
+import { ObservationManager } from './components/ObservationManager';
+import { MajorEvents, MajorBanner, MajorEventDetail } from './pages/MajorEvents';
+import { drainContent } from './ai/content-queue';
+import { foregroundStart, changeForeground } from './core/clock-presence';
+import { settleClocks } from './core/time';
+import { diagnostic } from './core/diagnostics';
 import { formatWorldTime } from './core/calendar';
 import { WorldHUD } from './components/WorldHUD';
 import { Scenes } from './pages/Scenes';
@@ -5,6 +13,7 @@ import { Component, useEffect, useState, type ReactNode } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {
   Waves,
+  BookOpen,
   LayoutDashboard,
   Globe2,
   MessageCircle,
@@ -41,6 +50,8 @@ const navigation = [
   { id: 'scenes', label: '线下观察', sub: 'IN PERSON', icon: ContactRound },
   { id: 'characters', label: '角色图鉴', sub: 'CHARACTERS', icon: ContactRound },
   { id: 'relationships', label: '关系网络', sub: 'CONNECTIONS', icon: Network },
+  { id: 'majorEvents', label: '重大事件', sub: 'WORLD EVENTS', icon: Globe2 },
+  { id: 'reports', label: '世界报告', sub: 'REPORTS', icon: BookOpen },
   { id: 'timeline', label: '生活时间轴', sub: 'LIFE LOG', icon: Clock3 },
 ];
 export class ErrorBoundary extends Component<{ children: ReactNode }, { error: string }> {
@@ -65,7 +76,9 @@ export default function App() {
   const [ready, setReady] = useState(false),
     [startupError, setStartupError] = useState(''),
     [page, setPage] = useState('home'),
+    [selectedMajor, setSelectedMajor] = useState(''),
     [selectedChat, setSelectedChat] = useState(''),
+    [focusEvent, setFocusEvent] = useState(''),
     [settingsTab, setSettingsTab] = useState('api'),
     [onboarding, setOnboarding] = useState(false),
     [apiSetup, setApiSetup] = useState(false),
@@ -76,16 +89,23 @@ export default function App() {
   const [cancelController] = useState(() => ({ current: new AbortController() }));
   const data = useLiveQuery(async () => {
     const settings = await db.settings.get('app');
+    const convs = settings
+      ? await db.conversations.where('worldId').equals(settings.worldId).toArray()
+      : [];
+    let unread = 0;
+    for (const c of convs) {
+      const cursor = await db.cursors.get(`observer:${c.id}`);
+      unread += await db.messages
+        .where('[conversationId+seq]')
+        .between([c.id, cursor?.seq ?? 0], [c.id, Number.MAX_SAFE_INTEGER], false, true)
+        .count();
+    }
     return {
       settings,
       worlds: await db.worlds.toArray(),
       cp: settings ? await db.checkpoints.get(settings.worldId) : undefined,
       profile: await db.profiles.get('api'),
-      convs: settings
-        ? await db.conversations.where('worldId').equals(settings.worldId).toArray()
-        : [],
-      messages: await db.messages.toArray(),
-      cursors: await db.cursors.toArray(),
+      unread,
     };
   }, []);
   const worldId = data?.settings?.worldId ?? 'w-harbor';
@@ -118,11 +138,18 @@ export default function App() {
         for (const world of worlds) {
           const cp = await db.checkpoints.get(world.id);
           if (!cp || cp.paused) continue;
+          void drainContent(world.id).catch((e) =>
+            diagnostic(world.id, { phase: 'error', error: String(e) }),
+          );
           cancelController.current = new AbortController();
+          void maintainWorld(world.id).catch((e) =>
+            diagnostic(world.id, { phase: 'error', error: String(e) }),
+          );
           await runWorld(world.id, {
             signal: cancelController.current.signal,
             now: startedAt,
-            foregroundSince: activeSince,
+            foregroundSince: foregroundStart(),
+            deferContent: true,
             maxSegments: 24,
             onProgress: (p) => {
               if (p.offline && p.to - p.from > 900000) setProgress(p);
@@ -142,6 +169,10 @@ export default function App() {
     void work();
     const timer = setInterval(work, 1000);
     const visible = () => {
+      const at = Date.now(),
+        previous = foregroundStart();
+      void settleClocks(at, previous).catch((e) => setError(String(e)));
+      changeForeground(document.hidden || !navigator.onLine ? undefined : at);
       foregroundSince = document.hidden || !navigator.onLine ? undefined : Date.now();
       if (!document.hidden) void work();
     };
@@ -164,16 +195,19 @@ export default function App() {
     setSelectedChat(id);
     navigate('chats');
   };
-  async function toggleRun() {
+  async function toggleRun(running?: boolean) {
     try {
-      if (!data?.cp) return;
-      if (!data.cp.paused) {
+      const cp = await db.checkpoints.get(worldId);
+      if (!cp) return;
+      const shouldRun = running ?? cp.paused;
+      if (!shouldRun) {
         cancelController.current.abort();
-        await setRunning(worldId, false, data.cp.mode);
+        await setRunning(worldId, false, cp.mode);
         return;
       }
-      const live = data.profile && getKey(data.profile);
-      if (!live && data.cp.mode === 'live') {
+      const profile = await db.profiles.get('api');
+      const live = profile && getKey(profile);
+      if (!live && cp.mode === 'live') {
         setApiSetup(true);
         return;
       }
@@ -183,12 +217,7 @@ export default function App() {
       setError(String(e));
     }
   }
-  const unread =
-    data?.messages.filter(
-      (m) =>
-        data.convs.some((c) => c.id === m.conversationId) &&
-        m.seq > (data.cursors.find((c) => c.id === `observer:${m.conversationId}`)?.seq ?? 0),
-    ).length ?? 0;
+  const unread = data?.unread ?? 0;
   if (startupError)
     return (
       <div className="fatal-error">
@@ -292,9 +321,10 @@ export default function App() {
                 </button>
               </div>
               <p>
+                <MajorBanner worldId={worldId} onOpen={setSelectedMajor} />
                 {data?.cp?.mode === 'demo' ? '演示模式 · 消息有演示标记' : '真实生成 · 本地优先'}
               </p>
-              <Button variant="primary" onClick={toggleRun}>
+              <Button variant="primary" onClick={() => void toggleRun()}>
                 {data?.cp?.paused ? <Play size={15} /> : <Pause size={15} />}{' '}
                 {data?.cp?.paused ? '开始观察' : '暂停观察'}
               </Button>
@@ -351,7 +381,7 @@ export default function App() {
               </button>
             </div>
           </header>
-          <WorldHUD worldId={worldId} onToggle={() => void toggleRun()} />
+          <WorldHUD worldId={worldId} onToggle={(running) => toggleRun(running)} />
           {data?.cp?.mode === 'demo' && (
             <div className="demo-banner">
               <FlaskConical size={15} />
@@ -408,8 +438,27 @@ export default function App() {
               <Chats worldId={worldId} selectedId={selectedChat} onSelect={setSelectedChat} />
             )}{' '}
             {page === 'relationships' && <Relationships worldId={worldId} />}{' '}
+            {page === 'majorEvents' && <MajorEvents worldId={worldId} onOpen={setSelectedMajor} />}
             {page === 'scenes' && <Scenes worldId={worldId} />}{' '}
-            {page === 'timeline' && <Timeline worldId={worldId} onConversation={openChat} />}{' '}
+            {page === 'observation' && <ObservationManager worldId={worldId} />}
+            {page === 'reports' && (
+              <WorldReports
+                worldId={worldId}
+                onCharacter={async (id) => setSelectedCharacter(await db.characters.get(id))}
+                onConversation={openChat}
+                onEvent={async (id) => {
+                  const e = await db.events.get(id);
+                  if (e) {
+                    await db.settings.update('app', { worldId: e.worldId });
+                    setFocusEvent(id);
+                    navigate('timeline');
+                  }
+                }}
+              />
+            )}
+            {page === 'timeline' && (
+              <Timeline worldId={worldId} focusEventId={focusEvent} onConversation={openChat} />
+            )}{' '}
             {page === 'settings' && <Settings key={settingsTab} initialTab={settingsTab} />}
           </main>
         </div>
@@ -418,7 +467,7 @@ export default function App() {
             navigation[0],
             navigation[2],
             navigation[3],
-            navigation[6],
+            navigation.find((n) => n.id === 'timeline')!,
             { id: 'settings', label: '设置', icon: SettingsIcon },
           ].map((n) => (
             <button
@@ -432,6 +481,13 @@ export default function App() {
           ))}
         </nav>
       </div>
+      {selectedMajor && (
+        <MajorEventDetail
+          eventId={selectedMajor}
+          onClose={() => setSelectedMajor('')}
+          onConversation={openChat}
+        />
+      )}
       {onboarding && (
         <Modal
           title="欢迎来到浮游观察池"

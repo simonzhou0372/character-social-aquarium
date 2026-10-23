@@ -8,12 +8,28 @@ export const promptKeys = [
   'profile',
   'memory',
   'inPerson',
+  'report',
 ] as const;
 export type PromptKey = (typeof promptKeys)[number];
 export const promptDefinitions: Record<
   PromptKey,
   { name: string; description: string; content: string }
 > = {
+  report: {
+    name: '世界报告生成',
+    description:
+      '依据已有事实整理日报、周报、月报、季报和年报；允许标题与段落，不使用角色对白限制。',
+    content: `你是一个虚拟世界的观察记录员。
+请根据提供的真实事件、聊天记录、关系变化与人物记忆，生成对应时间范围的世界观察报告。
+- 严格依据已提供的事实，不得捏造未发生的事件。
+- 优先关注用户观察的人物、CP与团体，忽略普通睡觉休息等流水账。
+- 日报简短关注当天；周报关注互动趋势与未结约定；月报关注故事线、关系、团体和习惯；季报关注阶段变化；年报回顾重要经历、共同活动、人物成长和未解决事情。
+- 长周期强调趋势，不重复罗列日期；重视有意义的线下活动。
+- 不得将角色不知道的事情当成角色认知，报告不会成为角色的共同记忆。
+- 不把观察者报告写成角色聊天，文风清晰自然，避免夸张赞美和制造冲突。
+- 所有重要结论必须能追溯到已给出的真实来源。
+报告允许合理标题和段落，角色聊天的Markdown禁令不适用于报告。`,
+  },
   inPerson: {
     name: '线下互动生成',
     description: '现实共同活动的阶段、对白与活动说明，独立于网聊条数和生成频率。',
@@ -190,7 +206,7 @@ export const PromptConfigSchema = z.object({
   entries: z
     .array(PromptEntrySchema)
     .min(6)
-    .max(7)
+    .max(8)
     .refine(
       (e) =>
         new Set(e.map((x) => x.key)).size === e.length &&
@@ -198,21 +214,19 @@ export const PromptConfigSchema = z.object({
           e.some((x) => x.key === k),
         ),
     )
-    .transform((entries) =>
-      entries.some((e) => e.key === 'inPerson')
-        ? entries
-        : [
-            ...entries,
-            {
-              key: 'inPerson' as const,
-              content: promptDefinitions.inPerson.content,
-              enabled: true,
-              updatedAt: Date.now(),
-              customized: false,
-              defaultVersion: 1,
-            },
-          ],
-    ),
+    .transform((entries) => [
+      ...entries,
+      ...(['inPerson', 'report'] as const)
+        .filter((key) => !entries.some((e) => e.key === key))
+        .map((key) => ({
+          key,
+          content: promptDefinitions[key].content,
+          enabled: true,
+          updatedAt: Date.now(),
+          customized: false,
+          defaultVersion: 1,
+        })),
+    ]),
   rules: MessageRulesSchema,
   updatedAt: z.number().nonnegative(),
 });
@@ -311,6 +325,8 @@ export function migrateDefaults(config: PromptConfig, defaults: PromptConfig): P
   };
 }
 export type TaskKind =
+  | 'report'
+  | 'evolution'
   | 'inPerson'
   | 'offlineScene'
   | 'chat'
@@ -322,6 +338,8 @@ export type TaskKind =
   | 'worldDraft'
   | 'groupDraft';
 const taskPrompts: Record<TaskKind, PromptKey[]> = {
+  report: ['report'],
+  evolution: ['profile'],
   inPerson: ['life', 'behavior', 'inPerson'],
   offlineScene: ['recovery', 'life', 'behavior', 'inPerson'],
   chat: ['behavior', 'social'],

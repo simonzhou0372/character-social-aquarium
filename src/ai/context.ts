@@ -35,7 +35,19 @@ function stripDecorative(value: unknown): unknown {
   if (value && typeof value === 'object')
     return Object.fromEntries(
       Object.entries(value)
-        .filter(([k]) => !['avatar', 'cover', 'color', 'imageData', 'realAt'].includes(k))
+        .filter(
+          ([k]) =>
+            ![
+              'avatar',
+              'cover',
+              'color',
+              'imageData',
+              'realAt',
+              'majorEventSettings',
+              'evolutionSettings',
+              'reportSettings',
+            ].includes(k),
+        )
         .map(([k, v]) => [k, stripDecorative(v)]),
     );
   return value;

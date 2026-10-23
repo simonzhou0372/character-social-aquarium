@@ -1,3 +1,15 @@
+import { dormantInfluence } from './dormant-influence';
+import {
+  resolveObservation,
+  recordCoverage,
+  observationKeys,
+  evolvedCharacter,
+} from './selective-observation';
+import { nextMajorSchedule, planMajor } from './major-events';
+import type { ContentJob } from './content-jobs';
+import { drainContent } from '../ai/content-queue';
+import { foregroundStart } from './clock-presence';
+import { diagnostic } from './diagnostics';
 import { recordHeardInformation } from '../data/knowledge';
 import { activityFor, onlineStep } from './activity';
 import { generateScene } from '../ai/scenes';
@@ -29,6 +41,7 @@ export interface RunOptions {
   onProgress?: (progress: RecoveryProgress) => void;
   maxSegments?: number;
   foregroundSince?: number;
+  deferContent?: boolean;
 }
 const demoLines = [
   '风好像变大了。',
@@ -50,12 +63,19 @@ export async function setRunning(
   mode: 'demo' | 'live',
   d: AquariumDB = db,
 ) {
-  if (!running) cancelWorld(worldId);
+  if (!running) {
+    cancelWorld(worldId);
+    cancelWorld('content:' + worldId);
+  }
   await d.transaction('rw', d.checkpoints, d.taskSnapshots, async () => {
     const cp = await d.checkpoints.get(worldId);
     if (!cp) return;
     await d.checkpoints.put({
       ...cp,
+      clockAnchor: {
+        simTime: clockTarget(cp, Date.now(), foregroundStart()),
+        realTime: Date.now(),
+      },
       controlVersion: (cp.controlVersion ?? 0) + 1,
       paused: !running,
       mode,
@@ -77,6 +97,10 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
       let cp = await d.checkpoints.get(worldId);
       if (!cp || cp.paused) return;
       const now = options.now ?? Date.now();
+      if (!cp.clockAnchor) {
+        cp = { ...cp, clockAnchor: { simTime: cp.simTime, realTime: cp.realTime } };
+        await d.checkpoints.update(worldId, { clockAnchor: cp.clockAnchor });
+      }
       const elapsed = Math.max(0, now - cp.realTime);
       const recovery = cp.recoveryTarget
         ? cp.recoveryKind !== 'foreground'
@@ -121,12 +145,38 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               (current?.controlVersion ?? 0) !== (cp!.controlVersion ?? 0)
             )
               return false;
+            cp = { ...cp!, clockAnchor: current.clockAnchor ?? cp!.clockAnchor };
             await d.checkpoints.put(cp!);
             return true;
           });
           if (!saved) return;
         }
       } else snapshot = await getPrompts(d);
+      const observation = await resolveObservation(worldId, d);
+      const runStart = cp.simTime;
+      const cachedCharacters = await d.characters
+        .where('id')
+        .anyOf([...observation.activeIds])
+        .toArray();
+      const cachedRelations = await d.relationships.where('worldId').equals(worldId).toArray();
+      const cachedGroups = await d.groups
+        .filter(
+          (g) =>
+            g.worldIds.includes(worldId) &&
+            g.entityMode !== 'background' &&
+            (observation.config.mode === 'full' ||
+              observation.config.groupIds.includes(g.id) ||
+              observation.gm.some(
+                (m) => m.groupId === g.id && observation.fullIds.has(m.characterId),
+              )),
+        )
+        .toArray();
+      const cachedActiveRelations = cachedRelations.filter(
+        (r) => observation.activeIds.has(r.from) && observation.activeIds.has(r.to),
+      );
+      const cachedMembers = observation.members.filter((m) =>
+        observation.activeIds.has(m.characterId),
+      );
       let settings = (await d.settings.get('app'))!;
       let provider = options.provider;
       let eventCount = 0,
@@ -135,22 +185,47 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
       while (cp.simTime < target && steps++ < (options.maxSegments ?? 240)) {
         if (options.signal?.aborted) return;
         const world = await d.worlds.get(worldId);
-        if (!world) return;
+        if (
+          !world ||
+          ((await d.observationConfigs.get(worldId))?.updatedAt ?? 0) !==
+            observation.config.updatedAt
+        )
+          return;
         const [members, all, relations, oldStates, allConvs] = await Promise.all([
-          d.memberships.where('worldId').equals(worldId).toArray(),
-          d.characters.toArray(),
-          d.relationships.where('worldId').equals(worldId).toArray(),
-          d.states.where('worldId').equals(worldId).toArray(),
-          d.conversations.where('worldId').equals(worldId).toArray(),
+          Promise.resolve(cachedMembers),
+          Promise.resolve(cachedCharacters),
+          Promise.resolve(cachedActiveRelations),
+          d.states
+            .where('id')
+            .anyOf([...observation.activeIds].map((id) => worldId + ':' + id))
+            .toArray(),
+          d.conversations
+            .where('participants')
+            .anyOf([...observation.activeIds])
+            .distinct()
+            .and((c) => c.worldId === worldId && observation.allowsConversation(c))
+            .toArray(),
         ]);
         const controlled = new Set(allConvs.map((c) => c.controlledId).filter(Boolean));
-        const characters = all.filter(
-          (c) => c.entityMode !== 'background' && members.some((m) => m.characterId === c.id),
-        );
+        const characters = all
+          .filter(
+            (c) => c.entityMode !== 'background' && members.some((m) => m.characterId === c.id),
+          )
+          .map((c) =>
+            evolvedCharacter(
+              c,
+              members.find((m) => m.characterId === c.id),
+              !!world.evolutionSettings?.enabled,
+            ),
+          );
         for (const r of relations) {
           if (!characters.some((c) => c.id === r.from) || !characters.some((c) => c.id === r.to))
             continue;
           const pair = [r.from, r.to].sort();
+          if (
+            !observation.allowsConversation({ kind: 'direct', participants: pair } as Conversation)
+          )
+            continue;
           if (
             !allConvs.some(
               (c) => c.kind === 'direct' && pair.every((id) => c.participants.includes(id)),
@@ -167,10 +242,8 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             });
         }
         const groupSync: Conversation[] = [];
-        const groups = await d.groups
-          .filter((g) => g.worldIds.includes(worldId) && g.entityMode !== 'background')
-          .toArray();
-        const groupMembers = await d.groupMembers.where('worldId').equals(worldId).toArray();
+        const groups = cachedGroups;
+        const groupMembers = observation.gm;
         for (const group of groups) {
           const participants = [
             ...new Set(
@@ -186,6 +259,10 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
           if (existing) {
             const added = participants.filter((id) => !existing.participants.includes(id));
             if (added.length) {
+              existing.participantJoinedAt = {
+                ...existing.participantJoinedAt,
+                ...Object.fromEntries(added.map((id) => [id, cp!.simTime])),
+              };
               existing.participants = [...existing.participants, ...added];
               groupSync.push(existing);
             }
@@ -207,7 +284,87 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
         settings = (await d.settings.get('app'))!;
         const tuning = activityFor(settings.activity);
         const end = Math.min(segmentEnd(cp, target), cp.simTime + onlineStep(settings.activity));
+        diagnostic(worldId, { phase: 'planning', lastScheduledAt: Date.now() });
+        // Dormant recipients are sampled only for a concrete, unanswered message from an explicitly observed person.
+        if (observation.config.mode === 'selective') {
+          for (const c of allConvs
+            .filter(
+              (c) =>
+                c.kind === 'direct' && c.participants.some((id) => observation.fullIds.has(id)),
+            )
+            .slice(0, 24)) {
+            const history = await d.messages.where('conversationId').equals(c.id).sortBy('seq');
+            const last = history.filter((m) => m.simAt <= end).at(-1);
+            if (!last || !observation.fullIds.has(last.senderId) || end - last.simAt > 6 * HOUR)
+              continue;
+            const recipient = c.participants.find((id) => !observation.activeIds.has(id));
+            if (!recipient || characters.some((c) => c.id === recipient)) continue;
+            if (
+              await d.contentJobs
+                .where('worldId')
+                .equals(worldId)
+                .and(
+                  (j) =>
+                    j.kind === 'chat' &&
+                    j.conversation?.id === c.id &&
+                    j.speakerId === recipient &&
+                    j.status !== 'complete',
+                )
+                .first()
+            )
+              continue;
+            const actor = await d.characters.get(recipient);
+            if (actor && actor.entityMode !== 'background') characters.push(actor);
+            if (characters.length >= cachedCharacters.length + 2) break;
+          }
+        }
         const plan = await planInWorker(world, characters, relations, cp, end, oldStates);
+        const influence = await dormantInfluence(
+          d,
+          world,
+          cp.simTime,
+          end,
+          observation,
+          cachedRelations,
+          plan,
+        );
+        if (influence) {
+          const actor = characters.find((c) => influence.event.participants.includes(c.id));
+          if (actor) {
+            const pair = [actor.id, influence.character.id];
+            const temporary: Conversation = {
+              id: await directConversationId(worldId, pair[0], pair[1]),
+              worldId,
+              kind: 'direct',
+              participants: pair,
+              name: [actor.name, influence.character.name].join(' & '),
+              createdAt: end,
+              lastAt: 0,
+            };
+            if (!allConvs.some((c) => c.id === temporary.id)) allConvs.push(temporary);
+          }
+        }
+        plan.events = plan.events.map((e) => ({
+          ...e,
+          origin: e.origin ?? 'realtime',
+          generatedAt: e.generatedAt ?? Date.now(),
+        }));
+        const majorSchedule = world.majorEventSettings?.enabled
+          ? ((await d.majorSchedules.get(worldId)) ??
+            nextMajorSchedule(worldId, cp.simTime, world.majorEventSettings.maximumIntervalDays))
+          : undefined;
+        const majorPlan = majorSchedule
+          ? planMajor(world, majorSchedule, plan.events, end)
+          : undefined;
+        if (majorPlan) {
+          plan.events = majorPlan.events;
+          for (const state of plan.states)
+            if (state.eventId === majorPlan.replacedId) {
+              state.eventId = majorPlan.event.id;
+              state.activity = '重要事件';
+            }
+        }
+
         let seed = plan.seed;
         const endedConversations: Conversation[] = [];
         let chosen:
@@ -216,7 +373,11 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
         const roll = random(seed);
         seed = roll.seed;
         const frequency =
-          tuning.opportunity * Math.min(1, (end - cp.simTime) / onlineStep(settings.activity));
+          tuning.opportunity *
+          (observation.config.mode === 'full'
+            ? 1
+            : Math.sqrt(observation.activeIds.size / Math.max(1, observation.interactiveCount))) *
+          Math.min(1, (end - cp.simTime) / onlineStep(settings.activity));
         if (snapshot.rules.autonomous && roll.value < frequency) {
           const ranked: {
             c: Conversation;
@@ -243,9 +404,14 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               endedConversations.push({ ...c, topicEndedAt: end });
               continue;
             }
-            for (const char of characters) {
+            for (const char of [...characters, ...(influence ? [influence.character] : [])]) {
               const state = plan.states.find((s) => s.characterId === char.id)!;
-              if (last?.senderId === char.id || controlled.has(char.id)) continue;
+              if (
+                last?.senderId === char.id ||
+                controlled.has(char.id) ||
+                (c.participantJoinedAt?.[char.id] ?? 0) > end
+              )
+                continue;
               const ownLast = history.filter((m) => m.senderId === char.id).at(-1);
               const unreplied =
                 !!last &&
@@ -274,6 +440,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                   unreplied,
                   tuning.cooldownMinutes,
                 ) *
+                (last?.mentionCharacterIds?.includes(char.id) ? 1.6 : 1) *
                 (0.3 + r.value) *
                 (c.kind === 'group' ? tuning.groupWeight : tuning.directWeight);
               if (weight > tuning.threshold)
@@ -313,43 +480,90 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               };
           }
         }
+        const queued: ContentJob[] = [];
+        if (majorPlan && cp.mode === 'live')
+          queued.push({
+            id: `major-content:${majorPlan.event.id}`,
+            worldId,
+            kind: 'major',
+            event: majorPlan.event,
+            at: majorPlan.event.start,
+            snapshot,
+            recovery,
+            status: 'pending',
+            attempts: 0,
+            nextAttemptAt: 0,
+          });
+        const enqueue = (kind: ContentJob['kind'], event: (typeof plan.events)[number]) => {
+          queued.push({
+            id: `${kind}:${event.id}:${chosen?.speaker ?? ''}`,
+            worldId,
+            kind,
+            event,
+            at: kind === 'chat' ? (chosen?.at ?? event.start) : event.start,
+            conversation: kind === 'chat' ? chosen?.c : undefined,
+            speakerId: kind === 'chat' ? chosen?.speaker : undefined,
+            state:
+              kind === 'chat'
+                ? plan.states.find((s) => s.characterId === chosen?.speaker)
+                : undefined,
+            snapshot,
+            recovery,
+            status: 'pending',
+            attempts: 0,
+            nextAttemptAt: 0,
+          });
+        };
         const day = new Date(Date.now()).toISOString().slice(0, 10);
         const usage = await d.usage.get(day);
         // One representative life description per six simulated hours, regardless of online preset.
         // Routine scheduling remains local and does not make one request per character or tick.
         if (
           cp.mode === 'live' &&
-          plan.events.length &&
+          plan.events.some(observation.allowsEvent) &&
           Math.floor(cp.simTime / (6 * HOUR)) !== Math.floor(end / (6 * HOUR)) &&
           (settings.unlimitedUsage ||
             !recovery ||
             cp.recoveryRequests + (chosen ? 1 : 0) < settings.recoveryBudget)
         ) {
-          provider ??= await liveProvider(d);
-          if (recovery) {
-            cp = { ...cp, recoveryRequests: cp.recoveryRequests + 1 };
-            await d.checkpoints.update(worldId, { recoveryRequests: cp.recoveryRequests });
+          if (options.deferContent) {
+            enqueue('life', plan.events.find(observation.allowsEvent)!);
+          } else {
+            provider ??= await liveProvider(d);
+            if (recovery) {
+              cp = { ...cp, recoveryRequests: cp.recoveryRequests + 1 };
+              await d.checkpoints.update(worldId, { recoveryRequests: cp.recoveryRequests });
+            }
+            const index = Math.max(
+              0,
+              plan.events.findIndex((e) => e.participants.length > 1),
+            );
+            plan.events[index] = await describeEvent(
+              d,
+              plan.events[index],
+              snapshot,
+              provider,
+              recovery,
+              options.signal,
+            );
           }
-          const index = Math.max(
-            0,
-            plan.events.findIndex((e) => e.participants.length > 1),
-          );
-          plan.events[index] = await describeEvent(
-            d,
-            plan.events[index],
-            snapshot,
-            provider,
-            recovery,
-            options.signal,
-          );
         }
         const canGenerate =
           cp.mode === 'live' &&
           (settings.unlimitedUsage ||
             ((usage?.messages ?? 0) + snapshot.rules.maxMessages <= settings.dailyMessages &&
               (!recovery || cp.recoveryRequests < settings.recoveryBudget)));
-        let generated: { messages: string[]; offsets?: number[] } | undefined;
-        if (canGenerate && chosen) {
+        let generated:
+          | {
+              messages: string[];
+              offsets?: number[];
+              gifAssetId?: string;
+              replyToMessageId?: string;
+            }
+          | undefined;
+        if (canGenerate && chosen && options.deferContent) {
+          enqueue('chat', plan.events.find((e) => e.id === chosen!.eventId)!);
+        } else if (canGenerate && chosen) {
           provider ??= await liveProvider(d);
           options.onProgress?.({
             worldId,
@@ -385,26 +599,53 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
         const scenes: InPersonScene[] = [];
         // Scene sampling and budget are independent of online activity presets.
         if (cp.mode === 'live')
-          for (const event of plan.events.filter((e) => e.participants.length > 1)) {
+          for (const event of plan.events.filter(
+            (e) => e.participants.length > 1 && observation.allowsEvent(e),
+          )) {
             const existing = await d.scenes.where('worldId').equals(worldId).toArray();
-            const used = existing.filter(
-              (s) => calendarDate(world, s.start) === calendarDate(world, event.start),
-            ).length;
+            const today = calendarDate(world, event.start);
+            const reserved = options.deferContent
+              ? await d.contentJobs
+                  .where('worldId')
+                  .equals(worldId)
+                  .and(
+                    (j) =>
+                      j.kind === 'scene' &&
+                      j.event.type !== 'major' &&
+                      j.status !== 'complete' &&
+                      calendarDate(world, j.at) === today,
+                  )
+                  .toArray()
+              : [];
+            const used =
+              existing.filter((s) => calendarDate(world, s.start) === today).length +
+              reserved.filter((j) => !existing.some((s) => s.eventId === j.event.id)).length +
+              queued.filter(
+                (j) =>
+                  j.kind === 'scene' &&
+                  j.event.type !== 'major' &&
+                  calendarDate(world, j.at) === today,
+              ).length;
             const pick = random(seed);
             seed = pick.seed;
             if (
-              used + scenes.length >= (settings.sceneDailyBudget ?? 3) ||
-              pick.value >= (settings.sceneFrequency ?? 0.5) ||
+              (event.type !== 'major' &&
+                used + scenes.length >= (settings.sceneDailyBudget ?? 3)) ||
+              (event.type !== 'major' && pick.value >= (settings.sceneFrequency ?? 0.5)) ||
               (recovery &&
                 !settings.unlimitedUsage &&
                 cp.recoveryRequests >= settings.recoveryBudget)
             )
               continue;
-            provider ??= await liveProvider(d);
             if (recovery) {
               cp = { ...cp, recoveryRequests: cp.recoveryRequests + 1 };
               await d.checkpoints.update(worldId, { recoveryRequests: cp.recoveryRequests });
             }
+            if (options.deferContent) {
+              enqueue('scene', event);
+              continue;
+            }
+            provider ??= await liveProvider(d);
             try {
               scenes.push(
                 await generateScene(d, event, snapshot, provider, recovery, options.signal),
@@ -426,10 +667,26 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             }
           }
         if (options.signal?.aborted) return;
+        const pings = await d.messages
+          .where('simAt')
+          .between(Math.max(0, end - 6 * HOUR), end, true, true)
+          .and(
+            (m) =>
+              !!m.mentionCharacterIds?.length && allConvs.some((c) => c.id === m.conversationId),
+          )
+          .toArray();
         const before = cp;
+        const commitStarted = Date.now();
         const committed = await d.transaction(
           'rw',
           [
+            d.observationCoverage,
+            d.majorSchedules,
+            d.majorEvents,
+            d.notifications,
+            d.readStates,
+            d.reactions,
+            d.contentJobs,
             d.checkpoints,
             d.events,
             d.scenes,
@@ -444,6 +701,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             d.backgroundKnowledge,
             d.characters,
             d.groups,
+            d.groupMembers,
           ],
           async () => {
             const current = await d.checkpoints.get(worldId);
@@ -473,9 +731,59 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               else
                 await d.conversations.update(c.id, {
                   participants: [...new Set([...existing.participants, ...c.participants])],
+                  participantJoinedAt: {
+                    ...existing.participantJoinedAt,
+                    ...c.participantJoinedAt,
+                  },
                 });
             }
+            for (const job of queued) {
+              if (job.conversation && !(await d.conversations.get(job.conversation.id)))
+                await d.conversations.add(job.conversation);
+              await d.contentJobs.put(job);
+              if (job.kind === 'chat' && chosen) {
+                const state = plan.states.find((s) => s.characterId === chosen!.speaker);
+                if (state) {
+                  state.lastAction = chosen.at;
+                  if (chosen.initiating) state.lastTopicAt = chosen.at;
+                }
+              }
+            }
+            if (majorSchedule && !majorPlan) await d.majorSchedules.put(majorSchedule);
+            if (majorPlan) {
+              const memberships = await d.groupMembers.where('worldId').equals(worldId).toArray();
+              const groupIds = [
+                ...new Set(
+                  memberships
+                    .filter((m) => majorPlan.event.participants.includes(m.characterId))
+                    .map((m) => m.groupId),
+                ),
+              ];
+              majorPlan.major.groupIds = world.majorEventSettings?.allowMultipleGroups
+                ? groupIds
+                : groupIds.slice(0, 1);
+              await d.majorEvents.put({
+                ...majorPlan.major,
+                status: cp!.mode === 'demo' ? 'occurred' : majorPlan.major.status,
+              });
+              await d.majorSchedules.put(majorPlan.schedule);
+              await d.notifications.put({
+                id: `notice:${majorPlan.major.id}`,
+                eventId: majorPlan.major.id,
+                worldId,
+                createdAt: Date.now(),
+                recovery,
+              });
+            }
             await d.events.bulkPut(plan.events);
+            if (observation.config.mode === 'selective')
+              await recordCoverage(
+                worldId,
+                observationKeys(observation.config),
+                before.simTime,
+                end,
+                d,
+              );
             await d.scenes.bulkPut(scenes);
             for (const scene of scenes)
               for (const phase of scene.phases)
@@ -488,6 +796,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                       entry.text,
                       phase.participants,
                       `线下场景 ${scene.id} · ${entry.at}`,
+                      entry.at,
                     );
             for (const ended of endedConversations) {
               const current = await d.conversations.get(ended.id);
@@ -498,8 +807,39 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               const char = characters.find((c) => c.id === state.characterId)!;
               const readRoll = random(seed);
               seed = readRoll.seed;
-              if (readRoll.value < state.phone * char.phoneHabit) {
+              if (
+                readRoll.value <
+                Math.min(
+                  1,
+                  state.phone *
+                    char.phoneHabit *
+                    (pings.some((m) => m.mentionCharacterIds?.includes(char.id)) ? 1.6 : 1),
+                )
+              ) {
                 state.lastPhone = end;
+                for (const major of await d.majorEvents
+                  .where('worldId')
+                  .equals(worldId)
+                  .and((e) => e.timestamp <= end && e.participantIds.includes(state.characterId))
+                  .toArray()) {
+                  const id = `major-read:${major.id}:${state.characterId}`;
+                  if (!(await d.memories.get(id)))
+                    await d.memories.put({
+                      id,
+                      worldId,
+                      owners: [state.characterId],
+                      content:
+                        major.description +
+                        ' ' +
+                        major.consequences.map((c) => c.description).join(' '),
+                      keywords: [major.type],
+                      importance: 0.95,
+                      at: end,
+                      eventId: major.eventId,
+                      kind: 'episode',
+                    });
+                }
+
                 for (const conv of allConvs.filter((c) =>
                   c.participants.includes(state.characterId),
                 )) {
@@ -507,15 +847,52 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                     .where('conversationId')
                     .equals(conv.id)
                     .sortBy('seq');
-                  const visible = messages.filter((m) => m.simAt <= end);
-                  const latest = visible.at(-1);
-                  if (latest)
+                  const joinedAt = conv.participantJoinedAt?.[state.characterId] ?? 0;
+                  const visible = messages.filter((m) => m.simAt <= end && m.simAt >= joinedAt);
+                  const cursorId = `character:${conv.id}:${state.characterId}`,
+                    old = await d.cursors.get(cursorId);
+                  for (const message of visible.filter((m) => m.seq > (old?.seq ?? 0))) {
+                    const readId = `character:${message.id}:${state.characterId}`;
+                    if (await d.readStates.get(readId)) continue;
+                    await d.readStates.put({
+                      id: readId,
+                      messageId: message.id,
+                      readerId: state.characterId,
+                      kind: 'character',
+                      readAt: end,
+                    });
+                    const reactionRoll = random(seed);
+                    seed = reactionRoll.seed;
+                    if (message.senderId !== state.characterId && reactionRoll.value < 0.04)
+                      await d.reactions.put({
+                        id: `reaction:${message.id}:${state.characterId}:thumb`,
+                        messageId: message.id,
+                        actorId: state.characterId,
+                        emoji: '👍',
+                        reactedAt: end,
+                      });
+                    await recordHeardInformation(
+                      d,
+                      worldId,
+                      message.senderId,
+                      message.text,
+                      [state.characterId],
+                      `会话 ${conv.id} · 消息 ${message.id}`,
+                      end,
+                    );
+                  }
+                  let seq = old?.seq ?? 0;
+                  for (const message of messages.filter((m) => m.seq > seq)) {
+                    if (message.simAt > end && message.simAt >= joinedAt) break;
+                    seq = message.seq;
+                  }
+                  if (seq > (old?.seq ?? 0))
                     await d.cursors.put({
-                      id: `character:${conv.id}:${state.characterId}`,
+                      id: cursorId,
                       conversationId: conv.id,
                       readerId: state.characterId,
                       kind: 'character',
-                      seq: latest.seq,
+                      seq,
                       at: end,
                     });
                 }
@@ -533,6 +910,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                 `sim:${worldId}:${before.simTime}`,
                 chosen.eventId,
                 generated.offsets,
+                generated,
               );
               messageCount += msgs.length;
               if (msgs.length)
@@ -552,11 +930,13 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             }
             await d.states.bulkPut(plan.states);
             // Event memory is private to its actual participants, never global by default.
-            for (const event of plan.events.filter((e) => e.type === 'social'))
+            for (const event of plan.events.filter(
+              (e) => e.type === 'social' || e.type === 'major',
+            ))
               await d.memories.put({
                 id: `memory:${event.id}`,
                 worldId,
-                owners: event.participants,
+                owners: event.type === 'major' && event.phone === 0 ? [] : event.participants,
                 content: event.description,
                 keywords: [event.location],
                 importance: 0.5,
@@ -569,6 +949,13 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             cp = {
               ...before,
               usageLimited: cp!.mode === 'live' && !!chosen && !canGenerate,
+              clockAnchor:
+                done && (current.clockAnchor?.realTime ?? 0) <= realTarget
+                  ? {
+                      simTime: clockTarget(current, realTarget, options.foregroundSince),
+                      realTime: realTarget,
+                    }
+                  : (current.clockAnchor ?? before.clockAnchor),
               paused: end >= limit,
               simTime: end,
               realTime: done ? realTarget : Math.min(realTarget, advancedReal),
@@ -598,6 +985,15 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
           },
         );
         if (!committed) return;
+        diagnostic(worldId, {
+          phase: 'idle',
+          lastCommittedAt: Date.now(),
+          commitLatencyMs: Date.now() - commitStarted,
+        });
+        if (options.deferContent)
+          void drainContent(worldId, d, provider).catch((e) =>
+            diagnostic(worldId, { phase: 'error', error: String(e) }),
+          );
         eventCount += plan.events.length;
         options.onProgress?.({
           worldId,

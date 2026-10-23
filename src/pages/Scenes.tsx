@@ -1,6 +1,12 @@
+import { renameScene } from '../data/titles';
+import { Input } from '../components/ui';
+import { getPrompts } from '../ai/prompts';
+import { generateScene } from '../ai/scenes';
+import { liveProvider } from '../ai/orchestrator';
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../data/db';
+import { db, withWorldLock } from '../data/db';
+import { startWorldTask } from '../core/tasks';
 import { filterScenes } from '../core/observation';
 import {
   formatWorldTime,
@@ -19,13 +25,35 @@ export function SceneDetail({ scene, onClose }: { scene: InPersonScene; onClose:
       world: await db.worlds.get(scene.worldId),
       chars: await db.characters.where('id').anyOf(scene.participants).toArray(),
       event: await db.events.get(scene.eventId),
+      stored: await db.scenes.get(scene.id),
+      job: await db.contentJobs
+        .where('worldId')
+        .equals(scene.worldId)
+        .and((j) => j.kind === 'scene' && j.event.id === scene.eventId)
+        .first(),
     }),
     [scene.id],
   );
+  scene = data?.stored ?? scene;
+  const [busy, setBusy] = useState(false),
+    [error, setError] = useState('');
   const fmt = (at: number) => (data?.world ? formatWorldTime(data.world, at) : '');
   const clock = (at: number) => (data?.world ? formatWorldClock(data.world, at) : '');
   return (
     <Modal title={scene.title} onClose={onClose} wide>
+      <details>
+        <summary>编辑场景标题 · {scene.titleMode === 'custom' ? '用户自定义' : '自动生成'}</summary>
+        <Input
+          key={scene.title}
+          aria-label="场景自定义标题"
+          defaultValue={scene.title}
+          onBlur={(e) => {
+            if (e.target.value !== scene.title)
+              void renameScene(scene.id, e.target.value).catch((e) => setError(String(e)));
+          }}
+        />
+        <Button onClick={() => void renameScene(scene.id, undefined)}>恢复自动标题</Button>
+      </details>
       <p>
         {scene.location} · {fmt(scene.start)} — {fmt(scene.end)}
       </p>
@@ -36,6 +64,45 @@ export function SceneDetail({ scene, onClose }: { scene: InPersonScene; onClose:
           </span>
         ))}
       </div>
+      {scene.generationStatus === 'partial' && (
+        <Status>
+          {scene.generationError ?? '阶段正在生成，已完成内容已保存'}
+          <Button
+            disabled={busy || data?.job?.status === 'running'}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                if (data?.event) {
+                  const event = data.event;
+                  const completed = await withWorldLock('content:' + scene.worldId, async () => {
+                    const task = startWorldTask('content:' + scene.worldId);
+                    try {
+                      return await generateScene(
+                        db,
+                        event,
+                        data.job?.snapshot ?? (await getPrompts(db)),
+                        await liveProvider(db),
+                        data.job?.recovery,
+                        task.signal,
+                      );
+                    } finally {
+                      task.done();
+                    }
+                  });
+                  if (!completed) setError('当前世界已有内容任务运行，完成后可继续此场景。');
+                }
+              } catch (e) {
+                setError(String(e));
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            {busy ? '继续生成中…' : '继续未完成阶段'}
+          </Button>
+        </Status>
+      )}
+      {error && <Status error>{error}</Status>}
       <nav className="toolbar">
         {scene.phases.map((p, i) => (
           <Button

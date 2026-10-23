@@ -1,3 +1,11 @@
+import {
+  ObservationManager,
+  ObservationSummary,
+  useObservation,
+} from '../components/ObservationManager';
+import { MajorSettingsEditor } from '../components/MajorSettingsEditor';
+import { configureMajor } from '../core/major-events';
+import { AvatarUpload } from '../components/AvatarUpload';
 import { WorldDateEditor } from '../components/WorldDateEditor';
 import { realLocalDate } from '../core/calendar';
 import { BackgroundKnowledgeEditor } from '../components/BackgroundKnowledgeEditor';
@@ -17,6 +25,7 @@ import {
   Empty,
   Avatar,
   Confirm,
+  Toggle,
 } from '../components/ui';
 import { TimeControls } from '../components/TimeControls';
 import { CharacterEditor } from './Characters';
@@ -40,6 +49,8 @@ export function Worlds({
   onSelect: (id: string) => void;
   onConversation: (id: string) => void;
 }) {
+  const observation = useObservation(worldId);
+  const [observeOpen, setObserveOpen] = useState(false);
   const worlds = useLiveQuery(() => db.worlds.toArray(), []),
     groups = useLiveQuery(() => db.groups.toArray(), []),
     chars = useLiveQuery(() => db.characters.toArray(), []),
@@ -92,6 +103,7 @@ export function Worlds({
           draftGroups,
         );
       else await db.worlds.put(w);
+      if (w.majorEventSettings) await configureMajor(w.id, w.majorEventSettings);
       setEdit(undefined);
       onSelect(w.id);
     } catch (e) {
@@ -220,6 +232,12 @@ export function Worlds({
         ))}
       </div>
       <TimeControls worldId={worldId} compact />
+      <ObservationSummary worldId={worldId} onEdit={() => setObserveOpen(true)} />
+      {observeOpen && (
+        <Modal title="观察管理" wide onClose={() => setObserveOpen(false)}>
+          <ObservationManager worldId={worldId} />
+        </Modal>
+      )}
       <section className="panel world-characters">
         <div className="section-title">
           <div>
@@ -239,7 +257,14 @@ export function Worlds({
                 <Avatar character={c} size={44} />
                 <span>
                   <strong>{c.name}</strong>
-                  <small>查看 / 编辑资料</small>
+                  <small>
+                    {observation?.jobs.some((j) => j.characterIds.includes(c.id))
+                      ? '历史补全中'
+                      : observation?.activeIds.has(c.id)
+                        ? '正在观察'
+                        : '静默'}{' '}
+                    · 查看 / 编辑资料
+                  </small>
                 </span>
               </button>
             ))}
@@ -285,6 +310,11 @@ export function Worlds({
                 <Users size={24} />
               </div>
               <h3>{g.name}</h3>
+              <span className="tag">
+                {observation?.config.mode === 'full' || observation?.config.groupIds.includes(g.id)
+                  ? '正在观察'
+                  : '静默'}
+              </span>
               <p>{g.description}</p>
               <div className="avatar-stack">
                 {gm
@@ -343,6 +373,50 @@ export function Worlds({
       </section>
       {edit && (
         <Modal title="世界观设定" onClose={() => setEdit(undefined)}>
+          <Toggle
+            label="允许人物设定随经历自然变化"
+            checked={edit.evolutionSettings?.enabled ?? false}
+            onChange={(enabled) =>
+              setEdit({
+                ...edit,
+                evolutionSettings: {
+                  enabled,
+                  rules:
+                    edit.evolutionSettings?.rules ??
+                    '仅允许有明确经历支持的缓慢变化，核心身份和锁定设定不能修改。',
+                },
+              })
+            }
+          />
+          <Field label="演化边界与要求">
+            <Textarea
+              value={edit.evolutionSettings?.rules ?? ''}
+              onChange={(e) =>
+                setEdit({
+                  ...edit,
+                  evolutionSettings: {
+                    enabled: edit.evolutionSettings?.enabled ?? false,
+                    rules: e.target.value,
+                  },
+                })
+              }
+            />
+          </Field>
+          <p className="muted">
+            开关只作用于本世界；角色资料中还需明确勾选允许演化的字段。默认全部锁定。
+          </p>
+          <MajorSettingsEditor
+            value={edit.majorEventSettings}
+            onChange={(majorEventSettings) => setEdit({ ...edit, majorEventSettings })}
+          />
+          <Field label="世界封面">
+            <AvatarUpload
+              cover
+              value={edit.cover}
+              name={edit.name}
+              onChange={(cover) => setEdit({ ...edit, cover })}
+            />
+          </Field>
           <Field label="世界名称">
             <Input
               value={edit.name}
@@ -502,14 +576,30 @@ export function Worlds({
               existingNames={worldSelectedNames}
               onApply={(draft) => {
                 if (draft.world) setEdit({ ...edit, ...draft.world, id: edit.id });
-                setWorldDrafts(draft.characters);
-                setNewNames(draft.characters.map((c) => c.name).join('\n'));
-                setNewGroups(
-                  draft.groups.map((g) => `${g.name}：${g.memberNames.join('、')}`).join('\n'),
+                setWorldDrafts((old) => [
+                  ...old.filter((c) => !draft.characters.some((n) => n.name === c.name)),
+                  ...draft.characters,
+                ]);
+                setNewNames((old) =>
+                  [
+                    ...new Set([
+                      ...old.split('\n').filter(Boolean),
+                      ...draft.characters.map((c) => c.name),
+                    ]),
+                  ].join('\n'),
                 );
-                setDraftGroups(
-                  Object.fromEntries(draft.groups.map((g) => [g.name, g.description])),
+                setNewGroups((old) =>
+                  [
+                    ...new Set([
+                      ...old.split('\n').filter(Boolean),
+                      ...draft.groups.map((g) => `${g.name}：${g.memberNames.join('、')}`),
+                    ]),
+                  ].join('\n'),
                 );
+                setDraftGroups((old) => ({
+                  ...old,
+                  ...Object.fromEntries(draft.groups.map((g) => [g.name, g.description])),
+                }));
               }}
             />
           )}
@@ -616,15 +706,25 @@ export function Worlds({
             }
             onApply={(draft) => {
               const g = draft.groups[0];
-              if (!g) return;
-              setGroup({ ...group, name: g.name, description: g.description });
-              setGroupDrafts(draft.characters);
-              setGroupNewNames(draft.characters.map((c) => c.name).join('\n'));
-              setParticipants(
-                chars
-                  ?.filter((c) => participants.includes(c.id) && g.memberNames.includes(c.name))
-                  .map((c) => c.id) ?? [],
+              if (g) setGroup({ ...group, name: g.name, description: g.description });
+              setGroupDrafts((old) => [
+                ...old.filter((c) => !draft.characters.some((n) => n.name === c.name)),
+                ...draft.characters,
+              ]);
+              setGroupNewNames((old) =>
+                [
+                  ...new Set([
+                    ...old.split('\n').filter(Boolean),
+                    ...draft.characters.map((c) => c.name),
+                  ]),
+                ].join('\n'),
               );
+              if (g)
+                setParticipants(
+                  chars
+                    ?.filter((c) => participants.includes(c.id) && g.memberNames.includes(c.name))
+                    .map((c) => c.id) ?? [],
+                );
             }}
           />
           {error && <Status error>{error}</Status>}

@@ -1,3 +1,4 @@
+import { promoteNaturalEvent } from '../core/major-events';
 import { SceneDetail } from './Scenes';
 import { timelineMatches, mergeRoutine, type TimelineView } from '../core/observation';
 import {
@@ -10,7 +11,7 @@ import {
 } from '../core/calendar';
 import { WorldDateEditor } from '../components/WorldDateEditor';
 import type { InPersonScene } from '../core/types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {
   CalendarDays,
@@ -27,8 +28,10 @@ import { Avatar, Button, Select, Modal, Empty, fmtTime } from '../components/ui'
 export function Timeline({
   worldId,
   onConversation,
+  focusEventId,
 }: {
   worldId: string;
+  focusEventId?: string;
   onConversation: (id: string) => void;
 }) {
   const data = useLiveQuery(
@@ -102,6 +105,15 @@ export function Timeline({
     ) ?? [],
   );
   const shift = (days: number) => setDate(shiftCalendar(days));
+  useEffect(() => {
+    if (focusEventId && data?.world) {
+      const e = data.events.find((e) => e.id === focusEventId);
+      if (e) {
+        setDate(calendarDate(data.world, e.start));
+        setView('all');
+      }
+    }
+  }, [focusEventId, data?.world?.id]);
   return (
     <div>
       <div className="page-heading">
@@ -259,6 +271,13 @@ export function Timeline({
       {selected && (
         <Modal title="一个生活片段" onClose={() => setSelected(undefined)}>
           <p>{selected.description}</p>
+          {(selected.importance ?? 0) >= 0.8 && (
+            <Button
+              onClick={() => void promoteNaturalEvent(selected.id).catch((e) => alert(String(e)))}
+            >
+              确认升级为大型事件
+            </Button>
+          )}
           <p>
             {world ? formatWorldTime(world, selected.start) : time(selected.start)} —{' '}
             {time(selected.end)}

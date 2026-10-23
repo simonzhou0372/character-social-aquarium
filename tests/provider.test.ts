@@ -126,3 +126,35 @@ describe('routine DeepSeek generation', () => {
     expect(result.outputTokens).toBe(2048);
   });
 });
+it('uses compatible JSON text by default on unknown hosts and honors explicit structured output modes', async () => {
+  const mock = vi.fn(
+    async (_url: unknown, _options: RequestInit) =>
+      new Response(JSON.stringify({ choices: [{ message: { content: '{}' } }] }), { status: 200 }),
+  );
+  vi.stubGlobal('fetch', mock);
+  const messages = [{ role: 'system' as const, content: '输出契约：仅返回 JSON' }];
+  await new CompatibleProvider(profile, 'fixture').complete(messages);
+  expect(JSON.parse(mock.mock.calls[0][1]!.body as string).response_format).toBeUndefined();
+  await new CompatibleProvider({ ...profile, structuredOutputMode: 'json' }, 'fixture').complete(
+    messages,
+  );
+  expect(JSON.parse(mock.mock.calls[1][1]!.body as string).response_format).toEqual({
+    type: 'json_object',
+  });
+  await new CompatibleProvider(
+    { ...profile, baseUrl: 'https://api.openai.com/v1', structuredOutputMode: 'off' },
+    'fixture',
+  ).complete(messages);
+  expect(JSON.parse(mock.mock.calls[2][1]!.body as string).response_format).toBeUndefined();
+});
+it('reports unsupported JSON response formats separately from schema and field errors', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => new Response('response_format json_object is unsupported', { status: 400 })),
+  );
+  await expect(
+    new CompatibleProvider({ ...profile, structuredOutputMode: 'json' }, 'fixture').complete([
+      { role: 'system', content: '输出契约：JSON' },
+    ]),
+  ).rejects.toMatchObject({ code: 'unsupported-format' });
+});

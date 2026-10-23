@@ -62,6 +62,7 @@ test('mobile HUD remains usable, pause survives reload, and unlimited usage reta
   await page.getByRole('button', { name: '继续世界', exact: true }).click();
   await expect(page.getByRole('button', { name: '暂停世界', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '暂停世界', exact: true }).click();
+  await expect(page.locator('.world-hud')).toContainText('已暂停');
   await page.reload();
   await expect(page.locator('.world-hud')).toContainText('已暂停');
   await expect(page.getByLabel('快捷世界速度')).toHaveValue('3600');

@@ -1,3 +1,5 @@
+import { resolveObservation } from '../core/selective-observation';
+import { ObservationSummary, useObservation } from '../components/ObservationManager';
 import { formatWorldClock, calendarDate } from '../core/calendar';
 import { featuredEvent } from '../core/observation';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -26,11 +28,15 @@ export function Home({
   onChat: (id: string) => void;
   onCharacter: (id: string) => void;
 }) {
+  const observation = useObservation(worldId);
   const data = useLiveQuery(
     async () => ({
       world: await db.worlds.get(worldId),
       cp: await db.checkpoints.get(worldId),
-      characters: await db.characters.toArray(),
+      characters: await db.characters
+        .where('id')
+        .anyOf([...(await resolveObservation(worldId)).activeIds])
+        .toArray(),
       members: await db.memberships.where('worldId').equals(worldId).toArray(),
       states: await db.states.where('worldId').equals(worldId).toArray(),
       events: await db.events.where('worldId').equals(worldId).reverse().sortBy('start'),
@@ -43,7 +49,10 @@ export function Home({
   );
   const chars =
     data?.characters.filter(
-      (c) => c.entityMode !== 'background' && data.members.some((m) => m.characterId === c.id),
+      (c) =>
+        c.entityMode !== 'background' &&
+        data.members.some((m) => m.characterId === c.id) &&
+        (!observation || observation.activeIds.has(c.id)),
     ) ?? [];
   const unread =
     data?.messages.filter(
@@ -75,6 +84,8 @@ export function Home({
           </div>
         </div>
       </div>
+      <ObservationSummary worldId={worldId} onEdit={() => onNavigate('observation')} />
+      <Button onClick={() => onNavigate('reports')}>世界报告 · 查看历史与配置</Button>
       <section className="world-hero">
         <div className="hero-copy">
           <div className="hero-tags">
@@ -98,36 +109,40 @@ export function Home({
           </div>
         </div>
         <div className="hero-art" aria-hidden="true">
-          <svg viewBox="0 0 600 320" preserveAspectRatio="xMidYMid slice">
-            <rect width="600" height="320" fill="#cbdacb" />
-            <circle cx="455" cy="82" r="54" fill="#f2ebc1" />
-            <path d="M0 183Q120 160 220 180T600 171V320H0" fill="#87a9a5" />
-            <path d="M0 222q170-40 320 0t280 0v98H0" fill="#a9c3b5" />
-            <path d="M0 266q190-38 370 3t230 0" fill="none" stroke="#e4e7c9" strokeWidth="3" />
-            <g stroke="#354a42" strokeWidth="4">
-              <path d="M36 221V59m0 20h120l55 38H36m79-36v90M24 224h203" fill="none" />
-              <path d="M245 224V147h109v77m-115-77h122l-13-20H254z" fill="#e8dfbc" />
-              <path d="M269 225v-41h28v41m18-62h21v25h-21" fill="#82968b" />
-              <path d="M389 224v-74h108v74m-120-74 65-41 66 41z" fill="#d5c6b0" />
-              <path d="M410 224v-48h28v48m20-43h22v21h-22" fill="#80988b" />
-              <path d="M0 228h600m-53 0V91m-13 14h28" fill="none" />
-            </g>
-            <path
-              d="M110 260q10-24 23-24t23 24m-25-19v42m13-40 8 40"
-              stroke="#394c42"
-              strokeWidth="7"
-              fill="none"
-            />
-            <circle cx="133" cy="221" r="10" fill="#394c42" />
-            <path
-              d="M177 267q8-28 18-28t21 28m-22-19-3 39m15-39 6 39"
-              stroke="#7a6d54"
-              strokeWidth="7"
-              fill="none"
-            />
-            <circle cx="196" cy="226" r="10" fill="#7a6d54" />
-            <path d="m308 61 9-5 9 5m14 7 8-4 8 4" stroke="#5a7568" strokeWidth="2" fill="none" />
-          </svg>
+          {data?.world?.cover ? (
+            <img className="world-cover" src={data.world.cover} alt={data.world.name} />
+          ) : (
+            <svg viewBox="0 0 600 320" preserveAspectRatio="xMidYMid slice">
+              <rect width="600" height="320" fill="#cbdacb" />
+              <circle cx="455" cy="82" r="54" fill="#f2ebc1" />
+              <path d="M0 183Q120 160 220 180T600 171V320H0" fill="#87a9a5" />
+              <path d="M0 222q170-40 320 0t280 0v98H0" fill="#a9c3b5" />
+              <path d="M0 266q190-38 370 3t230 0" fill="none" stroke="#e4e7c9" strokeWidth="3" />
+              <g stroke="#354a42" strokeWidth="4">
+                <path d="M36 221V59m0 20h120l55 38H36m79-36v90M24 224h203" fill="none" />
+                <path d="M245 224V147h109v77m-115-77h122l-13-20H254z" fill="#e8dfbc" />
+                <path d="M269 225v-41h28v41m18-62h21v25h-21" fill="#82968b" />
+                <path d="M389 224v-74h108v74m-120-74 65-41 66 41z" fill="#d5c6b0" />
+                <path d="M410 224v-48h28v48m20-43h22v21h-22" fill="#80988b" />
+                <path d="M0 228h600m-53 0V91m-13 14h28" fill="none" />
+              </g>
+              <path
+                d="M110 260q10-24 23-24t23 24m-25-19v42m13-40 8 40"
+                stroke="#394c42"
+                strokeWidth="7"
+                fill="none"
+              />
+              <circle cx="133" cy="221" r="10" fill="#394c42" />
+              <path
+                d="M177 267q8-28 18-28t21 28m-22-19-3 39m15-39 6 39"
+                stroke="#7a6d54"
+                strokeWidth="7"
+                fill="none"
+              />
+              <circle cx="196" cy="226" r="10" fill="#7a6d54" />
+              <path d="m308 61 9-5 9 5m14 7 8-4 8 4" stroke="#5a7568" strokeWidth="2" fill="none" />
+            </svg>
+          )}
           <span className="art-sticker">
             <Sun size={18} /> SLOW DAYS, GOOD COMPANY.
           </span>
@@ -219,7 +234,7 @@ export function Home({
           {data?.convs.slice(0, 3).map((c) => {
             const last = data.messages
               .filter((m) => m.conversationId === c.id)
-              .sort((a, b) => a.seq - b.seq)
+              .sort((a, b) => a.simAt - b.simAt || a.seq - b.seq)
               .at(-1);
             return (
               <button className="home-conversation" key={c.id} onClick={() => onChat(c.id)}>

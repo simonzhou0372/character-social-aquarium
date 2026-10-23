@@ -1,3 +1,18 @@
+import type {
+  ObservationConfig,
+  BackfillJob,
+  EvolutionRecord,
+  WorldReport,
+} from '../core/focus-types';
+import type { z } from 'zod';
+import type {
+  CoverageSchema,
+  EvolutionCursorSchema,
+  ReportCursorSchema,
+} from '../core/focus-types';
+import type { MajorSchedule, MajorEvent, EventNotification } from '../core/types';
+import type { MessageReaction, MessageReadState, GifAsset, LocalResource } from '../core/types';
+import type { ContentJob } from '../core/content-jobs';
 import { realLocalDate } from '../core/calendar';
 import type { InPersonScene, BackgroundKnowledge } from '../core/types';
 import type { PromptConfig } from '../ai/prompts';
@@ -21,6 +36,21 @@ import type {
   Usage,
 } from '../core/types';
 export class AquariumDB extends Dexie {
+  observationConfigs!: Table<ObservationConfig>;
+  observationCoverage!: Table<z.infer<typeof CoverageSchema>>;
+  backfillJobs!: Table<BackfillJob>;
+  evolutionRecords!: Table<EvolutionRecord>;
+  evolutionCursors!: Table<z.infer<typeof EvolutionCursorSchema>>;
+  worldReports!: Table<WorldReport>;
+  reportCursors!: Table<z.infer<typeof ReportCursorSchema>>;
+  majorSchedules!: Table<MajorSchedule>;
+  majorEvents!: Table<MajorEvent>;
+  notifications!: Table<EventNotification>;
+  reactions!: Table<MessageReaction>;
+  readStates!: Table<MessageReadState>;
+  gifAssets!: Table<GifAsset>;
+  resources!: Table<LocalResource>;
+  contentJobs!: Table<ContentJob>;
   scenes!: Table<InPersonScene>;
   backgroundKnowledge!: Table<BackgroundKnowledge>;
   taskSnapshots!: Table<{ id: string; config: PromptConfig }>;
@@ -129,10 +159,61 @@ export class AquariumDB extends Dexie {
             s.unlimitedUsage ??= false;
           });
       });
+    this.version(7)
+      .stores({ contentJobs: 'id,worldId,status,at' })
+      .upgrade(async (tx) => {
+        await tx
+          .table('checkpoints')
+          .toCollection()
+          .modify((cp) => {
+            cp.clockAnchor ??= {
+              simTime: cp.recoveryTarget ?? cp.simTime,
+              realTime: cp.recoveryRealTarget ?? cp.realTime,
+            };
+          });
+      });
+    this.version(8).stores({
+      reactions: 'id,messageId,actorId',
+      readStates: 'id,messageId,readerId',
+      gifAssets: 'id,scopeType,scopeId,resourceId',
+      resources: 'id,digest',
+    });
+    this.version(9).stores({
+      majorSchedules: 'id',
+      majorEvents: 'id,worldId,eventId,timestamp',
+      notifications: 'id,worldId,eventId,createdAt',
+    });
+    this.version(10).stores({
+      characters: 'id,name,entityMode',
+      observationConfigs: 'id',
+      observationCoverage: 'id,worldId,target',
+      backfillJobs: 'id,worldId,status',
+      evolutionRecords: 'id,worldId,characterId,at,[worldId+at]',
+      evolutionCursors: 'id',
+      worldReports: 'id,worldId,type,start,[worldId+type+start]',
+      reportCursors: 'id,worldId',
+      events: 'id,worldId,start,end,[worldId+start],[worldId+end],*participants',
+      scenes: 'id,worldId,eventId,start,[worldId+start],*participants',
+    });
   }
 }
 export const db = new AquariumDB();
 export const dataTables = (d: AquariumDB) => [
+  d.observationConfigs,
+  d.observationCoverage,
+  d.backfillJobs,
+  d.evolutionRecords,
+  d.evolutionCursors,
+  d.worldReports,
+  d.reportCursors,
+  d.majorSchedules,
+  d.majorEvents,
+  d.notifications,
+  d.reactions,
+  d.readStates,
+  d.gifAssets,
+  d.resources,
+  d.contentJobs,
   d.scenes,
   d.backgroundKnowledge,
   d.characters,
@@ -152,6 +233,7 @@ export const dataTables = (d: AquariumDB) => [
   d.usage,
   d.promptConfigs,
 ];
+const localLocks = new Map<string, Promise<unknown>>();
 export async function withWorldLock<T>(
   worldId: string,
   fn: () => Promise<T>,
@@ -161,6 +243,17 @@ export async function withWorldLock<T>(
     return navigator.locks.request(`aquarium:${worldId}`, { ifAvailable: !wait }, (lock) =>
       lock ? fn() : undefined,
     );
-  // Browsers without Web Locks still get commit-level checkpoint compare-and-swap.
-  return fn();
+  const active = localLocks.get(worldId);
+  if (active) {
+    if (!wait) return undefined;
+    await active.catch(() => undefined);
+    return withWorldLock(worldId, fn, wait);
+  }
+  const task = Promise.resolve().then(fn);
+  localLocks.set(worldId, task);
+  try {
+    return await task;
+  } finally {
+    if (localLocks.get(worldId) === task) localLocks.delete(worldId);
+  }
 }

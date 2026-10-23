@@ -1,3 +1,13 @@
+import {
+  ReportSettingsSchema,
+  ObservationConfigSchema,
+  CoverageSchema,
+  BackfillSchema,
+  EvolutionRecordSchema,
+  EvolutionCursorSchema,
+  WorldReportSchema,
+  ReportCursorSchema,
+} from './focus-types';
 import { z } from 'zod';
 import { WorldDateTimeSchema } from './calendar';
 import { PromptConfigSchema } from '../ai/prompts';
@@ -36,6 +46,18 @@ export const CharacterSchema = z.object({
 });
 export type Character = z.infer<typeof CharacterSchema>;
 export const WorldSchema = z.object({
+  evolutionSettings: z.object({ enabled: z.boolean(), rules: z.string().max(4000) }).optional(),
+  reportSettings: ReportSettingsSchema.optional(),
+  majorEventSettings: z
+    .object({
+      enabled: z.boolean(),
+      maximumIntervalDays: z.number().min(1).max(36500),
+      tendency: z.string().max(4000),
+      allowRelationshipChanges: z.boolean(),
+      allowMultipleGroups: z.boolean(),
+    })
+    .optional(),
+  cover: z.string().max(1500000).optional(),
   id,
   name: z.string().min(1).max(80),
   description: text,
@@ -51,6 +73,15 @@ export const WorldSchema = z.object({
 });
 export type World = z.infer<typeof WorldSchema>;
 export const MembershipSchema = z.object({
+  evolutionFields: z.array(z.enum(['initiative', 'personality', 'style', 'habits'])).optional(),
+  evolved: z
+    .object({
+      initiative: z.number().min(0).max(1).optional(),
+      personality: text.optional(),
+      style: text.optional(),
+      habits: text.optional(),
+    })
+    .optional(),
   id,
   worldId: id,
   characterId: id,
@@ -79,6 +110,9 @@ export const GroupMemberSchema = z.object({
 });
 export type GroupMember = z.infer<typeof GroupMemberSchema>;
 export const RelationshipSchema = z.object({
+  generationMetadata: z
+    .object({ origin: z.literal('ai'), uncertain: z.boolean(), at: time })
+    .optional(),
   id,
   worldId: id,
   from: id,
@@ -96,11 +130,16 @@ export const RelationshipSchema = z.object({
 });
 export type Relationship = z.infer<typeof RelationshipSchema>;
 export const ConversationSchema = z.object({
+  avatar: z.string().max(1500000).optional(),
+  titleMode: z.enum(['auto', 'custom']).optional(),
+  customTitle: text.optional(),
+  autoTitle: text.optional(),
   id,
   worldId: id,
   groupId: id.optional(),
   name: text,
   kind: z.enum(['direct', 'group']),
+  participantJoinedAt: z.record(time).optional(),
   participants: z.array(id).min(1).max(50),
   createdAt: time,
   lastAt: time,
@@ -109,6 +148,22 @@ export const ConversationSchema = z.object({
 });
 export type Conversation = z.infer<typeof ConversationSchema>;
 export const MessageSchema = z.object({
+  backfilled: z.boolean().optional(),
+  messageType: z.enum(['text', 'gif']).optional(),
+  gifAssetId: id.optional(),
+  replyToMessageId: id.optional(),
+  mentionCharacterIds: z.array(id).max(50).optional(),
+  mentions: z
+    .array(
+      z.object({
+        characterId: id,
+        start: z.number().int().nonnegative(),
+        end: z.number().int().positive(),
+        label: z.string().max(100),
+      }),
+    )
+    .max(50)
+    .optional(),
   id,
   conversationId: id,
   senderId: id,
@@ -130,9 +185,11 @@ export const CursorSchema = z.object({
 });
 export type ReadCursor = z.infer<typeof CursorSchema>;
 export const EventSchema = z.object({
+  origin: z.enum(['realtime', 'backfill', 'macro']).optional(),
+  generatedAt: time.optional(),
   id,
   worldId: id,
-  type: z.enum(['sleep', 'work', 'meal', 'rest', 'out', 'social']),
+  type: z.enum(['sleep', 'work', 'meal', 'rest', 'out', 'social', 'major']),
   start: time,
   end: time,
   participants: z.array(id).min(1),
@@ -176,6 +233,7 @@ export const MemorySchema = z.object({
 export type MemoryEntry = z.infer<typeof MemorySchema>;
 export const CheckpointSchema = z.object({
   id,
+  clockAnchor: z.object({ simTime: time, realTime: time }).optional(),
   simTime: time,
   realTime: time,
   seed: z.number().int(),
@@ -209,6 +267,7 @@ export const SettingsSchema = z.object({
   sceneFrequency: z.number().min(0).max(1).optional(),
   sceneDailyBudget: z.number().int().min(0).max(100).optional(),
   onboarded: z.boolean(),
+  gifAutoplay: z.boolean().optional(),
   theme: z.enum(['light', 'dark']),
 });
 export type AppSettings = z.infer<typeof SettingsSchema>;
@@ -220,6 +279,7 @@ export const ProfileSchema = z.object({
   persistKey: z.boolean(),
   contextBudgetTokens: z.number().int().min(1000).max(32000).optional(),
   outputBudgetTokens: z.number().int().min(256).max(16000).optional(),
+  structuredOutputMode: z.enum(['auto', 'json', 'off']).optional(),
   thinkingMode: z.enum(['auto', 'off', 'on']).optional(),
   key: z.string().max(2000).optional(),
   status: z.enum(['untested', 'connected', 'invalid', 'error']),
@@ -238,6 +298,7 @@ export const UsageSchema = z.object({
 });
 export type Usage = z.infer<typeof UsageSchema>;
 export const BackgroundKnowledgeSchema = z.object({
+  knownAt: time.optional(),
   id,
   worldId: id,
   entityId: id,
@@ -249,6 +310,7 @@ export const BackgroundKnowledgeSchema = z.object({
         kind: z.enum(['fact', 'rumor', 'falseRumor', 'opinion']),
         content: text,
         source: text,
+        learnedAt: time.optional(),
       }),
     )
     .max(100),
@@ -258,6 +320,16 @@ export const SceneSchema = z.object({
   id,
   worldId: id,
   eventId: id,
+  titleMode: z.enum(['auto', 'custom']).optional(),
+  customTitle: text.optional(),
+  autoTitle: text.optional(),
+  generationStatus: z.enum(['partial', 'complete', 'failed']).optional(),
+  generationError: text.optional(),
+  generationCheckpoint: z.number().int().nonnegative().optional(),
+  plannedPhases: z
+    .array(z.object({ id, title: text, start: time, end: time, participants: z.array(id) }))
+    .max(32)
+    .optional(),
   title: z.string().min(1).max(200),
   location: text,
   type: z.string().max(80),
@@ -286,11 +358,135 @@ export const SceneSchema = z.object({
           .max(40),
       }),
     )
-    .min(1)
-    .max(8),
+    .max(32),
 });
 export type InPersonScene = z.infer<typeof SceneSchema>;
+export const ContentJobSchema = z.object({
+  id: z.string().max(512),
+  worldId: z.string(),
+  kind: z.enum(['chat', 'life', 'scene', 'major']),
+  event: EventSchema,
+  conversation: ConversationSchema.optional(),
+  speakerId: z.string().optional(),
+  at: z.number(),
+  state: RuntimeSchema.optional(),
+  snapshot: PromptConfigSchema,
+  recovery: z.boolean(),
+  status: z.enum(['pending', 'running', 'failed', 'complete']),
+  attempts: z.number().int().nonnegative(),
+  nextAttemptAt: z.number(),
+  error: z.string().optional(),
+  controlVersion: z.number().optional(),
+});
+export type ContentJob = z.infer<typeof ContentJobSchema>;
+
+export const ReactionSchema = z.object({
+  id: z.string().max(512),
+  messageId: id,
+  actorId: id,
+  emoji: z.string().min(1).max(16),
+  reactedAt: time,
+});
+export type MessageReaction = z.infer<typeof ReactionSchema>;
+export const ReadStateSchema = z.object({
+  kind: z.enum(['observer', 'character']).optional(),
+  id: z.string().max(512),
+  messageId: id,
+  readerId: id,
+  readAt: time,
+});
+export type MessageReadState = z.infer<typeof ReadStateSchema>;
+export const GifAssetSchema = z.object({
+  id,
+  name: z.string().min(1).max(80),
+  tags: z.array(z.string().max(50)).max(30),
+  description: text,
+  scopeType: z.enum(['world', 'group', 'character']),
+  scopeId: id,
+  resourceId: id,
+  favorite: z.boolean(),
+  removed: z.boolean().optional(),
+  createdAt: time,
+});
+export type GifAsset = z.infer<typeof GifAssetSchema>;
+export const ResourceBackupSchema = z.object({
+  id,
+  mime: z.literal('image/gif'),
+  size: z
+    .number()
+    .int()
+    .positive()
+    .max(5 * 1024 * 1024),
+  digest: z.string().length(64),
+  data: z.string().max(7100000),
+});
+export type LocalResource = {
+  id: string;
+  mime: 'image/gif';
+  size: number;
+  digest: string;
+  blob: Blob;
+};
+export const MajorScheduleSchema = z.object({
+  id,
+  lastOccurredAt: time,
+  nextDueAt: time,
+  plannedAt: time,
+  sequence: z.number().int().nonnegative(),
+  lastType: z.string(),
+});
+export type MajorSchedule = z.infer<typeof MajorScheduleSchema>;
+export const MajorEventSchema = z.object({
+  id,
+  eventId: id,
+  worldId: id,
+  title: z.string().min(1).max(200),
+  timestamp: time,
+  participantIds: z.array(id).min(1),
+  groupIds: z.array(id),
+  importance: z.number().min(0).max(1),
+  status: z.enum(['contentPending', 'occurred']),
+  type: z.string().max(80),
+  description: text,
+  consequences: z
+    .array(
+      z.object({
+        kind: z.enum(['relationship', 'followUp']),
+        description: text,
+        from: id.optional(),
+        to: id.optional(),
+        delta: z.number().min(-5).max(5).optional(),
+      }),
+    )
+    .max(20),
+});
+export type MajorEvent = z.infer<typeof MajorEventSchema>;
+export const NotificationSchema = z.object({
+  id,
+  eventId: id,
+  worldId: id,
+  createdAt: time,
+  readAt: time.optional(),
+  dismissedAt: time.optional(),
+  recovery: z.boolean(),
+});
+export type EventNotification = z.infer<typeof NotificationSchema>;
 export const BackupSchema = z.object({
+  observationConfigs: z.array(ObservationConfigSchema).default([]),
+  observationCoverage: z.array(CoverageSchema).default([]),
+  backfillJobs: z.array(BackfillSchema).default([]),
+  evolutionRecords: z.array(EvolutionRecordSchema).default([]),
+  evolutionCursors: z.array(EvolutionCursorSchema).default([]),
+  worldReports: z.array(WorldReportSchema).default([]),
+  reportCursors: z.array(ReportCursorSchema).default([]),
+  majorSchedules: z.array(MajorScheduleSchema).max(100).default([]),
+  majorEvents: z.array(MajorEventSchema).max(100000).default([]),
+  notifications: z.array(NotificationSchema).max(100000).default([]),
+  reactions: z.array(ReactionSchema).max(200000).default([]),
+  readStates: z.array(ReadStateSchema).max(1000000).default([]),
+  gifAssets: z.array(GifAssetSchema).max(2000).default([]),
+  resources: z.array(ResourceBackupSchema).max(2000).default([]),
+  contentJobs: z.array(ContentJobSchema).max(100000).default([]),
   scenes: z.array(SceneSchema).max(50000).default([]),
   backgroundKnowledge: z.array(BackgroundKnowledgeSchema).max(50000).default([]),
   format: z.literal('aquarium'),
@@ -318,6 +514,7 @@ export const uid = (prefix = 'id') => `${prefix}-${crypto.randomUUID()}`;
 export const HOUR = 3600000,
   DAY = 24 * HOUR;
 export const activityNames: Record<ActivityEvent['type'], string> = {
+  major: '重要事件',
   sleep: '睡觉中',
   work: '忙碌中',
   meal: '吃饭中',
