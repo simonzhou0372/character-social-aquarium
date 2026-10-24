@@ -1,3 +1,4 @@
+import { MultiSelect } from '../components/MultiSelect';
 import { renameScene } from '../data/titles';
 import { Input } from '../components/ui';
 import { getPrompts } from '../ai/prompts';
@@ -287,24 +288,14 @@ export function Scenes({ worldId }: { worldId: string }) {
           </Field>
         </div>
         <Field label="参与角色（可多选）">
-          <div className="check-list">
-            {data?.chars
+          <MultiSelect
+            label="场景参与者"
+            options={(data?.chars ?? [])
               .filter((c) => c.entityMode !== 'background')
-              .map((c) => (
-                <label key={c.id}>
-                  <input
-                    type="checkbox"
-                    checked={people.includes(c.id)}
-                    onChange={(e) =>
-                      setPeople(
-                        e.target.checked ? [...people, c.id] : people.filter((id) => id !== c.id),
-                      )
-                    }
-                  />
-                  {c.name}
-                </label>
-              ))}
-          </div>
+              .map((c) => ({ ...c, character: c }))}
+            value={people}
+            onChange={setPeople}
+          />
         </Field>
         <Select
           aria-label="角色匹配方式"

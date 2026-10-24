@@ -1,3 +1,4 @@
+import { MultiSelect } from '../components/MultiSelect';
 import { RecycleButton } from '../components/RecycleButton';
 import { PresetDetails } from '../components/PresetDetails';
 import { EvolutionPanel } from '../components/EvolutionPanel';
@@ -32,11 +33,13 @@ export function CharacterEditor({
   );
   const [selected, setSelected] = useState<string[] | null>(null);
   const [override, setOverride] = useState('');
+  const [identity, setIdentity] = useState('');
   const [styleOverride, setStyleOverride] = useState('');
   useEffect(() => {
     const m = memberships?.find((m) => m.worldId === worldId);
     if (m) {
       setOverride(m.bioOverride);
+      setIdentity(m.identity);
       setStyleOverride(m.styleOverride);
     }
   }, [memberships, worldId]);
@@ -57,7 +60,7 @@ export function CharacterEditor({
             id: old?.id ?? `${w}:${c.id}`,
             worldId: w,
             characterId: c.id,
-            identity: old?.identity ?? '',
+            identity: w === worldId ? identity : (old?.identity ?? ''),
             bioOverride: w === worldId ? override : (old?.bioOverride ?? ''),
             styleOverride: w === worldId ? styleOverride : (old?.styleOverride ?? ''),
           });
@@ -140,26 +143,61 @@ export function CharacterEditor({
             </Field>
           ))}
           <Field label="加入世界（一个角色可加入多个世界）">
-            <div className="check-list">
-              {worlds?.map((w) => (
-                <label key={w.id}>
-                  <input
-                    type="checkbox"
-                    checked={activeWorlds.includes(w.id)}
-                    disabled={!!memberships?.some((m) => m.worldId === w.id)}
-                    onChange={(e) =>
-                      setSelected(
-                        e.target.checked
-                          ? [...activeWorlds, w.id]
-                          : activeWorlds.filter((id) => id !== w.id),
-                      )
-                    }
-                  />
-                  {w.name}
-                </label>
-              ))}
-            </div>
+            <MultiSelect
+              label="加入世界"
+              options={(worlds ?? []).map((w) => ({
+                ...w,
+                disabled: !!memberships?.some((m) => m.worldId === w.id),
+              }))}
+              value={activeWorlds}
+              onChange={setSelected}
+            />
           </Field>
+          <Field label="当前世界身份（不影响其他世界）">
+            <Input value={identity} onChange={(e) => setIdentity(e.target.value)} />
+          </Field>
+          <Field label="别名（日文名、英文名等，每行一个）">
+            <Textarea
+              value={(c.aliases ?? []).join('\n')}
+              onChange={(e) =>
+                patch({
+                  aliases: e.target.value
+                    .split('\n')
+                    .map((v) => v.trim())
+                    .filter(Boolean),
+                })
+              }
+            />
+          </Field>
+          {c.socialBehavior && (
+            <details className="settings-section">
+              <summary>具体社交行为 · 模拟演绎参数</summary>
+              {(['familiar', 'stranger', 'conflict', 'humor', 'topics', 'avoid'] as const).map(
+                (key) => (
+                  <Field
+                    key={key}
+                    label={
+                      {
+                        familiar: '熟人面前',
+                        stranger: '陌生人面前',
+                        conflict: '冲突反应',
+                        humor: '幽默风格',
+                        topics: '主动话题',
+                        avoid: '回避与知识边界',
+                      }[key]
+                    }
+                  >
+                    <Textarea
+                      value={c.socialBehavior![key]}
+                      onChange={(e) =>
+                        patch({ socialBehavior: { ...c.socialBehavior!, [key]: e.target.value } })
+                      }
+                    />
+                  </Field>
+                ),
+              )}
+            </details>
+          )}
           <EvolutionPanel worldId={worldId} characterId={c.id} />
           <details className="advanced">
             <summary>当前世界专属设定（不影响其他世界）</summary>

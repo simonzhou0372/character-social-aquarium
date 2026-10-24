@@ -225,7 +225,7 @@ test('thirty-day major-event history shows aggregated notifications and details'
   });
   await expect(page.locator('.major-banner')).toContainText('重大事件');
   await nav(page, '重大事件');
-  expect(await page.locator('.major-list article').count()).toBeGreaterThanOrEqual(4);
+  await expect.poll(() => page.locator('.major-list article').count()).toBeGreaterThanOrEqual(4);
   await page
     .locator('.major-list article')
     .first()

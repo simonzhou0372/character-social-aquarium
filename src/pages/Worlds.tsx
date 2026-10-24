@@ -1,3 +1,9 @@
+import { TouhouUpgrade } from '../components/TouhouUpgrade';
+import { WorldContentPanel } from '../components/WorldContentPanel';
+import { NovelSettings, StoryProgress } from '../components/NovelSettings';
+import { normalizeNovel, saveManagedWorld } from '../core/novel';
+import { removeMember } from '../data/world-members';
+import { MultiSelect } from '../components/MultiSelect';
 import { RecycleButton } from '../components/RecycleButton';
 import { PresetDetails } from '../components/PresetDetails';
 import {
@@ -52,6 +58,8 @@ export function Worlds({
   onConversation: (id: string) => void;
 }) {
   const observation = useObservation(worldId);
+  const [tab, setTab] = useState('overview'),
+    [addOpen, setAddOpen] = useState(false);
   const [observeOpen, setObserveOpen] = useState(false);
   const worlds = useLiveQuery(() => db.worlds.filter((entity) => !entity.deletedAt).toArray(), []),
     groups = useLiveQuery(() => db.groups.filter((entity) => !entity.deletedAt).toArray(), []),
@@ -78,7 +86,8 @@ export function Worlds({
   const [groupNewNames, setGroupNewNames] = useState(''),
     [groupDrafts, setGroupDrafts] = useState<CharacterDraft[]>([]),
     [confirmedOutside, setConfirmedOutside] = useState<string[]>([]),
-    [outsideCandidate, setOutsideCandidate] = useState<Character>();
+    [pendingParticipants, setPendingParticipants] = useState<string[]>(),
+    [removeCandidate, setRemoveCandidate] = useState<Character>();
   const worldSelectedNames =
     chars
       ?.filter(
@@ -91,7 +100,7 @@ export function Worlds({
   async function saveWorld() {
     if (!edit) return;
     try {
-      const w = WorldSchema.parse(edit);
+      const w = WorldSchema.parse(isNew ? normalizeNovel(edit) : edit);
       new Intl.DateTimeFormat('zh', { timeZone: w.timezone });
       if (isNew)
         await createWorld(
@@ -104,8 +113,8 @@ export function Worlds({
           worldDrafts,
           draftGroups,
         );
-      else await db.worlds.put(w);
-      if (w.majorEventSettings) await configureMajor(w.id, w.majorEventSettings);
+      else await saveManagedWorld(w);
+      if (isNew && w.majorEventSettings) await configureMajor(w.id, w.majorEventSettings);
       setEdit(undefined);
       onSelect(w.id);
     } catch (e) {
@@ -189,7 +198,8 @@ export function Worlds({
       </div>
       {pageError && <Status error>{pageError}</Status>}
       {worlds?.some((w) => w.provenance) && (
-        <section className="panel preset-intro">
+        <details className="panel preset-intro">
+          <summary>内置东方预设 · 资料范围与使用方式</summary>
           <h3>内置大型世界：东方Project</h3>
           <p>
             原设资料已在本地就绪。幻想乡与 PC-98 旧作分开保存，默认暂停、选择性观察，不会自动消耗
@@ -198,235 +208,312 @@ export function Worlds({
           <p>
             角色档案只整理已确认身份与能力；资料分组不是虚构社团，原作未确认的恋爱与家谱保持未知。已有自定义内容不会被预设更新覆盖。
           </p>
-        </section>
+        </details>
       )}
-      <div className="world-grid">
-        {worlds?.map((w) => (
-          <article className={`world-card ${w.id === worldId ? 'selected' : ''}`} key={w.id}>
-            <div className="world-cover">
-              <Globe2 size={74} strokeWidth={1} />
-              <span>PARALLEL WORLD</span>
-              <b>{w.name.slice(0, 2)}</b>
-            </div>
-            <div>
-              <span className="tag">
-                {members?.filter((m) => m.worldId === w.id).length} 位角色
-              </span>
-              <h2>{w.name}</h2>
-              {w.provenance && <span className="tag">内置原设资料 · v{w.presetVersion ?? 1}</span>}
-              <p>{w.description}</p>
-              <div className="toolbar">
-                <RecycleButton kind="worlds" id={w.id} name={w.name} />
-                <Button onClick={() => onSelect(w.id)}>
-                  {w.id === worldId ? '当前世界' : '进入世界'}
-                  <ArrowUpRight size={15} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setError('');
-                    setEdit(w);
-                  }}
-                >
-                  编辑设定
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={async () => {
-                    try {
-                      downloadJson(await exportWorld(w.id), `${w.name}-世界观.json`);
-                    } catch (e) {
-                      setPageError(String(e));
-                    }
-                  }}
-                >
-                  导出世界观
-                </Button>
-              </div>
-            </div>
-          </article>
+      <nav className="management-tabs" aria-label="世界管理分区">
+        {[
+          ['overview', '世界总览'],
+          ['people', '世界人物'],
+          ['groups', '世界团体'],
+          ['settings', '运行与知识'],
+        ].map(([id, label]) => (
+          <Button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)}>
+            {label}
+          </Button>
         ))}
-      </div>
-      <TimeControls worldId={worldId} compact />
+        <Button onClick={() => setAddOpen(true)}>添加内容</Button>
+        <Button
+          onClick={() => {
+            const w = worlds?.find((w) => w.id === worldId);
+            if (w) setEdit(w);
+          }}
+        >
+          世界设定 / 小说模式
+        </Button>
+      </nav>
+      {addOpen && (
+        <WorldContentPanel key={worldId} worldId={worldId} onClose={() => setAddOpen(false)} />
+      )}
+      {tab === 'overview' && (
+        <>
+          <div className="world-grid">
+            {worlds?.map((w) => (
+              <article className={`world-card ${w.id === worldId ? 'selected' : ''}`} key={w.id}>
+                <div className="world-cover">
+                  <Globe2 size={74} strokeWidth={1} />
+                  <span>PARALLEL WORLD</span>
+                  <b>{w.name.slice(0, 2)}</b>
+                </div>
+                <div>
+                  <span className="tag">
+                    {members?.filter((m) => m.worldId === w.id).length} 位角色
+                  </span>
+                  <h2>{w.name}</h2>
+                  {w.provenance && (
+                    <span className="tag">内置原设资料 · v{w.presetVersion ?? 1}</span>
+                  )}
+                  <p>{w.description}</p>
+                  <div className="toolbar">
+                    <RecycleButton kind="worlds" id={w.id} name={w.name} />
+                    <Button onClick={() => onSelect(w.id)}>
+                      {w.id === worldId ? '当前世界' : '进入世界'}
+                      <ArrowUpRight size={15} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setError('');
+                        setEdit(w);
+                      }}
+                    >
+                      编辑设定
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={async () => {
+                        try {
+                          downloadJson(await exportWorld(w.id), `${w.name}-世界观.json`);
+                        } catch (e) {
+                          setPageError(String(e));
+                        }
+                      }}
+                    >
+                      导出世界观
+                    </Button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+          <TouhouUpgrade key={worldId} worldId={worldId} />
+          <StoryProgress worldId={worldId} />
+        </>
+      )}
+      {tab === 'settings' && <TimeControls worldId={worldId} compact />}
       <ObservationSummary worldId={worldId} onEdit={() => setObserveOpen(true)} />
       {observeOpen && (
         <Modal title="观察管理" wide onClose={() => setObserveOpen(false)}>
           <ObservationManager worldId={worldId} />
         </Modal>
       )}
-      <section className="panel world-characters">
-        <div className="section-title">
-          <div>
-            <span className="eyebrow">PEOPLE IN THIS WORLD</span>
-            <h2>当前世界的角色</h2>
+      {tab === 'people' && (
+        <section className="panel world-characters">
+          <div className="section-title">
+            <div>
+              <span className="eyebrow">PEOPLE IN THIS WORLD</span>
+              <h2>当前世界的角色</h2>
+            </div>
+            <Button variant="primary" onClick={() => setAddOpen(true)}>
+              <Plus size={16} />
+              添加角色
+            </Button>
           </div>
-          <Button variant="primary" onClick={() => setEditCharacter(null)}>
-            <Plus size={16} />
-            添加角色
-          </Button>
-        </div>
-        <div className="world-character-list">
-          {chars
-            ?.filter((c) => members?.some((m) => m.worldId === worldId && m.characterId === c.id))
-            .map((c) => (
-              <button key={c.id} onClick={() => setEditCharacter(c)}>
-                <Avatar character={c} size={44} />
-                <span>
-                  <strong>{c.name}</strong>
-                  <small>
-                    {observation?.jobs.some((j) => j.characterIds.includes(c.id))
-                      ? '历史补全中'
-                      : observation?.activeIds.has(c.id)
-                        ? '正在观察'
-                        : '静默'}{' '}
-                    · 查看 / 编辑资料
-                  </small>
-                </span>
-              </button>
-            ))}
-        </div>
-        {!members?.some((m) => m.worldId === worldId) && (
-          <Empty
-            title="世界里还没有角色"
-            description="添加角色，或编辑角色资料将已有角色加入此世界。"
-          />
-        )}
-      </section>
-      <div className="section-title spaced">
-        <div>
-          <span className="eyebrow">LITTLE CIRCLES</span>
-          <h2>属于他们的小圈子</h2>
-        </div>
-        <Button
-          onClick={() => {
-            setError('');
-            setParticipants([]);
-            setGroupNewNames('');
-            setGroupDrafts([]);
-            setConfirmedOutside([]);
-            setGroup({
-              id: uid('group'),
-              name: '',
-              description: '',
-              worldIds: [worldId],
-              color: '#d9ef69',
-            });
-          }}
-        >
-          <Plus size={16} />
-          创建团体
-        </Button>
-      </div>
-      <div className="group-grid">
-        {groups
-          ?.filter((g) => g.worldIds.includes(worldId))
-          .map((g) => (
-            <article className="panel group-card" key={g.id}>
-              <div className="group-symbol">
-                <Users size={24} />
-              </div>
-              <h3>{g.name}</h3>
-              <span className="tag">
-                {observation?.config.mode === 'full' || observation?.config.groupIds.includes(g.id)
-                  ? '正在观察'
-                  : '静默'}
-              </span>
-              <p>{g.description}</p>
-              <div className="avatar-stack">
-                {gm
-                  ?.filter((m) => m.groupId === g.id && m.worldId === worldId)
-                  .map((m) => (
-                    <Avatar
-                      key={m.id}
-                      character={chars?.find((c) => c.id === m.characterId)}
-                      size={36}
-                    />
-                  ))}
-              </div>
-              <div className="toolbar">
-                <Button
-                  onClick={async () => {
-                    const c = await db.conversations
-                      .where('groupId')
-                      .equals(g.id)
-                      .and((c) => c.worldId === worldId)
-                      .first();
-                    if (c) onConversation(c.id);
-                  }}
-                >
-                  旁观群聊
-                  <ArrowUpRight size={15} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setError('');
-                    setGroupNewNames('');
-                    setGroupDrafts([]);
-                    setConfirmedOutside([]);
-                    setParticipants(
-                      gm
-                        ?.filter((m) => m.groupId === g.id && m.worldId === worldId)
-                        .map((m) => m.characterId) ?? [],
-                    );
-                    setGroup(g);
-                  }}
-                >
-                  成员 / 编辑
-                </Button>
-                <RecycleButton kind="groups" id={g.id} name={g.name} />
-              </div>
-            </article>
-          ))}
-      </div>
-      <BackgroundKnowledgeEditor worldId={worldId} />
-      <section className="panel knowledge-entry">
-        <BookOpen size={28} />
-        <div>
-          <h3>世界知识库</h3>
-          <p>导入 TXT / Markdown，明确哪些角色知道这些事。</p>
-        </div>
-        <Button onClick={() => setShowKnowledge(true)}>添加知识</Button>
-      </section>
+          <div className="world-character-list">
+            {chars
+              ?.filter((c) =>
+                members?.some(
+                  (m) => !m.inactive && m.worldId === worldId && m.characterId === c.id,
+                ),
+              )
+              .map((c) => (
+                <div key={c.id}>
+                  <button onClick={() => setEditCharacter(c)}>
+                    <Avatar character={c} size={44} />
+                    <span>
+                      <strong>{c.name}</strong>
+                      <small>
+                        {observation?.jobs.some((j) => j.characterIds.includes(c.id))
+                          ? '历史补全中'
+                          : observation?.activeIds.has(c.id)
+                            ? '正在观察'
+                            : '静默'}{' '}
+                        · 查看 / 编辑资料
+                      </small>
+                    </span>
+                  </button>
+                  <Button variant="ghost" onClick={() => setRemoveCandidate(c)}>
+                    从当前世界移除
+                  </Button>
+                </div>
+              ))}
+          </div>
+          {!members?.some((m) => !m.inactive && m.worldId === worldId) && (
+            <Empty
+              title="世界里还没有角色"
+              description="添加角色，或编辑角色资料将已有角色加入此世界。"
+            />
+          )}
+        </section>
+      )}
+      {tab === 'groups' && (
+        <>
+          <div className="section-title spaced">
+            <div>
+              <span className="eyebrow">LITTLE CIRCLES</span>
+              <h2>属于他们的小圈子</h2>
+            </div>
+            <Button
+              onClick={() => {
+                setError('');
+                setParticipants([]);
+                setGroupNewNames('');
+                setGroupDrafts([]);
+                setConfirmedOutside([]);
+                setGroup({
+                  id: uid('group'),
+                  name: '',
+                  description: '',
+                  worldIds: [worldId],
+                  color: '#d9ef69',
+                });
+              }}
+            >
+              <Plus size={16} />
+              创建团体
+            </Button>
+          </div>
+          <div className="group-grid">
+            {groups
+              ?.filter((g) => g.worldIds.includes(worldId))
+              .map((g) => (
+                <article className="panel group-card" key={g.id}>
+                  <div className="group-symbol">
+                    <Users size={24} />
+                  </div>
+                  <h3>{g.name}</h3>
+                  <span className="tag">
+                    {observation?.config.mode === 'full' ||
+                    observation?.config.groupIds.includes(g.id)
+                      ? '正在观察'
+                      : '静默'}
+                  </span>
+                  <p>{g.description}</p>
+                  <div className="avatar-stack">
+                    {gm
+                      ?.filter((m) => m.groupId === g.id && m.worldId === worldId)
+                      .map((m) => (
+                        <Avatar
+                          key={m.id}
+                          character={chars?.find((c) => c.id === m.characterId)}
+                          size={36}
+                        />
+                      ))}
+                  </div>
+                  <div className="toolbar">
+                    <Button
+                      onClick={async () => {
+                        const c = await db.conversations
+                          .where('groupId')
+                          .equals(g.id)
+                          .and((c) => c.worldId === worldId)
+                          .first();
+                        if (c) onConversation(c.id);
+                      }}
+                    >
+                      旁观群聊
+                      <ArrowUpRight size={15} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setError('');
+                        setGroupNewNames('');
+                        setGroupDrafts([]);
+                        setConfirmedOutside([]);
+                        setParticipants(
+                          gm
+                            ?.filter((m) => m.groupId === g.id && m.worldId === worldId)
+                            .map((m) => m.characterId) ?? [],
+                        );
+                        setGroup(g);
+                      }}
+                    >
+                      成员 / 编辑
+                    </Button>
+                    <RecycleButton kind="groups" id={g.id} name={g.name} />
+                  </div>
+                </article>
+              ))}
+          </div>
+        </>
+      )}
+      {tab === 'settings' && (
+        <>
+          <BackgroundKnowledgeEditor worldId={worldId} />
+          <section className="panel knowledge-entry">
+            <BookOpen size={28} />
+            <div>
+              <h3>世界知识库</h3>
+              <p>导入 TXT / Markdown，明确哪些角色知道这些事。</p>
+            </div>
+            <Button onClick={() => setShowKnowledge(true)}>添加知识</Button>
+          </section>
+        </>
+      )}
       {edit && (
-        <Modal title="世界观设定" onClose={() => setEdit(undefined)}>
-          <PresetDetails provenance={edit.provenance} locations={edit.locationDetails} />
-          <Toggle
-            label="允许人物设定随经历自然变化"
-            checked={edit.evolutionSettings?.enabled ?? false}
-            onChange={(enabled) =>
-              setEdit({
-                ...edit,
-                evolutionSettings: {
-                  enabled,
-                  rules:
-                    edit.evolutionSettings?.rules ??
-                    '仅允许有明确经历支持的缓慢变化，核心身份和锁定设定不能修改。',
-                },
-              })
-            }
-          />
-          <Field label="演化边界与要求">
-            <Textarea
-              value={edit.evolutionSettings?.rules ?? ''}
-              onChange={(e) =>
+        <Modal title="世界观设定" wide side onClose={() => setEdit(undefined)}>
+          <NovelSettings world={edit} onChange={setEdit} />
+          <details className="settings-section">
+            <summary>人物演化与重大事件高级设置</summary>
+            <PresetDetails provenance={edit.provenance} locations={edit.locationDetails} />
+            <Toggle
+              label="允许人物设定随经历自然变化"
+              checked={edit.novel?.enabled || (edit.evolutionSettings?.enabled ?? false)}
+              onChange={(enabled) =>
                 setEdit({
                   ...edit,
                   evolutionSettings: {
-                    enabled: edit.evolutionSettings?.enabled ?? false,
-                    rules: e.target.value,
+                    enabled: edit.novel?.enabled ? true : enabled,
+                    rules:
+                      edit.evolutionSettings?.rules ??
+                      '仅允许有明确经历支持的缓慢变化，核心身份和锁定设定不能修改。',
                   },
                 })
               }
             />
-          </Field>
-          <p className="muted">
-            开关只作用于本世界；角色资料中还需明确勾选允许演化的字段。默认全部锁定。
-          </p>
-          <MajorSettingsEditor
-            value={edit.majorEventSettings}
-            onChange={(majorEventSettings) => setEdit({ ...edit, majorEventSettings })}
-          />
+            <Field label="演化边界与要求">
+              <Textarea
+                value={edit.evolutionSettings?.rules ?? ''}
+                onChange={(e) =>
+                  setEdit({
+                    ...edit,
+                    evolutionSettings: {
+                      enabled: edit.evolutionSettings?.enabled ?? false,
+                      rules: e.target.value,
+                    },
+                  })
+                }
+              />
+            </Field>
+            <p className="muted">
+              开关只作用于本世界；角色资料中还需明确勾选允许演化的字段。默认全部锁定。
+            </p>
+            <MajorSettingsEditor
+              value={
+                edit.novel?.enabled
+                  ? {
+                      ...(edit.majorEventSettings ?? {
+                        enabled: true,
+                        maximumIntervalDays: 7,
+                        tendency: '循序推进结局',
+                        allowMultipleGroups: false,
+                        allowRelationshipChanges: false,
+                      }),
+                      enabled: true,
+                    }
+                  : edit.majorEventSettings
+              }
+              onChange={(majorEventSettings) =>
+                setEdit({
+                  ...edit,
+                  majorEventSettings: {
+                    ...majorEventSettings,
+                    enabled: edit.novel?.enabled ? true : majorEventSettings.enabled,
+                  },
+                })
+              }
+            />
+          </details>
           <Field label="世界封面">
             <AvatarUpload
               cover
@@ -496,44 +583,20 @@ export function Worlds({
             <>
               <h3>快速导入角色与团体</h3>
               <Field label="从已有角色加入">
-                <div className="check-list">
-                  {chars?.map((c) => (
-                    <label key={c.id}>
-                      <input
-                        type="checkbox"
-                        checked={selectedCharacters.includes(c.id)}
-                        onChange={(e) =>
-                          setSelectedCharacters(
-                            e.target.checked
-                              ? [...selectedCharacters, c.id]
-                              : selectedCharacters.filter((id) => id !== c.id),
-                          )
-                        }
-                      />
-                      {c.name}
-                    </label>
-                  ))}
-                </div>
+                <MultiSelect
+                  label="世界角色"
+                  options={(chars ?? []).map((c) => ({ ...c, character: c, detail: c.source }))}
+                  value={selectedCharacters}
+                  onChange={setSelectedCharacters}
+                />
               </Field>
               <Field label="从已有团体加入（成员自动加入）">
-                <div className="check-list">
-                  {groups?.map((g) => (
-                    <label key={g.id}>
-                      <input
-                        type="checkbox"
-                        checked={selectedGroups.includes(g.id)}
-                        onChange={(e) =>
-                          setSelectedGroups(
-                            e.target.checked
-                              ? [...selectedGroups, g.id]
-                              : selectedGroups.filter((id) => id !== g.id),
-                          )
-                        }
-                      />
-                      {g.name}
-                    </label>
-                  ))}
-                </div>
+                <MultiSelect
+                  label="世界团体"
+                  options={groups ?? []}
+                  value={selectedGroups}
+                  onChange={setSelectedGroups}
+                />
               </Field>
               <Field label="批量新增角色（每行一个名字）">
                 <Textarea
@@ -666,31 +729,37 @@ export function Worlds({
             />
           </Field>
           <Field label="选择已有角色（高亮为当前世界成员）">
-            <div className="check-list group-member-picker">
-              {chars?.map((c) => {
-                const inWorld = members?.some(
-                  (m) => m.worldId === worldId && m.characterId === c.id,
+            <MultiSelect
+              label="团体成员"
+              options={(chars ?? []).map((c) => ({
+                ...c,
+                character: c,
+                className: members?.some(
+                  (m) => !m.inactive && m.worldId === worldId && m.characterId === c.id,
+                )
+                  ? 'in-world'
+                  : 'outside-world',
+                detail: members?.some(
+                  (m) => !m.inactive && m.worldId === worldId && m.characterId === c.id,
+                )
+                  ? '当前世界'
+                  : '世界外 · 确认后自动加入',
+              }))}
+              value={participants}
+              onChange={(ids) => {
+                const outside = ids.filter(
+                  (id) =>
+                    !members?.some(
+                      (m) => !m.inactive && m.worldId === worldId && m.characterId === id,
+                    ) && !confirmedOutside.includes(id),
                 );
-                return (
-                  <label key={c.id} className={inWorld ? 'in-world' : 'outside-world'}>
-                    <input
-                      type="checkbox"
-                      checked={participants.includes(c.id)}
-                      onChange={(e) => {
-                        if (!e.target.checked)
-                          setParticipants(participants.filter((id) => id !== c.id));
-                        else if (inWorld || confirmedOutside.includes(c.id))
-                          setParticipants([...participants, c.id]);
-                        else setOutsideCandidate(c);
-                      }}
-                    />
-                    <Avatar character={c} size={28} />
-                    <span>{c.name}</span>
-                    <small>{inWorld ? '当前世界' : '世界外 · 加入前需确认'}</small>
-                  </label>
-                );
-              })}
-            </div>
+                if (outside.length) {
+                  setPendingParticipants(ids);
+                  return;
+                }
+                setParticipants(ids);
+              }}
+            />
           </Field>
           <Field label="新增角色（每行一个名字）">
             <Textarea
@@ -775,28 +844,18 @@ export function Worlds({
             />
           </label>
           <Field label="谁知道这些事？">
-            <div className="check-list">
-              {chars
-                ?.filter((c) =>
-                  members?.some((m) => m.worldId === worldId && m.characterId === c.id),
+            <MultiSelect
+              label="知识知情人"
+              options={(chars ?? [])
+                .filter((c) =>
+                  members?.some(
+                    (m) => !m.inactive && m.worldId === worldId && m.characterId === c.id,
+                  ),
                 )
-                .map((c) => (
-                  <label key={c.id}>
-                    <input
-                      type="checkbox"
-                      checked={knowledgeOwners.includes(c.id)}
-                      onChange={(e) =>
-                        setKnowledgeOwners(
-                          e.target.checked
-                            ? [...knowledgeOwners, c.id]
-                            : knowledgeOwners.filter((id) => id !== c.id),
-                        )
-                      }
-                    />
-                    {c.name}
-                  </label>
-                ))}
-            </div>
+                .map((c) => ({ ...c, character: c }))}
+              value={knowledgeOwners}
+              onChange={setKnowledgeOwners}
+            />
           </Field>
           <Button
             variant="primary"
@@ -855,20 +914,47 @@ export function Worlds({
           </Button>
         </Modal>
       )}
-      {outsideCandidate && (
+      {pendingParticipants && (
         <Confirm
           title="同时加入当前世界观？"
           confirmLabel="确认同时加入"
-          onClose={() => setOutsideCandidate(undefined)}
+          onClose={() => setPendingParticipants(undefined)}
           onConfirm={() => {
-            setParticipants([...participants, outsideCandidate.id]);
-            setConfirmedOutside([...confirmedOutside, outsideCandidate.id]);
-            setOutsideCandidate(undefined);
+            setParticipants(pendingParticipants);
+            setConfirmedOutside([
+              ...new Set([
+                ...confirmedOutside,
+                ...pendingParticipants.filter(
+                  (id) =>
+                    !members?.some(
+                      (m) => !m.inactive && m.worldId === worldId && m.characterId === id,
+                    ),
+                ),
+              ]),
+            ]);
+            setPendingParticipants(undefined);
+          }}
+        >
+          <p>保存团体时，所选世界外角色会同时加入当前世界观，保留原有世界和团体身份。</p>
+        </Confirm>
+      )}
+      {removeCandidate && (
+        <Confirm
+          title="从当前世界移除角色？"
+          confirmLabel="确认移除关联"
+          onClose={() => setRemoveCandidate(undefined)}
+          onConfirm={async () => {
+            try {
+              await removeMember(worldId, removeCandidate.id);
+              setRemoveCandidate(undefined);
+            } catch (e) {
+              setPageError(String(e));
+            }
           }}
         >
           <p>
-            「{outsideCandidate.name}
-            」还不在当前世界。保存团体时，该角色会同时加入当前世界观，保留原有世界和团体身份。
+            {removeCandidate.name}{' '}
+            的全局资料、其他世界身份和当前历史保留；后续不再参与本世界模拟，可从角色池重新导入。
           </p>
         </Confirm>
       )}

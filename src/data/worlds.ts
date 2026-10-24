@@ -1,3 +1,5 @@
+import { restartNovel } from '../core/novel-types';
+import { normalizeNovel } from '../core/novel';
 import { ObservationConfigSchema } from '../core/focus-types';
 import { clockTarget } from '../core/time';
 import { foregroundStart } from '../core/clock-presence';
@@ -117,7 +119,7 @@ export async function createWorld(
 ) {
   const tick = Date.now();
   const parsed = WorldSchema.parse({
-    ...world,
+    ...normalizeNovel(world, undefined, tick),
     era: world.era ?? 'AD',
     calendarSystem: 'gregorian',
     initialDate: world.initialDate ?? realLocalDate(tick, world.timezone),
@@ -262,7 +264,12 @@ export async function importWorld(input: unknown, d: AquariumDB = db) {
     const id = uid('world'),
       cIds = new Map(p.characters.map((c) => [c.id, uid('char')])),
       gIds = new Map(p.groups.map((g) => [g.id, uid('group')]));
-    await d.worlds.add({ ...p.world, id });
+    await d.worlds.add({
+      ...p.world,
+      novel: restartNovel(p.world.novel, Date.now()),
+      novelHistory: undefined,
+      id,
+    });
     await d.characters.bulkAdd(p.characters.map((c) => ({ ...c, id: cIds.get(c.id)! })));
     await d.memberships.bulkAdd(
       p.memberships.map((m) => ({
@@ -332,7 +339,9 @@ export async function saveGroupMembers(
     const selected = await d.characters.where('id').anyOf(ids).toArray();
     if (selected.length !== ids.length) throw new Error('部分角色不存在');
     const memberships = await d.memberships.where('worldId').equals(worldId).toArray();
-    const outside = ids.filter((id) => !memberships.some((m) => m.characterId === id));
+    const outside = ids.filter(
+      (id) => !memberships.some((m) => !m.inactive && m.characterId === id),
+    );
     if (outside.some((id) => !confirmedOutside.includes(id)))
       throw new Error('请确认世界外角色会同时加入世界观');
     const uniqueNames = [...new Set(names.map((n) => n.trim()).filter(Boolean))];
@@ -358,8 +367,15 @@ export async function saveGroupMembers(
         throw new Error('有历史消息的成员无法移除，请创建新的团体');
     }
     await d.characters.bulkAdd(added);
+    for (const id of outside) {
+      const previous = memberships.find((m) => m.characterId === id);
+      if (previous) await d.memberships.update(previous.id, { inactive: false });
+    }
     await d.memberships.bulkAdd(
-      [...outside, ...added.map((c) => c.id)].map((characterId) => ({
+      [
+        ...outside.filter((id) => !memberships.some((m) => m.characterId === id)),
+        ...added.map((c) => c.id),
+      ].map((characterId) => ({
         id: uid('member'),
         worldId,
         characterId,

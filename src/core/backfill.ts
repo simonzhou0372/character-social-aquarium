@@ -24,6 +24,16 @@ export async function processBackfill(worldId: string, d: AquariumDB = db) {
         .and((j) => ['pending', 'running', 'waiting', 'failed'].includes(j.status))
         .first();
       if (!job) return;
+      const members = await d.memberships.where('worldId').equals(worldId).toArray();
+      if (
+        job.characterIds.some((id) => !members.some((m) => m.characterId === id && !m.inactive))
+      ) {
+        await d.backfillJobs.update(job.id, {
+          status: 'paused',
+          error: '角色已从世界移除，回溯已暂停',
+        });
+        return;
+      }
       const actors = await d.characters.bulkGet(job.characterIds);
       if (actors.some((c) => !c || c.deletedAt)) {
         await d.backfillJobs.update(job.id, {

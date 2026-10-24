@@ -555,6 +555,7 @@ export async function replyToUser(conversationId: string, d: AquariumDB = db) {
       d.characters,
       d.groups,
       d.worlds,
+      d.memberships,
       d.checkpoints,
     ],
     async () => {

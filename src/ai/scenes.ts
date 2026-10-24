@@ -59,6 +59,10 @@ export async function generateScene(
   )
     throw new Error('背景实体不能参加场景');
   const memberships = await d.memberships.where('worldId').equals(event.worldId).toArray();
+  if (
+    event.participants.some((id) => !memberships.some((m) => m.characterId === id && !m.inactive))
+  )
+    throw new Error('场景参与者已从世界移除');
   const relations = await d.relationships
     .where('worldId')
     .equals(event.worldId)

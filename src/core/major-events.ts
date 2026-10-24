@@ -48,6 +48,7 @@ export async function configureMajor(
     const w = await d.worlds.get(worldId),
       cp = await d.checkpoints.get(worldId);
     if (!w || !cp) throw new Error('世界不存在');
+    if(w.novel?.enabled && !settings.enabled) throw new Error('小说模式必须启用重大事件');
     await d.worlds.update(worldId, { majorEventSettings: settings });
     const schedule = await d.majorSchedules.get(worldId);
     if (

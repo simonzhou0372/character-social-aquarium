@@ -36,7 +36,7 @@ test('first launch, prompt editing, preview reset, refresh persistence and versi
   await expect(editor).toHaveValue(/独立人格/);
   expect(errors).toEqual([]);
 });
-test('prompt JSON export/import and six toggles', async ({ page }) => {
+test('prompt JSON export/import and independent category toggles', async ({ page }) => {
   await enter(page);
   await prompts(page);
   const download = page.waitForEvent('download');
@@ -85,7 +85,7 @@ test('desktop management, navigation and screenshots', async ({ page }) => {
   await page.getByLabel('时间轴展示').selectOption('all');
   await expect(page.locator('.life-log-event').first()).toBeVisible();
   await prompts(page);
-  await expect(page.locator('.prompt-card')).toHaveCount(8);
+  await expect(page.locator('.prompt-card')).toHaveCount(10);
   await page.screenshot({ path: 'test-results/desktop-prompts.png', fullPage: true });
 });
 test('mobile single-column navigation, prompt editor, chat and no horizontal overflow', async ({
@@ -181,7 +181,7 @@ test('prompt import previews changes before replacement, global reset is confirm
   await page.getByRole('button', { name: '恢复全部默认' }).click();
   await expect(page.getByRole('dialog')).toContainText('自定义提示词');
   await page.getByRole('button', { name: '取消', exact: true }).click();
-  await expect(page.locator('.prompt-card')).toHaveCount(8);
+  await expect(page.locator('.prompt-card')).toHaveCount(10);
 });
 test('two tabs share persistence, exclusive work releases on close and recovery is idempotent', async ({
   page,

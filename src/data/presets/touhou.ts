@@ -1,3 +1,4 @@
+import { calibratePerson, calibrateEdge } from './touhou-calibration';
 import { db, type AquariumDB } from '../db';
 import { type Character, type World, type Group, type Relationship } from '../../core/types';
 import { emptyReports } from '../../core/focus-types';
@@ -12,7 +13,7 @@ import type { CanonPerson, CanonPlace, CanonGroup, CanonEdge } from './touhou-mo
 
 export const TOUHOU_WORLD_ID = 'w-touhou-windows';
 export const TOUHOU_LEGACY_ID = 'w-touhou-pc98';
-export const TOUHOU_PRESET_VERSION = 1;
+export const TOUHOU_PRESET_VERSION = 2;
 const characterId = (key: string) => `th:${key}`;
 const groupId = (key: string) => `th-group:${key}`;
 const commonRules = `本预设是非官方整理的原作事实资料，不是官方新剧情。只使用资料已确认事实；不引用二次创作、商业衍生手游、同人漫画或网络梗补足设定。
@@ -69,14 +70,16 @@ function buildCharacter(person: CanonPerson, legacy: boolean): Character {
   };
 }
 
-export function buildTouhouPreset(legacy: boolean, now: number) {
+export function buildTouhouPreset(legacy: boolean, now: number, version = TOUHOU_PRESET_VERSION) {
   const id = legacy ? TOUHOU_LEGACY_ID : TOUHOU_WORLD_ID;
   const people: CanonPerson[] = legacy ? touhouLegacyPeople : touhouPeople;
   const places: CanonPlace[] = legacy ? touhouLegacyPlaces : touhouPlaces;
   const circles: CanonGroup[] = legacy ? touhouLegacyGroups : touhouGroups;
   const edges: CanonEdge[] = legacy ? touhouLegacyEdges : touhouEdges;
   const date = { year: 1, month: 1, day: 1, hour: 9, minute: 0 };
-  const characters = people.map((p) => buildCharacter(p, legacy));
+  const characters = people.map((p) =>
+    version >= 2 ? calibratePerson(p, buildCharacter(p, legacy)) : buildCharacter(p, legacy),
+  );
   const world: World = {
     id,
     name: legacy ? '东方Project · PC-98旧作档案' : '东方Project · 幻想乡原设资料',
@@ -99,7 +102,7 @@ export function buildTouhouPreset(legacy: boolean, now: number) {
     color: legacy ? '#cab7d5' : '#d9ef69',
     evolutionSettings: { enabled: false, rules: '不自动改写原设身份、性格或有出处的锁定关系。' },
     reportSettings: { ...emptyReports },
-    presetVersion: TOUHOU_PRESET_VERSION,
+    presetVersion: version,
     provenance: {
       catalogId: TOUHOU_CATALOG,
       continuity: legacy ? 'pc98' : 'windows',
@@ -149,7 +152,8 @@ export function buildTouhouPreset(legacy: boolean, now: number) {
     world,
     characters,
     groups,
-    relationships,
+    relationships:
+      version >= 2 ? relationships.map((r, i) => calibrateEdge(edges[i], r)) : relationships,
     memberships: characters.map((c) => ({
       id: `${id}:${c.id}`,
       worldId: id,

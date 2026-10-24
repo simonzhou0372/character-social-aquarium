@@ -36,6 +36,19 @@ export async function drainContent(worldId: string, d: AquariumDB = db, provider
         const cp = await d.checkpoints.get(worldId);
         if (!cp || cp.paused || task.signal.aborted || (await d.worlds.get(worldId))?.deletedAt)
           return;
+        const members = await d.memberships.where('worldId').equals(worldId).toArray();
+        if (
+          job.event.participants.some(
+            (id) => !members.some((m) => m.characterId === id && !m.inactive),
+          )
+        ) {
+          await d.contentJobs.update(job.id, {
+            status: 'failed',
+            attempts: 3,
+            error: '角色已从世界移除，任务已挂起',
+          });
+          continue;
+        }
         const actors = await d.characters.bulkGet(job.event.participants);
         if (
           actors.some((c) => !c || c.deletedAt) ||

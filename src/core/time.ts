@@ -1,3 +1,4 @@
+import { restartNovel } from './novel-types';
 import { historicalCharacter } from './selective-observation';
 import { nextMajorSchedule } from './major-events';
 import { foregroundStart } from './clock-presence';
@@ -102,7 +103,13 @@ export async function rewindWorld(worldId: string, at: number, d: AquariumDB = d
         const id = uid('timeline'),
           now = Date.now(),
           date = formatWorldTime(world, at);
-        await d.worlds.add({ ...world, id, name: `${world.name.slice(0, 50)} · ${date}` });
+        await d.worlds.add({
+          ...world,
+          novel: restartNovel(world.novel, at),
+          novelHistory: undefined,
+          id,
+          name: `${world.name.slice(0, 50)} · ${date}`,
+        });
         const memberships = await d.memberships.where('worldId').equals(worldId).toArray();
         for (const m of memberships) {
           const c = await d.characters.get(m.characterId),
@@ -366,6 +373,8 @@ export async function startCalendarBranch(
       now = Date.now();
     await d.worlds.add({
       ...world,
+      novel: restartNovel(world.novel, now),
+      novelHistory: undefined,
       id,
       name: `${world.name.slice(0, 40)} · 新故事`,
       initialDate: date,

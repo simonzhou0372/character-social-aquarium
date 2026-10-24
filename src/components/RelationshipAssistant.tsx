@@ -1,3 +1,4 @@
+import { MultiSelect } from './MultiSelect';
 import { useState, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../data/db';
@@ -84,24 +85,12 @@ export function RelationshipAssistant({
               ))}
             </Select>
           </Field>
-          <div className="check-list">
-            {chars.map((c) => (
-              <label key={c.id}>
-                <input
-                  type="checkbox"
-                  checked={selection.includes(c.id)}
-                  onChange={(e) =>
-                    setSelection(
-                      e.target.checked
-                        ? [...selection, c.id]
-                        : selection.filter((id) => id !== c.id),
-                    )
-                  }
-                />
-                {c.name}
-              </label>
-            ))}
-          </div>
+          <MultiSelect
+            label="关系对象"
+            options={chars.map((c) => ({ ...c, character: c }))}
+            value={selection}
+            onChange={setSelection}
+          />
           <Field label="关系补充要求">
             <Textarea value={constraints} onChange={(e) => setConstraints(e.target.value)} />
           </Field>

@@ -1,3 +1,4 @@
+import type { ExpansionJob } from '../core/expansion-types';
 import type {
   ObservationConfig,
   BackfillJob,
@@ -36,6 +37,7 @@ import type {
   Usage,
 } from '../core/types';
 export class AquariumDB extends Dexie {
+  expansionJobs!: Table<ExpansionJob>;
   observationConfigs!: Table<ObservationConfig>;
   observationCoverage!: Table<z.infer<typeof CoverageSchema>>;
   backfillJobs!: Table<BackfillJob>;
@@ -195,6 +197,7 @@ export class AquariumDB extends Dexie {
       events: 'id,worldId,start,end,[worldId+start],[worldId+end],*participants',
       scenes: 'id,worldId,eventId,start,[worldId+start],*participants',
     });
+    this.version(12).stores({ expansionJobs: 'id,worldId,status' });
     this.version(11).stores({
       worlds: 'id,deletedAt',
       characters: 'id,name,entityMode,deletedAt',
@@ -204,6 +207,7 @@ export class AquariumDB extends Dexie {
 }
 export const db = new AquariumDB();
 export const dataTables = (d: AquariumDB) => [
+  d.expansionJobs,
   d.observationConfigs,
   d.observationCoverage,
   d.backfillJobs,

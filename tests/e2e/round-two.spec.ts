@@ -83,6 +83,7 @@ test('user avatar validates decoding, crops, persists and appears on the right s
 }) => {
   await enter(page);
   await simulation(page);
+  await page.getByRole('button', { name: '用户资料', exact: true }).click();
   const upload = page.locator('.avatar-upload');
   await upload
     .locator('input[type=file]')
@@ -110,6 +111,7 @@ test('user avatar validates decoding, crops, persists and appears on the right s
   await expect(upload.locator('img')).toHaveAttribute('src', /^data:image\/webp/);
   await page.reload();
   await simulation(page);
+  await page.getByRole('button', { name: '用户资料', exact: true }).click();
   await expect(page.locator('.avatar-upload img')).toHaveAttribute('src', /^data:image\/webp/);
   await nav(page, '聊天消息');
   await page.getByRole('button').filter({ hasText: '夏生 & 澪' }).click();
@@ -190,10 +192,19 @@ test('scene archive renders real structured records, all-person filters and time
   });
   await nav(page, '线下观察');
   await expect(page.locator('.scene-card')).toContainText('窗边的下午');
-  await page.locator('.check-list').getByLabel('凪 夏生').check();
-  await page.locator('.check-list').getByLabel('森川 澪').check();
+  await page
+    .locator('.selection-grid')
+    .getByRole('checkbox', { name: '凪 夏生', exact: true })
+    .check();
+  await page
+    .locator('.selection-grid')
+    .getByRole('checkbox', { name: '森川 澪', exact: true })
+    .check();
   await expect(page.locator('.scene-card')).toHaveCount(1);
-  await page.locator('.check-list').getByLabel('白石 透').check();
+  await page
+    .locator('.selection-grid')
+    .getByRole('checkbox', { name: '白石 透', exact: true })
+    .check();
   await expect(page.locator('.scene-card')).toHaveCount(0);
   await page.getByLabel('角色匹配方式').selectOption('any');
   await expect(page.locator('.scene-card')).toHaveCount(1);

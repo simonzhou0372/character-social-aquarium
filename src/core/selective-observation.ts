@@ -1,7 +1,14 @@
 import { getPrompts } from '../ai/prompts';
 import { db, withWorldLock, type AquariumDB } from '../data/db';
 import { ObservationConfigSchema, type ObservationConfig, type BackfillJob } from './focus-types';
-import { DAY, uid, type Conversation, type ActivityEvent, type Character } from './types';
+import {
+  DAY,
+  uid,
+  type Membership,
+  type Conversation,
+  type ActivityEvent,
+  type Character,
+} from './types';
 import { cancelWorld } from './tasks';
 export const fullObservation = (worldId: string): ObservationConfig => ({
   id: worldId,
@@ -32,14 +39,22 @@ export async function resolveObservation(worldId: string, d: AquariumDB = db) {
   const members = await d.memberships
     .where('worldId')
     .equals(worldId)
-    .and((m) => !deleted.has(m.characterId))
+    .and((m) => !m.inactive && !deleted.has(m.characterId))
     .toArray();
+  const memberIds = new Set(members.map((m) => m.characterId));
   const gm = await d.groupMembers
     .where('worldId')
     .equals(worldId)
-    .and((m) => !deleted.has(m.characterId) && !deletedGroups.has(m.groupId))
+    .and(
+      (m) =>
+        memberIds.has(m.characterId) &&
+        !deleted.has(m.characterId) &&
+        !deletedGroups.has(m.groupId),
+    )
     .toArray();
-  const fullIds = new Set(config.characterIds.filter((id) => !deleted.has(id))),
+  const fullIds = new Set(
+      config.characterIds.filter((id) => memberIds.has(id) && !deleted.has(id)),
+    ),
     groupSets = config.groupIds.map(
       (id) => new Set(gm.filter((m) => m.groupId === id).map((m) => m.characterId)),
     );
@@ -51,10 +66,12 @@ export async function resolveObservation(worldId: string, d: AquariumDB = db) {
     (await d.characters.where('entityMode').equals('background').primaryKeys()).map(String),
   );
   const interactiveCount = members.filter((m) => !backgroundIds.has(m.characterId)).length;
-  const activeIds = new Set(ids.filter((id) => !backgroundIds.has(id) && !deleted.has(id)));
+  const activeIds = new Set(
+    ids.filter((id) => memberIds.has(id) && !backgroundIds.has(id) && !deleted.has(id)),
+  );
   const allowsConversation = (c: Conversation) =>
     c.kind !== 'notes' &&
-    !c.participants.some((id) => deleted.has(id)) &&
+    c.participants.every((id) => memberIds.has(id) && !deleted.has(id)) &&
     (!c.groupId || !deletedGroups.has(c.groupId)) &&
     (config.mode === 'full' ||
       c.participants.some((id) => fullIds.has(id)) ||
@@ -280,10 +297,10 @@ export async function saveObservation(input: ObservationConfig, d: AquariumDB = 
 }
 export function evolvedCharacter(
   c: Character,
-  m?: { evolved?: Partial<Pick<Character, 'personality' | 'style' | 'habits' | 'initiative'>> },
+  m?: Pick<Membership, 'evolved' | 'behaviorOverride'>,
   enabled = true,
 ): Character {
-  return { ...c, ...m?.evolved };
+  return { ...c, ...m?.behaviorOverride, ...m?.evolved };
 }
 /** Recover the dynamic field values known at a historical request time; future growth is not past knowledge. */
 export async function historicalCharacter(

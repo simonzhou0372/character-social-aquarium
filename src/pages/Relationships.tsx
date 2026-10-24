@@ -283,6 +283,41 @@ export function Relationships({ worldId }: { worldId: string }) {
               />
             </Field>
           ))}
+          <details className="settings-section">
+            <summary>竞争、调侃与主动联系 · 模拟参数</summary>
+            {(['competition', 'banter', 'initiativeScale'] as const).map((key) => (
+              <Field
+                key={key}
+                label={
+                  {
+                    competition: '竞争倾向',
+                    banter: '调侃倾向',
+                    initiativeScale: '对该角色主动联系倍率',
+                  }[key]
+                }
+              >
+                <Input
+                  type="number"
+                  min={key === 'initiativeScale' ? 0.1 : 0}
+                  max={key === 'initiativeScale' ? 2 : 1}
+                  step={0.1}
+                  value={edit.behavior?.[key] ?? (key === 'initiativeScale' ? 1 : 0.15)}
+                  onChange={(e) =>
+                    setEdit({
+                      ...edit,
+                      behavior: {
+                        competition: 0.15,
+                        banter: 0.15,
+                        initiativeScale: 1,
+                        ...edit.behavior,
+                        [key]: Number(e.target.value),
+                      },
+                    })
+                  }
+                />
+              </Field>
+            ))}
+          </details>
           <Field label="对对方的昵称">
             <Input
               value={edit.nickname}

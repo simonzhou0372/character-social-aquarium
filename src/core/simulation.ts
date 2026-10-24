@@ -202,12 +202,24 @@ export function socialWeight(
     return 0;
   const affinity = relations
     .filter((r) => r.from === c.id && conversation.participants.includes(r.to))
-    .reduce((v, r) => Math.max(v, r.closeness / 100), 0.25);
+    .reduce(
+      (v, r) => Math.max(v, (r.closeness * 0.45 + r.familiarity * 0.35 + r.trust * 0.2) / 100),
+      0.25,
+    );
+  const initiativeScale = relations
+    .filter((r) => r.from === c.id && conversation.participants.includes(r.to))
+    .reduce((v, r) => Math.max(v, r.behavior?.initiativeScale ?? 1), 0.1);
+  const relationshipScale = relations.some(
+    (r) => r.from === c.id && conversation.participants.includes(r.to),
+  )
+    ? initiativeScale
+    : 1;
   const cooldown = Math.min(1, Math.max(0, (at - state.lastAction) / (cooldownMinutes * 60000)));
   const stale = at - lastMessageAt > 6 * HOUR ? 0.6 : 1;
   return (
     state.phone *
     c.phoneHabit *
+    (hasUnreplied ? 1 : relationshipScale) *
     (hasUnreplied ? c.replyChance : c.initiative) *
     (0.4 + affinity * 0.6) *
     cooldown *

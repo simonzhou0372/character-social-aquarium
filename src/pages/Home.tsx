@@ -1,3 +1,4 @@
+import { StoryProgress } from '../components/NovelSettings';
 import { resolveObservation } from '../core/selective-observation';
 import { ObservationSummary, useObservation } from '../components/ObservationManager';
 import { formatWorldClock, calendarDate } from '../core/calendar';
@@ -84,6 +85,7 @@ export function Home({
           </div>
         </div>
       </div>
+      <StoryProgress worldId={worldId} />
       <ObservationSummary worldId={worldId} onEdit={() => onNavigate('observation')} />
       <Button onClick={() => onNavigate('reports')}>世界报告 · 查看历史与配置</Button>
       <section className="world-hero">

@@ -254,28 +254,9 @@ function SimulationSettings() {
           </button>
         ))}
       </div>
-      <Field label="你的头像">
-        <AvatarUpload
-          value={s.userAvatar}
-          name={s.nickname}
-          onChange={(userAvatar) => void db.settings.update('app', { userAvatar })}
-        />
-      </Field>
-      <Field label="你的昵称">
-        <Input
-          value={s.nickname}
-          maxLength={40}
-          onChange={(e) =>
-            e.target.value && db.settings.update('app', { nickname: e.target.value })
-          }
-        />
-      </Field>
-      <Field label="你在世界中的身份">
-        <Textarea
-          value={s.userBio}
-          onChange={(e) => db.settings.update('app', { userBio: e.target.value })}
-        />
-      </Field>
+      <p className="muted">
+        用户昵称、头像与身份已统一收纳到「用户资料」。世界内的速度与时间也可从顶部控制。
+      </p>
       <Field label="线下事件抽样生成比例（独立于网聊活跃度）">
         <Input
           type="range"
@@ -459,6 +440,37 @@ function DataSettings() {
     </section>
   );
 }
+function UserSettings() {
+  const s = useLiveQuery(() => db.settings.get('app'), []);
+  if (!s) return null;
+  return (
+    <section className="panel">
+      <h2>用户资料</h2>{' '}
+      <Field label="你的头像">
+        <AvatarUpload
+          value={s.userAvatar}
+          name={s.nickname}
+          onChange={(userAvatar) => void db.settings.update('app', { userAvatar })}
+        />
+      </Field>
+      <Field label="你的昵称">
+        <Input
+          value={s.nickname}
+          maxLength={40}
+          onChange={(e) =>
+            e.target.value && db.settings.update('app', { nickname: e.target.value })
+          }
+        />
+      </Field>
+      <Field label="你在世界中的身份">
+        <Textarea
+          value={s.userBio}
+          onChange={(e) => db.settings.update('app', { userBio: e.target.value })}
+        />
+      </Field>
+    </section>
+  );
+}
 export function Settings({ initialTab = 'api' }: { initialTab?: string }) {
   const [tab, setTab] = useState(initialTab);
   const activeWorld = useLiveQuery(() => db.settings.get('app'), []);
@@ -496,6 +508,7 @@ export function Settings({ initialTab = 'api' }: { initialTab?: string }) {
           ['prompts', '提示词管理', BookOpen],
           ['simulation', '模拟器', Sliders],
           ['observation', '观察管理', EyeOff],
+          ['profile', '用户资料', Sliders],
           ['data', '本地数据', Database],
         ].map(([key, title, Icon]) => (
           <button
@@ -544,7 +557,7 @@ export function Settings({ initialTab = 'api' }: { initialTab?: string }) {
             <BookOpen size={22} />
             <span>
               <strong>提示词管理</strong>
-              <small>为六类 AI 任务设定独立的全局规则</small>
+              <small>为各类 AI 任务设定独立的全局规则</small>
             </span>
             <span>→</span>
           </button>
@@ -552,6 +565,7 @@ export function Settings({ initialTab = 'api' }: { initialTab?: string }) {
       )}
       {tab === 'prompts' && <PromptManager />}
       {tab === 'simulation' && <SimulationSettings />}
+      {tab === 'profile' && <UserSettings />}
       {tab === 'data' && <DataSettings />}
       {tab === 'observation' && activeWorld && (
         <ObservationManager key={activeWorld.worldId} worldId={activeWorld.worldId} />

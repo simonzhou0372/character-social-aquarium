@@ -29,9 +29,16 @@ test('world page creates and edits characters, creates a world suite, and confir
 }) => {
   await enter(page);
   await worlds(page);
+  await page.getByRole('tab', { name: '世界人物', exact: true }).click();
   await page.getByRole('button', { name: '添加角色', exact: true }).click();
+  await page.getByRole('button', { name: '创建新角色', exact: true }).click();
+  await page.getByRole('button', { name: '打开角色创建器', exact: true }).click();
   await page.getByLabel('角色名称', { exact: true }).fill('世界页新角色');
   await page.getByRole('button', { name: '保存角色' }).click();
+  await page
+    .getByRole('dialog', { name: '添加内容' })
+    .getByRole('button', { name: '关闭', exact: true })
+    .click();
   await expect(page.locator('.world-character-list')).toContainText('世界页新角色');
   await page.locator('.world-character-list button').filter({ hasText: '世界页新角色' }).click();
   await page.getByLabel('角色名称', { exact: true }).fill('世界页已编辑');
@@ -48,8 +55,10 @@ test('world page creates and edits characters, creates a world suite, and confir
   await dialog.getByRole('button', { name: '保存世界' }).click();
   await expect(dialog).not.toBeVisible();
   await expect(page.locator('.world-character-list')).toContainText('新人甲');
+  await page.getByRole('tab', { name: '世界团体', exact: true }).click();
   await expect(page.locator('.group-grid')).toContainText('摄影社');
   await expect(page.locator('.group-grid')).toContainText('晚潮乐队');
+  await page.getByRole('tab', { name: '世界团体', exact: true }).click();
   await page.getByRole('button', { name: '创建团体' }).click();
   const group = page.getByRole('dialog', { name: '团体与成员' });
   await group.getByLabel('团体名称', { exact: true }).fill('跨世界团体');
@@ -65,6 +74,7 @@ test('world page creates and edits characters, creates a world suite, and confir
   await group.getByLabel('新增角色（每行一个名字）', { exact: true }).fill('新增队友');
   await group.getByRole('button', { name: '保存团体' }).click();
   await expect(group).not.toBeVisible();
+  await page.getByRole('tab', { name: '世界人物', exact: true }).click();
   await expect(page.locator('.world-character-list')).toContainText('白石 透');
   await expect(page.locator('.world-character-list')).toContainText('新增队友');
 });
@@ -132,17 +142,19 @@ test('world and group AI generation keeps constraints and previews before saving
       const p = '/src/data/db.ts';
       return (await import(p)).db.worlds.count();
     }),
-  ).toBe(1);
+  ).toBe(3);
   await dialog.getByRole('button', { name: '采用草稿并继续编辑' }).click();
   await expect(dialog.getByLabel('世界名称', { exact: true })).toHaveValue('AI 世界草稿');
   await dialog.getByRole('button', { name: '保存世界' }).click();
   await expect(dialog).not.toBeVisible();
   expect(calls[0]).toContain('普通学校');
+  await page.getByRole('tab', { name: '世界人物', exact: true }).click();
   await page.locator('.world-character-list button').filter({ hasText: 'AI 角色甲' }).click();
   await expect(page.getByLabel('人设简介与身份', { exact: true })).toHaveValue(
     'AI 草稿保留的具体身份',
   );
   await page.getByRole('button', { name: '取消', exact: true }).click();
+  await page.getByRole('tab', { name: '世界团体', exact: true }).click();
   await page.getByRole('button', { name: '创建团体' }).click();
   dialog = page.getByRole('dialog', { name: '团体与成员' });
   await dialog
@@ -157,6 +169,7 @@ test('world and group AI generation keeps constraints and previews before saving
   await dialog.getByRole('button', { name: '保存团体' }).click();
   await expect(dialog).not.toBeVisible();
   await expect(page.locator('.group-grid')).toContainText('AI 乐队');
+  await page.getByRole('tab', { name: '世界人物', exact: true }).click();
   await expect(page.locator('.world-character-list')).toContainText('AI 角色乙');
 });
 test('time mode controls, acceleration and rewind preserve the original world', async ({
@@ -164,6 +177,7 @@ test('time mode controls, acceleration and rewind preserve the original world', 
 }) => {
   await enter(page);
   await worlds(page);
+  await page.getByRole('tab', { name: '运行与知识', exact: true }).click();
   await page.locator('.time-controls summary').click();
   await page.getByLabel('前台时间加速倍率', { exact: true }).selectOption('3600');
   await expect(page.locator('.sidebar .speed')).toHaveText('3600×');
@@ -171,9 +185,9 @@ test('time mode controls, acceleration and rewind preserve the original world', 
   await expect(page.locator('.time-controls')).toContainText('很多时候需要等待');
   await expect(page.getByLabel('前台时间加速倍率', { exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: '上帝模式' }).click();
-  const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('en-CA', {
-    timeZone: 'Asia/Shanghai',
-  });
+  const yesterday = await page.evaluate(() =>
+    new Date(Date.now() - 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' }),
+  );
   const dateParts = yesterday.split('-');
   const editor = page.locator('.rewind-controls .world-date-editor');
   await editor.getByLabel('年', { exact: true }).fill(dateParts[0]);
@@ -185,8 +199,9 @@ test('time mode controls, acceleration and rewind preserve the original world', 
   const confirm = page.getByRole('dialog', { name: '回到过去，保留原时间线？' });
   await confirm.getByRole('button', { name: '回到这一天', exact: true }).click();
   await expect(confirm).not.toBeVisible();
-  await expect(page.locator('.world-card')).toHaveCount(2);
-  await expect(page.locator('.world-card')).toContainText(['海盐市', '海盐市']);
+  await page.getByRole('tab', { name: '世界总览', exact: true }).click();
+  await expect(page.locator('.world-card')).toHaveCount(4);
+  await expect(page.locator('.world-card').filter({ hasText: '海盐市' })).toHaveCount(2);
 });
 test('life timeline is newest-first and follows accelerated world date', async ({ page }) => {
   await enter(page);
@@ -287,6 +302,7 @@ test('mobile world creation and time settings do not overflow the viewport', asy
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: 'test-results/mobile-world-wizard.png', fullPage: true });
   await page.getByRole('button', { name: '关闭', exact: true }).click();
+  await page.getByRole('tab', { name: '运行与知识', exact: true }).click();
   await page.locator('.time-controls summary').click();
   await expect(page.getByLabel('前台时间加速倍率', { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

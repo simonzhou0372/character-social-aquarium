@@ -1,3 +1,5 @@
+import { NovelSchema } from './novel-types';
+import { ExpansionJobSchema } from './expansion-types';
 import {
   ReportSettingsSchema,
   ObservationConfigSchema,
@@ -21,6 +23,17 @@ export const ProvenanceSchema = z.object({
   continuity: z.enum(['windows', 'pc98', 'reference']),
 });
 export const CharacterSchema = z.object({
+  socialBehavior: z
+    .object({
+      familiar: text,
+      stranger: text,
+      conflict: text,
+      humor: text,
+      topics: text,
+      avoid: text,
+      basis: text,
+    })
+    .optional(),
   provenance: ProvenanceSchema.optional(),
   locationAccess: z
     .object({ home: z.string().max(100), usual: z.array(z.string().max(100)).min(1).max(20) })
@@ -29,6 +42,7 @@ export const CharacterSchema = z.object({
   id,
   name: z.string().min(1).max(60),
   gender: z.string().max(200).optional(),
+  aliases: z.array(z.string().max(80)).max(20).optional(),
   entityMode: z.enum(['interactive', 'background']).optional(),
   fame: z.number().min(0).max(100).optional(),
   source: text,
@@ -57,6 +71,8 @@ export const CharacterSchema = z.object({
 });
 export type Character = z.infer<typeof CharacterSchema>;
 export const WorldSchema = z.object({
+  novel: NovelSchema.optional(),
+  novelHistory: z.array(NovelSchema).max(50).optional(),
   provenance: ProvenanceSchema.optional(),
   presetVersion: z.number().int().positive().optional(),
   locationDetails: z
@@ -99,6 +115,16 @@ export const WorldSchema = z.object({
 });
 export type World = z.infer<typeof WorldSchema>;
 export const MembershipSchema = z.object({
+  inactive: z.boolean().optional(),
+  behaviorOverride: z
+    .object({
+      initiative: z.number().min(0).max(1).optional(),
+      topicIntervalMinutes: z.number().min(5).max(10080).optional(),
+      replyChance: z.number().min(0).max(1).optional(),
+      style: text.optional(),
+      socialBehavior: CharacterSchema.shape.socialBehavior,
+    })
+    .optional(),
   evolutionFields: z.array(z.enum(['initiative', 'personality', 'style', 'habits'])).optional(),
   evolved: z
     .object({
@@ -138,6 +164,13 @@ export const GroupMemberSchema = z.object({
 });
 export type GroupMember = z.infer<typeof GroupMemberSchema>;
 export const RelationshipSchema = z.object({
+  behavior: z
+    .object({
+      competition: z.number().min(0).max(1),
+      banter: z.number().min(0).max(1),
+      initiativeScale: z.number().min(0.1).max(2),
+    })
+    .optional(),
   provenance: ProvenanceSchema.optional(),
   generationMetadata: z
     .object({ origin: z.literal('ai'), uncertain: z.boolean(), at: time })
@@ -502,6 +535,7 @@ export const NotificationSchema = z.object({
 });
 export type EventNotification = z.infer<typeof NotificationSchema>;
 export const BackupSchema = z.object({
+  expansionJobs: z.array(ExpansionJobSchema).max(1000).default([]),
   observationConfigs: z.array(ObservationConfigSchema).default([]),
   observationCoverage: z.array(CoverageSchema).default([]),
   backfillJobs: z.array(BackfillSchema).default([]),

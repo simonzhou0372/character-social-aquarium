@@ -203,6 +203,27 @@ export async function purgeEntity(kind: RecycleKind, id: string, d: AquariumDB =
       evolution: 'evolutionRecords',
     };
     mark('worldReports', (r) => r.sources.some((s: any) => gone(sourceTables[s.type], s.id)));
+    // Purging source facts invalidates their narrative evidence, never leaves a completed ending with missing proof.
+    for (const world of rows.worlds) {
+      if (gone('worlds', world.id) || !world.novel) continue;
+      const n = world.novel;
+      if (
+        n.milestones.some((m: any) => gone('events', m.eventId)) ||
+        n.conditions.some((c: any) => c.evidence.some((e: any) => gone('events', e.eventId)))
+      )
+        await d.worlds.update(world.id, {
+          novel: {
+            ...n,
+            milestones: n.milestones.filter((m: any) => !gone('events', m.eventId)),
+            conditions: n.conditions.map((c: any) => ({
+              ...c,
+              evidence: c.evidence.filter((e: any) => !gone('events', e.eventId)),
+            })),
+            ending: undefined,
+            stage: n.stage === 'completed' ? 'finale' : n.stage,
+          },
+        });
+    }
     for (const r of rows.messages)
       if (!gone('messages', r.id)) {
         const { replyToMessageId, gifAssetId } = r;

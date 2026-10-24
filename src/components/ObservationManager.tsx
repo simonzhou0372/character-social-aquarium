@@ -1,3 +1,4 @@
+import { MultiSelect } from './MultiSelect';
 import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../data/db';
@@ -10,7 +11,7 @@ import {
 import { setBackfillPaused } from '../core/backfill';
 import { formatWorldTime } from '../core/calendar';
 import type { ObservationConfig } from '../core/focus-types';
-import { Button, Field, Input, Select, Status, Avatar } from './ui';
+import { Button, Field, Input, Select, Status } from './ui';
 export function useObservation(worldId: string) {
   return useLiveQuery(
     async () => ({
@@ -90,11 +91,6 @@ export function ObservationManager({ worldId }: { worldId: string }) {
     draft.characterIds.includes(id) ||
     draft.pairs.some((p) => p.includes(id)) ||
     data.scope.gm.some((m) => m.characterId === id && draft.groupIds.includes(m.groupId));
-  const toggle = (key: 'characterIds' | 'groupIds', id: string, checked: boolean) =>
-    setDraft({
-      ...draft,
-      [key]: checked ? [...new Set([...draft[key], id])] : draft[key].filter((v) => v !== id),
-    });
   return (
     <div className="observation-manager">
       <h2>观察管理</h2>
@@ -146,49 +142,25 @@ export function ObservationManager({ worldId }: { worldId: string }) {
         </Button>
       </div>
       <h3>角色 · 个人完整观察</h3>
-      <div className="focus-grid">
-        {chars
+      <MultiSelect
+        label="观察角色"
+        options={chars
           .filter(
             (c) =>
               c.name.includes(search) &&
               (filter === 'all' || active(c.id) === (filter === 'active')),
           )
-          .map((c) => (
-            <label key={c.id}>
-              <input
-                type="checkbox"
-                checked={draft.characterIds.includes(c.id)}
-                onChange={(e) => toggle('characterIds', c.id, e.target.checked)}
-              />
-              <Avatar character={c} size={28} />
-              {c.name}
-              <small>{active(c.id) ? '正在观察' : '静默'}</small>
-            </label>
-          ))}
-      </div>
+          .map((c) => ({ ...c, character: c, detail: active(c.id) ? '正在观察' : '静默' }))}
+        value={draft.characterIds}
+        onChange={(characterIds) => setDraft({ ...draft, mode: 'selective', characterIds })}
+      />
       <h3>团体 · 不扩张成员的私人社交网络</h3>
-      <div className="focus-grid">
-        {data.groups
-          .filter(
-            (g) =>
-              g.name.includes(search) &&
-              (filter === 'all' ||
-                (draft.mode === 'full' || draft.groupIds.includes(g.id)) === (filter === 'active')),
-          )
-          .map((g) => (
-            <label key={g.id}>
-              <input
-                type="checkbox"
-                checked={draft.groupIds.includes(g.id)}
-                onChange={(e) => toggle('groupIds', g.id, e.target.checked)}
-              />
-              {g.name}
-              <small>
-                {draft.mode === 'full' || draft.groupIds.includes(g.id) ? '正在观察' : '静默'}
-              </small>
-            </label>
-          ))}
-      </div>
+      <MultiSelect
+        label="观察团体"
+        options={data.groups.filter((g) => !g.deletedAt && g.name.includes(search))}
+        value={draft.groupIds}
+        onChange={(groupIds) => setDraft({ ...draft, mode: 'selective', groupIds })}
+      />
       <h3>双人关系 / CP</h3>
       <div className="toolbar">
         <Select aria-label="CP第一位" value={first} onChange={(e) => setFirst(e.target.value)}>

@@ -46,15 +46,15 @@ import { Settings, ApiSettings } from './pages/Settings';
 import type { Character } from './core/types';
 const navigation = [
   { id: 'home', label: '今日观察', sub: 'OVERVIEW', icon: LayoutDashboard },
-  { id: 'worlds', label: '世界与团体', sub: 'WORLDS', icon: Globe2 },
   { id: 'chats', label: '聊天消息', sub: 'MESSAGES', icon: MessageCircle },
   { id: 'scenes', label: '线下观察', sub: 'IN PERSON', icon: ContactRound },
-  { id: 'characters', label: '角色图鉴', sub: 'CHARACTERS', icon: ContactRound },
-  { id: 'relationships', label: '关系网络', sub: 'CONNECTIONS', icon: Network },
   { id: 'majorEvents', label: '重大事件', sub: 'WORLD EVENTS', icon: Globe2 },
   { id: 'reports', label: '世界报告', sub: 'REPORTS', icon: BookOpen },
-  { id: 'recycle', label: '回收站', sub: 'RECYCLE BIN', icon: Globe2 },
   { id: 'timeline', label: '生活时间轴', sub: 'LIFE LOG', icon: Clock3 },
+  { id: 'worlds', label: '世界与团体', sub: 'WORLDS', icon: Globe2 },
+  { id: 'relationships', label: '关系网络', sub: 'CONNECTIONS', icon: Network },
+  { id: 'characters', label: '角色图鉴', sub: 'CHARACTERS', icon: ContactRound },
+  { id: 'recycle', label: '回收站', sub: 'RECYCLE BIN', icon: Globe2 },
 ];
 export class ErrorBoundary extends Component<{ children: ReactNode }, { error: string }> {
   state = { error: '' };
@@ -289,23 +289,31 @@ export default function App() {
           </div>
           <span className="nav-label">YOUR OBSERVATORY</span>
           <nav>
-            {navigation.map((n) => (
-              <button
-                key={n.id}
-                className={page === n.id ? 'active' : ''}
-                onClick={() => navigate(n.id)}
-              >
-                <n.icon size={20} />
-                <span>
-                  {n.label}
-                  <small>{n.sub}</small>
-                </span>
-                {n.id === 'chats' && unread > 0 ? (
-                  <b className="nav-unread">{unread > 99 ? '99+' : unread}</b>
-                ) : page === n.id ? (
-                  <span className="nav-mark">↗</span>
-                ) : null}
-              </button>
+            {navigation.map((n, i) => (
+              <div key={n.id}>
+                {[0, 6, 8].includes(i) && (
+                  <span className="nav-category">
+                    {i === 0 ? '世界观察' : i === 6 ? '世界管理' : '全局管理'}
+                  </span>
+                )}
+                <button
+                  key={n.id}
+                  aria-label={n.label}
+                  className={page === n.id ? 'active' : ''}
+                  onClick={() => navigate(n.id)}
+                >
+                  <n.icon size={20} />
+                  <span>
+                    {n.label}
+                    <small>{n.sub}</small>
+                  </span>
+                  {n.id === 'chats' && unread > 0 ? (
+                    <b className="nav-unread">{unread > 99 ? '99+' : unread}</b>
+                  ) : page === n.id ? (
+                    <span className="nav-mark">↗</span>
+                  ) : null}
+                </button>
+              </div>
             ))}
           </nav>
           <div className="sidebar-bottom">
@@ -470,8 +478,8 @@ export default function App() {
         <nav className="mobile-bottom-nav">
           {[
             navigation[0],
-            navigation[2],
-            navigation[3],
+            navigation.find((n) => n.id === 'chats')!,
+            navigation.find((n) => n.id === 'scenes')!,
             navigation.find((n) => n.id === 'timeline')!,
             { id: 'settings', label: '设置', icon: SettingsIcon },
           ].map((n) => (

@@ -29,7 +29,7 @@ export async function applyEvolution(worldId: string, input: unknown, d: Aquariu
           .equals([worldId, p.characterId])
           .first(),
         character = await d.characters.get(p.characterId);
-      if (!m || !character || character.deletedAt || !m.evolutionFields?.includes(p.field))
+      if (!m || m.inactive || !character || character.deletedAt || !m.evolutionFields?.includes(p.field))
         throw new Error('此字段已锁定或角色不属于此世界');
       const checkpoint = await d.checkpoints.get(worldId);
       const sources = await d.events.bulkGet(p.sourceEventIds);

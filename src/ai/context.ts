@@ -49,6 +49,8 @@ function stripDecorative(value: unknown): unknown {
               'locationDetails',
               'provenance',
               'presetVersion',
+              'novel',
+              'novelHistory',
             ].includes(k),
         )
         .map(([k, v]) => [k, stripDecorative(v)]),

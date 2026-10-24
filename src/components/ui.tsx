@@ -1,5 +1,7 @@
 import {
   useState,
+  useEffect,
+  useRef,
   useId,
   Children,
   isValidElement,
@@ -113,21 +115,68 @@ export function Modal({
   children,
   onClose,
   wide = false,
+  side = false,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
   wide?: boolean;
+  side?: boolean;
 }) {
+  const ref = useRef<HTMLElement>(null);
+  const close = useRef(onClose);
+  close.current = onClose;
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    const panel = ref.current!;
+    const focusable = () =>
+      Array.from(
+        panel.querySelectorAll<HTMLElement>(
+          'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex="0"]',
+        ),
+      ).filter((el) => el.getClientRects().length);
+    (focusable()[0] ?? panel).focus();
+    const key = (event: KeyboardEvent) => {
+      const dialogs = document.querySelectorAll('[aria-modal="true"]');
+      if (dialogs[dialogs.length - 1] !== panel) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close.current();
+      }
+      if (event.key === 'Tab') {
+        const items = focusable(),
+          first = items[0],
+          last = items.at(-1);
+        if (!first) {
+          event.preventDefault();
+          return;
+        }
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', key);
+    return () => {
+      document.removeEventListener('keydown', key);
+      previous?.focus();
+    };
+  }, []);
   return (
     <div
-      className="modal-backdrop"
+      className={`modal-backdrop ${side ? 'drawer-backdrop' : ''}`}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <section
-        className={`modal ${wide ? 'wide' : ''}`}
+        ref={ref}
+        tabIndex={-1}
+        className={`modal ${wide ? 'wide' : ''} ${side ? 'drawer' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-label={title}

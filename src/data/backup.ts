@@ -5,6 +5,7 @@ import { realLocalDate } from '../core/calendar';
 import { BackupSchema, type Backup } from '../core/types';
 import { db, dataTables, type AquariumDB } from './db';
 const names = [
+  'expansionJobs',
   'observationConfigs',
   'observationCoverage',
   'backfillJobs',
@@ -84,6 +85,7 @@ export function validateBackup(input: unknown): Backup {
   }
   const member = (w: string, c: string) =>
     b.memberships.some((m) => m.worldId === w && m.characterId === c);
+  b.expansionJobs.forEach((j) => assert(worlds.has(j.worldId), '世界扩展任务'));
   b.memberships.forEach((x) =>
     assert(chars.has(x.characterId) && worlds.has(x.worldId), '角色世界成员'),
   );

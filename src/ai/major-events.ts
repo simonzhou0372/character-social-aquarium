@@ -1,3 +1,4 @@
+import { DirectorSchema, applyStory } from '../core/novel';
 import { z } from 'zod';
 import type { AquariumDB } from '../data/db';
 import type { ContentJob } from '../core/types';
@@ -6,6 +7,7 @@ import { budgetedCompletion } from './orchestrator';
 import type { Provider } from './provider';
 import { parseStructuredJSON } from './structured';
 const Result = z.object({
+  story: DirectorSchema.optional(),
   title: z.string().min(1).max(200),
   description: z.string().min(1).max(3000),
   followUp: z.string().min(1).max(1500),
@@ -39,7 +41,7 @@ export async function generateMajor(
     d,
     provider,
     composePrompt(
-      'life',
+      world.novel?.enabled && !world.novel.ending ? 'novel' : 'life',
       job.snapshot,
       {
         world,
@@ -51,17 +53,35 @@ export async function generateMajor(
           characters,
           recent: recent.map((e) => ({ type: e.type, title: e.title, description: e.description })),
           tendency: world.majorEventSettings?.tendency,
+          ...(world.novel?.enabled && !world.novel.ending
+            ? {
+                story: world.novel,
+                storyEvidence: recent
+                  .filter((e) => e.status === 'occurred')
+                  .map((e) => ({
+                    eventId: e.eventId,
+                    description: e.description,
+                    timestamp: e.timestamp,
+                  })),
+                currentEventId: job.event.id,
+              }
+            : {}),
         },
       },
-      '返回 JSON {"title":"事件标题","description":"对已规划重要事件的具体经过","followUp":"未来可以落实的后续安排","relationshipChanges":[{"from":"参与者ID","to":"参与者ID","delta":1,"reason":"理由"}]}。不得改变时间地点参与者，不创造已发生但不存在的旧经历，不重复近期事件类型；不得自动制造死亡、永久失踪、永久身份变化、解散团体、分手、删除、改变世界规则或锁定人设。以重要机会、决定、长期计划和有因果的互动为主。关系后果仅供配置允许时应用，幅度不超过5。',
+      '返回 JSON {"title":"事件标题","description":"对已规划重要事件的具体经过","followUp":"未来可以落实的后续安排","relationshipChanges":[{"from":"参与者ID","to":"参与者ID","delta":1,"reason":"理由"}]}。不得改变时间地点参与者，不创造已发生但不存在的旧经历，不重复近期事件类型；不得自动制造死亡、永久失踪、永久身份变化、解散团体、分手、删除、改变世界规则或锁定人设。以重要机会、决定、长期计划和有因果的互动为主。关系后果仅供配置允许时应用，幅度不超过5。' +
+        (world.novel?.enabled && !world.novel.ending
+          ? ` 小说模式：事件须向用户结局目标推进一个有因果的小步骤，不跳结局。额外返回 story:{stage:"foundation|development|turning|finale|completed",conditions:[{id:"稳定编号",description:"与用户结局目标对应的必要条件",evidence:[{eventId:"已发生或当前事件ID",quote:"该事件description中逐字存在的4字以上证据"}]}],unresolved:["未解矛盾"],milestone:"当前节点与目标的关联",ending:"仅最终阶段条件有充分过程时返回回顾结尾"}。首次建立2～8个可验证目标条件，此后沿用编号与文字不可弱化。每次最多推进一个阶段，证据必须来自实际事件，未发生计划不算完成。`
+          : ''),
     ),
     job.worldId,
-    'life',
+    world.novel?.enabled && !world.novel.ending ? 'novel' : 'life',
     job.snapshot,
     signal,
     { outputBudget: 3500 },
   );
   const result = Result.parse(parseStructuredJSON(r.content));
+  if (world.novel?.enabled && !world.novel.ending && !result.story)
+    throw new Error('缺少可验证的剧情导演结果');
   if (/死亡|死去|永久失踪|解散|永久改变身份|分手/.test(result.description + result.followUp))
     throw new Error('事件涉及默认禁止的破坏性后果');
   return result;
@@ -108,6 +128,7 @@ export async function applyMajor(
     status: 'occurred',
   });
   await d.events.update(job.event.id, { description: result.description });
+  if (result.story) await applyStory(job.worldId, job.event.id, result.story, d);
   await d.memories.put({
     id: `major-memory:${major.id}`,
     worldId: job.worldId,
