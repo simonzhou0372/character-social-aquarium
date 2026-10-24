@@ -142,12 +142,7 @@ export async function drainContent(worldId: string, d: AquariumDB = db, provider
               await d.events.update(job.event.id, { description: (result as any).description });
             if (job.kind === 'scene' && result) await d.scenes.put(result as any);
             if (job.kind === 'chat' && result && job.conversation && job.speakerId) {
-              const r = result as {
-                messages: string[];
-                offsets?: number[];
-                replyToMessageId?: string;
-                gifAssetId?: string;
-              };
+              const r = result as Awaited<ReturnType<typeof generateDialogue>>;
               await persistDialogue(
                 d,
                 job.conversation.id,

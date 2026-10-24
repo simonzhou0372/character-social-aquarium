@@ -1,3 +1,4 @@
+import { ConversationAvatar } from '../components/ConversationAvatar';
 import type { Message } from '../core/types';
 import { ensureNotes, saveNote, recordObserved } from '../data/chat';
 import { GifLibrary } from '../components/GifLibrary';
@@ -277,22 +278,11 @@ export function Chats({
                 className={`conversation-item ${selectedId === c.id ? 'active' : ''}`}
                 onClick={() => onSelect(c.id)}
               >
-                {c.kind === 'notes' ? (
-                  <Avatar
-                    character={{ name: data.settings?.nickname, avatar: data.settings?.userAvatar }}
-                  />
-                ) : c.avatar ? (
-                  <Avatar character={{ name: c.name, avatar: c.avatar }} />
-                ) : c.kind === 'group' ? (
-                  <span className="group-avatar">
-                    <Users size={24} />
-                  </span>
-                ) : (
-                  <Avatar
-                    character={data.chars.find((ch) => ch.id === c.participants[0])}
-                    size={46}
-                  />
-                )}
+                <ConversationAvatar
+                  conversation={c}
+                  characters={data.chars}
+                  user={{ name: data.settings?.nickname, avatar: data.settings?.userAvatar }}
+                />
                 <div>
                   <div>
                     <strong>{c.name}</strong>
@@ -327,6 +317,12 @@ export function Chats({
               >
                 <ChevronLeft size={20} />
               </button>
+              <ConversationAvatar
+                conversation={convo}
+                characters={data?.chars ?? []}
+                user={{ name: data?.settings?.nickname, avatar: data?.settings?.userAvatar }}
+                size={40}
+              />
               <div>
                 <h2>{convo.name}</h2>
                 <Button onClick={() => setEditingConversation(true)}>编辑名称 / 图片</Button>
@@ -335,11 +331,6 @@ export function Chats({
                     ? '只属于你的备注 · 使用现实时间，不调用 AI'
                     : `${convo.participants.length} 位角色 · ${convo.kind === 'group' ? '群聊' : '私聊'}`}
                 </span>
-              </div>
-              <div className="chat-header-avatars">
-                {convo.participants.slice(0, 5).map((id) => (
-                  <Avatar key={id} character={data?.chars.find((c) => c.id === id)} size={30} />
-                ))}
               </div>
               <Button
                 variant="ghost"

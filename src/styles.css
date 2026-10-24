@@ -4282,3 +4282,49 @@ img.world-cover {
     animation: none;
   }
 }
+
+/* Local, live conversation thumbnails; no image download or extra database writes. */
+.conversation-avatar {
+  flex-shrink: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 10px;
+  background: #e5ecd9;
+  overflow: hidden;
+  position: relative;
+}
+.conversation-avatar .avatar {
+  border-radius: 5px;
+}
+.conversation-avatar.direct {
+  display: block;
+}
+.conversation-avatar.direct .avatar {
+  position: absolute;
+  border: 2px solid #fcfff5;
+}
+.conversation-avatar.direct .avatar:first-child {
+  top: 1px;
+  left: 1px;
+}
+.conversation-avatar.direct .avatar:nth-child(2) {
+  bottom: 1px;
+  right: 1px;
+}
+.chat-header > .conversation-avatar,
+.chat-header > .avatar {
+  flex-shrink: 0;
+}
+@media (max-width: 600px) {
+  .chat-header {
+    gap: 8px;
+    padding-inline: 10px;
+  }
+  .chat-header > div {
+    min-width: 0;
+  }
+}

@@ -1,3 +1,4 @@
+import { ConversationAvatar } from '../components/ConversationAvatar';
 import { StoryProgress } from '../components/NovelSettings';
 import { resolveObservation } from '../core/selective-observation';
 import { ObservationSummary, useObservation } from '../components/ObservationManager';
@@ -30,8 +31,13 @@ export function Home({
   onCharacter: (id: string) => void;
 }) {
   const observation = useObservation(worldId);
-  const data = useLiveQuery(
-    async () => ({
+  const data = useLiveQuery(async () => {
+    const convs = await db.conversations
+      .where('worldId')
+      .equals(worldId)
+      .reverse()
+      .sortBy('lastAt');
+    return {
       world: await db.worlds.get(worldId),
       cp: await db.checkpoints.get(worldId),
       characters: await db.characters
@@ -41,13 +47,17 @@ export function Home({
       members: await db.memberships.where('worldId').equals(worldId).toArray(),
       states: await db.states.where('worldId').equals(worldId).toArray(),
       events: await db.events.where('worldId').equals(worldId).reverse().sortBy('start'),
-      convs: await db.conversations.where('worldId').equals(worldId).reverse().sortBy('lastAt'),
+      convs,
       messages: await db.messages.toArray(),
       cursors: await db.cursors.toArray(),
       groups: await db.groups.toArray(),
-    }),
-    [worldId],
-  );
+      avatarCharacters: await db.characters
+        .where('id')
+        .anyOf([...new Set(convs.slice(0, 3).flatMap((c) => c.participants))])
+        .toArray(),
+      settings: await db.settings.get('app'),
+    };
+  }, [worldId]);
   const chars =
     data?.characters.filter(
       (c) =>
@@ -246,9 +256,11 @@ export function Home({
               .at(-1);
             return (
               <button className="home-conversation" key={c.id} onClick={() => onChat(c.id)}>
-                <span className="group-avatar">
-                  {c.kind === 'group' ? <Users size={22} /> : <MessageCircle size={22} />}
-                </span>
+                <ConversationAvatar
+                  conversation={c}
+                  characters={data.avatarCharacters}
+                  user={{ name: data.settings?.nickname, avatar: data.settings?.userAvatar }}
+                />
                 <div>
                   <h3>
                     {c.name}

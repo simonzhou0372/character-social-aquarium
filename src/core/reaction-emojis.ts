@@ -376,3 +376,19 @@ const supportedReactions = new Set<string>();
 for (const group of reactionEmojiGroups)
   for (const emoji of group.emojis) supportedReactions.add(emoji);
 export const isSupportedReaction = (emoji: string) => supportedReactions.has(emoji);
+
+/** Low-cost read simulation fallback; AI dialogue can choose its own supported emoji. */
+export function simulatedReaction(text: string, variation: number) {
+  const choices = /难过|伤心|哭|失眠|失败|生病|抱歉/.test(text)
+    ? ['🫂', '😢', '🥺']
+    : /哈哈|笑|好玩|有趣/.test(text)
+      ? ['😂', '🤣', '😆']
+      : /恭喜|成功|完成|生日|太好了/.test(text)
+        ? ['🎉', '👏', '🥳']
+        : /谢谢|感谢/.test(text)
+          ? ['❤️', '😊', '🫶']
+          : /[？?]|怎么|为什么/.test(text)
+            ? ['🤔', '👀']
+            : ['👍', '😊', '👀', '👌', '✨'];
+  return choices[Math.min(choices.length - 1, Math.floor(Math.max(0, variation) * choices.length))];
+}

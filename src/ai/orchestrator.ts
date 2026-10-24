@@ -1,3 +1,4 @@
+import { isSupportedReaction, reactionEmojiGroups } from '../core/reaction-emojis';
 import { DEFAULT_CONTEXT_BUDGET_TOKENS } from '../core/ai-limits';
 import { conversationAvailable } from '../data/chat';
 import { evolvedCharacter, historicalCharacter } from '../core/selective-observation';
@@ -36,6 +37,20 @@ import {
 } from './provider';
 const DialogueSchema = z
   .object({
+    mentionTargets: z
+      .array(
+        z
+          .object({ messageIndex: z.number().int().min(0).max(2), characterId: z.string() })
+          .strict(),
+      )
+      .max(12)
+      .optional(),
+    reactions: z
+      .array(
+        z.object({ messageId: z.string(), emoji: z.string().refine(isSupportedReaction) }).strict(),
+      )
+      .max(3)
+      .optional(),
     replyToMessageId: z.string().optional(),
     gifAssetId: z.string().optional(),
     speakerId: z.string(),
@@ -61,7 +76,7 @@ export function parseDialogue(raw: string, speakerId: string, snapshot: PromptCo
   if (
     r.speakerId !== speakerId ||
     r.messages.length > max ||
-    (!rules.allowSilence && !r.gifAssetId && r.messages.length < min) ||
+    (!rules.allowSilence && !r.gifAssetId && !r.reactions?.length && r.messages.length < min) ||
     (r.messages.length > 0 && r.messages.length < min)
   )
     throw new ProviderError('schema', '回复角色或消息数量不合法，本次生成未写入。');
@@ -273,6 +288,7 @@ export async function dialogueContext(
         .join(' '),
     ),
     history: recent.map((m) => ({
+      id: m.id,
       speakerId: m.senderId,
       text: m.text,
       at: m.simAt,
@@ -284,6 +300,8 @@ export async function dialogueContext(
     })),
     state,
     input: {
+      conversationKind: c.kind,
+      availableReactionEmojis: reactionEmojiGroups[0].emojis,
       participants: aliases.map((x) => ({ id: x.id, name: x.name })),
       user: { id: 'user', name: settings?.nickname, bio: settings?.userBio },
       simTime: at,
@@ -403,58 +421,135 @@ export async function persistDialogue(
   prefix: string,
   eventId?: string,
   offsets?: number[],
-  extras: Partial<Message> = {},
+  extras: Partial<Message> & {
+    mentionTargets?: { messageIndex: number; characterId: string }[];
+    reactions?: { messageId: string; emoji: string }[];
+  } = {},
 ) {
-  const c = await d.conversations.get(conversationId);
-  if (!c || c.controlledId === speakerId) return [];
-  if (await d.messages.get(`${prefix}:0`)) return [];
-  const existing = await d.messages.where('conversationId').equals(conversationId).sortBy('seq');
-  const last = existing.at(-1);
-  let seq = last?.seq ?? 0;
-  const messages: Message[] = texts.map((text, i) => ({
-    id: `${prefix}:${i}`,
-    conversationId,
-    senderId: speakerId,
-    seq: ++seq,
-    text,
-    realAt: Date.now(),
-    simAt: at + (offsets?.[i] ?? i * 2) * 1000,
-    source,
-    eventId,
-    backfilled: extras.backfilled,
-    replyToMessageId: extras.replyToMessageId,
-    gifAssetId: i === 0 ? extras.gifAssetId : undefined,
-    messageType: i === 0 && extras.gifAssetId ? 'gif' : 'text',
-  }));
-  if (messages.some((m) => m.simAt < (last?.simAt ?? 0)) && !extras.backfilled) return [];
-  if (!messages.length) return [];
-  const day = dayKey(Date.now()),
-    usage = (await d.usage.get(day)) ?? {
-      id: day,
-      day,
-      requests: 0,
-      inputTokens: 0,
-      outputTokens: 0,
-      messages: 0,
-      estimated: false,
-    };
-  const settings = await d.settings.get('app');
+  const candidate = await d.conversations.get(conversationId);
   if (
-    settings &&
-    !settings.unlimitedUsage &&
-    source !== 'demo' &&
-    usage.messages + messages.length > settings.dailyMessages
+    !candidate ||
+    !candidate.participants.includes(speakerId) ||
+    candidate.controlledId === speakerId
   )
-    throw new ProviderError('budget', '今日消息生成上限已用完。');
-  await d.messages.bulkAdd(messages);
-  await d.conversations.update(conversationId, {
-    lastAt: Math.max(c.lastAt, messages.at(-1)!.simAt),
-  });
-  await d.usage.put({
-    ...usage,
-    messages: usage.messages + (source === 'demo' ? 0 : messages.length),
-  });
-  return messages;
+    return [];
+  return d.transaction(
+    'rw',
+    [
+      d.messages,
+      d.conversations,
+      d.usage,
+      d.settings,
+      ...(extras.mentionTargets?.length ? [d.characters] : []),
+      ...(extras.reactions?.length ? [d.reactions] : []),
+    ],
+    async () => {
+      const c = await d.conversations.get(conversationId);
+      if (!c || !c.participants.includes(speakerId) || c.controlledId === speakerId) return [];
+      if (await d.messages.get(`${prefix}:0`)) return [];
+      const existing = await d.messages
+        .where('conversationId')
+        .equals(conversationId)
+        .sortBy('seq');
+      const last = existing.at(-1);
+      let seq = last?.seq ?? 0;
+      const messages: Message[] = texts.map((text, i) => ({
+        id: `${prefix}:${i}`,
+        conversationId,
+        senderId: speakerId,
+        seq: ++seq,
+        text,
+        realAt: Date.now(),
+        simAt: at + (offsets?.[i] ?? i * 2) * 1000,
+        source,
+        eventId,
+        backfilled: extras.backfilled,
+        replyToMessageId: extras.replyToMessageId,
+        gifAssetId: i === 0 ? extras.gifAssetId : undefined,
+        messageType: i === 0 && extras.gifAssetId ? 'gif' : 'text',
+      }));
+      for (const m of messages) {
+        const i = messages.indexOf(m);
+        const mentions: NonNullable<Message['mentions']> = [];
+        for (const target of extras.mentionTargets ?? []) {
+          if (
+            target.messageIndex !== i ||
+            c.kind !== 'group' ||
+            target.characterId === speakerId ||
+            !c.participants.includes(target.characterId)
+          )
+            continue;
+          const char = await d.characters.get(target.characterId);
+          if (!char || char.deletedAt) continue;
+          const label = '@' + char.name;
+          let start = m.text.indexOf(label);
+          while (start >= 0) {
+            if (!mentions.some((x) => x.start === start))
+              mentions.push({ characterId: char.id, label, start, end: start + label.length });
+            start = m.text.indexOf(label, start + label.length);
+          }
+        }
+        m.mentions = mentions.sort((a, b) => a.start - b.start);
+        m.mentionCharacterIds = [...new Set(mentions.map((x) => x.characterId))];
+      }
+      if (messages.some((m) => m.simAt < (last?.simAt ?? 0)) && !extras.backfilled) return [];
+      // A reaction-only response is valid; stable IDs make task replay idempotent.
+      for (const reaction of extras.reactions ?? []) {
+        const target = await d.messages.get(reaction.messageId);
+        if (
+          !target ||
+          target.conversationId !== c.id ||
+          target.simAt > at ||
+          target.simAt < (c.participantJoinedAt?.[speakerId] ?? 0) ||
+          target.senderId === speakerId ||
+          !isSupportedReaction(reaction.emoji)
+        )
+          continue;
+        const id = `reaction:${target.id}:${speakerId}:${reaction.emoji}`;
+        const duplicate = await d.reactions
+          .where('messageId')
+          .equals(target.id)
+          .and((r) => r.actorId === speakerId && r.emoji === reaction.emoji)
+          .first();
+        if (!duplicate)
+          await d.reactions.put({
+            id,
+            messageId: target.id,
+            actorId: speakerId,
+            emoji: reaction.emoji,
+            reactedAt: at,
+          });
+      }
+      if (!messages.length) return [];
+      const day = dayKey(Date.now()),
+        usage = (await d.usage.get(day)) ?? {
+          id: day,
+          day,
+          requests: 0,
+          inputTokens: 0,
+          outputTokens: 0,
+          messages: 0,
+          estimated: false,
+        };
+      const settings = await d.settings.get('app');
+      if (
+        settings &&
+        !settings.unlimitedUsage &&
+        source !== 'demo' &&
+        usage.messages + messages.length > settings.dailyMessages
+      )
+        throw new ProviderError('budget', '今日消息生成上限已用完。');
+      await d.messages.bulkAdd(messages);
+      await d.conversations.update(conversationId, {
+        lastAt: Math.max(c.lastAt, messages.at(-1)!.simAt),
+      });
+      await d.usage.put({
+        ...usage,
+        messages: usage.messages + (source === 'demo' ? 0 : messages.length),
+      });
+      return messages;
+    },
+  );
 }
 export async function sendUserMessage(
   conversationId: string,
@@ -550,6 +645,7 @@ export async function replyToUser(conversationId: string, d: AquariumDB = db) {
     'rw',
     [
       d.messages,
+      d.reactions,
       d.conversations,
       d.usage,
       d.settings,
@@ -745,6 +841,26 @@ async function validateGenerated(
   at: number,
   r: ReturnType<typeof parseDialogue>,
 ) {
+  const visible = (await d.messages.where('conversationId').equals(c.id).toArray())
+    .filter((m) => m.simAt <= at && m.simAt >= (c.participantJoinedAt?.[r.speakerId] ?? 0))
+    .sort((a, b) => a.simAt - b.simAt || a.seq - b.seq)
+    .slice(-18);
+  for (const target of r.mentionTargets ?? []) {
+    const char = await d.characters.get(target.characterId);
+    if (
+      c.kind !== 'group' ||
+      target.characterId === r.speakerId ||
+      !c.participants.includes(target.characterId) ||
+      !char ||
+      char.deletedAt ||
+      !r.messages[target.messageIndex]?.includes('@' + char.name)
+    )
+      throw new ProviderError('schema', '提及对象或对应消息不合法');
+  }
+  for (const reaction of r.reactions ?? []) {
+    if (!visible.some((m) => m.id === reaction.messageId && m.senderId !== r.speakerId))
+      throw new ProviderError('schema', '回应对象不在角色可见的当前历史中');
+  }
   if (r.replyToMessageId) {
     const m = await d.messages.get(r.replyToMessageId);
     if (!m || m.conversationId !== c.id || m.simAt > at)

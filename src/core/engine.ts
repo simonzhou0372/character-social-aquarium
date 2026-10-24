@@ -1,3 +1,4 @@
+import { simulatedReaction } from './reaction-emojis';
 import { dormantInfluence } from './dormant-influence';
 import {
   resolveObservation,
@@ -569,12 +570,15 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             ((usage?.messages ?? 0) + snapshot.rules.maxMessages <= settings.dailyMessages &&
               (!recovery || cp.recoveryRequests < settings.recoveryBudget)));
         let generated:
-          | {
-              messages: string[];
-              offsets?: number[];
-              gifAssetId?: string;
-              replyToMessageId?: string;
-            }
+          | Pick<
+              Awaited<ReturnType<typeof generateDialogue>>,
+              | 'messages'
+              | 'offsets'
+              | 'gifAssetId'
+              | 'replyToMessageId'
+              | 'mentionTargets'
+              | 'reactions'
+            >
           | undefined;
         if (canGenerate && chosen && options.deferContent) {
           enqueue('chat', plan.events.find((e) => e.id === chosen!.eventId)!);
@@ -878,12 +882,16 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                     });
                     const reactionRoll = random(seed);
                     seed = reactionRoll.seed;
-                    if (message.senderId !== state.characterId && reactionRoll.value < 0.04)
+                    if (
+                      conv.controlledId !== state.characterId &&
+                      message.senderId !== state.characterId &&
+                      reactionRoll.value < 0.04
+                    )
                       await d.reactions.put({
-                        id: `reaction:${message.id}:${state.characterId}:thumb`,
+                        id: `reaction:${message.id}:${state.characterId}:auto`,
                         messageId: message.id,
                         actorId: state.characterId,
-                        emoji: '👍',
+                        emoji: simulatedReaction(message.text, reactionRoll.value / 0.04),
                         reactedAt: end,
                       });
                     await recordHeardInformation(
@@ -928,7 +936,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                 generated,
               );
               messageCount += msgs.length;
-              if (msgs.length)
+              if (msgs.length || generated.reactions?.length)
                 await d.taskLogs.put({
                   id: `social:${worldId}:${before.simTime}`,
                   worldId,
@@ -938,7 +946,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                   status: 'committed',
                 });
               const state = plan.states.find((s) => s.characterId === chosen!.speaker)!;
-              if (msgs.length) {
+              if (msgs.length || generated.reactions?.length) {
                 state.lastAction = chosen.at;
                 if (chosen.initiating) state.lastTopicAt = chosen.at;
               }
