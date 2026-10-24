@@ -1,3 +1,4 @@
+import { MAX_CONTEXT_BUDGET_TOKENS } from './ai-limits';
 import { NovelSchema } from './novel-types';
 import { ExpansionJobSchema } from './expansion-types';
 import {
@@ -352,7 +353,7 @@ export const ProfileSchema = z.object({
   baseUrl: z.string().url(),
   model: z.string().min(1).max(100),
   persistKey: z.boolean(),
-  contextBudgetTokens: z.number().int().min(1000).max(32000).optional(),
+  contextBudgetTokens: z.number().int().min(1000).max(MAX_CONTEXT_BUDGET_TOKENS).optional(),
   outputBudgetTokens: z.number().int().min(256).max(16000).optional(),
   structuredOutputMode: z.enum(['auto', 'json', 'off']).optional(),
   thinkingMode: z.enum(['auto', 'off', 'on']).optional(),

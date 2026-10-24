@@ -1,3 +1,5 @@
+import { DEFAULT_CONTEXT_BUDGET_TOKENS, MAX_CONTEXT_BUDGET_TOKENS } from '../src/core/ai-limits';
+import { ProfileSchema } from '../src/core/types';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { packRequest, compressContext, selectiveText } from '../src/ai/context';
 import { parseStructuredJSON } from '../src/ai/structured';
@@ -7,6 +9,42 @@ import { AquariumDB } from '../src/data/db';
 import { seed } from '../src/data/seed';
 import type { Completion, ChatInput } from '../src/ai/provider';
 describe('selective context packing', () => {
+  it('allows essential large-world facts under the new default while respecting an explicit small budget', () => {
+    const messages: ChatInput = [
+      { role: 'system', content: '必须保留世界事实' },
+      {
+        role: 'user',
+        content: JSON.stringify({ world: { rules: '世界中的重要事实。'.repeat(1000) } }),
+      },
+    ];
+    expect(() => packRequest(messages, 'chat', 4000)).toThrow('必要的世界事实');
+    const packed = packRequest(messages, 'chat');
+    expect(packed.report.budgetTokens).toBe(DEFAULT_CONTEXT_BUDGET_TOKENS);
+    expect(packed.report.afterTokens).toBeGreaterThan(4000);
+    expect(JSON.parse(packed.messages[1].content).world).toEqual(
+      JSON.parse(messages[1].content).world,
+    );
+    const profile = {
+      id: 'api',
+      provider: 'fixture',
+      baseUrl: 'https://fixture.invalid/v1',
+      model: 'fixture',
+      persistKey: false,
+      status: 'untested',
+    };
+    expect(ProfileSchema.parse({ ...profile, contextBudgetTokens: 4000 }).contextBudgetTokens).toBe(
+      4000,
+    );
+    expect(
+      ProfileSchema.parse({ ...profile, contextBudgetTokens: MAX_CONTEXT_BUDGET_TOKENS })
+        .contextBudgetTokens,
+    ).toBe(MAX_CONTEXT_BUDGET_TOKENS);
+    expect(
+      ProfileSchema.safeParse({ ...profile, contextBudgetTokens: MAX_CONTEXT_BUDGET_TOKENS + 1 })
+        .success,
+    ).toBe(false);
+  });
+
   it('keeps world facts, locked boundaries, latest user-controlled text and exact system rules', () => {
     const world = {
         rules: '普通现代世界，不能使用魔法',
@@ -154,7 +192,8 @@ describe('truncation recovery', () => {
     expect(usage.outputTokens).toBe(2078);
     const logs = await d.taskLogs.toArray();
     expect(logs.some((l) => l.finishReason === 'length' && l.status === 'truncated')).toBe(true);
-    expect(logs.every((l) => l.context!.afterTokens <= 4000)).toBe(true);
+    expect(logs.every((l) => l.context!.afterTokens <= DEFAULT_CONTEXT_BUDGET_TOKENS)).toBe(true);
+    expect(logs.every((l) => l.context!.budgetTokens === DEFAULT_CONTEXT_BUDGET_TOKENS)).toBe(true);
   });
   it('does not retry forever or write partial messages when output repeatedly truncates', async () => {
     let calls = 0;

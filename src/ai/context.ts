@@ -1,3 +1,4 @@
+import { DEFAULT_CONTEXT_BUDGET_TOKENS } from '../core/ai-limits';
 import { ProviderError, type ChatInput } from './provider';
 import { estimateTokens, type TaskKind, type PromptContext } from './prompts';
 type Obj = Record<string, unknown>;
@@ -120,7 +121,7 @@ export function compressContext(
 export function packRequest(
   messages: ChatInput,
   _task: TaskKind,
-  budgetTokens = 4000,
+  budgetTokens = DEFAULT_CONTEXT_BUDGET_TOKENS,
   forceTight = false,
 ): { messages: ChatInput; report: ContextReport } {
   const beforeTokens = messages.reduce((sum, m) => sum + estimateTokens(m.content), 0);

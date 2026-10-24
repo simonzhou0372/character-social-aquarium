@@ -1,3 +1,4 @@
+import { DEFAULT_CONTEXT_BUDGET_TOKENS } from '../core/ai-limits';
 import { conversationAvailable } from '../data/chat';
 import { evolvedCharacter, historicalCharacter } from '../core/selective-observation';
 import { completedField } from './structured';
@@ -137,7 +138,7 @@ export async function budgetedCompletion(
   const packed = packRequest(
     messages,
     task,
-    profile?.contextBudgetTokens ?? 4000,
+    profile?.contextBudgetTokens ?? DEFAULT_CONTEXT_BUDGET_TOKENS,
     options?.tightContext,
   );
   const estimatedInput = packed.report.afterTokens;

@@ -1,3 +1,4 @@
+import { DEFAULT_CONTEXT_BUDGET_TOKENS, MAX_CONTEXT_BUDGET_TOKENS } from '../core/ai-limits';
 import { TouhouPortraitEntry } from '../components/TouhouPortraitManager';
 import { ObservationManager } from '../components/ObservationManager';
 import { AvatarUpload } from '../components/AvatarUpload';
@@ -168,15 +169,15 @@ export function ApiSettings({ onDone }: { onDone?: () => void }) {
         </Field>
         <Field
           label="上下文输入预算（估算 Token）"
-          hint="优先保留世界事实、全局禁用规则、当前状态与最新用户消息；压缩旧聊天、低相关记忆和外观数据。必要事实超过预算时会明确提示，不会静默删除。"
+          hint="默认 32,000，上限可设为 1,000,000 Token；这是输入额度而非填充目标，仍会压缩无关历史。请按服务商实际模型窗口设置，并为输出及模型思考留出余量。更高额度可能增加费用；已有手动设置保持不变。"
         >
           <Input
             aria-label="上下文输入预算"
             type="number"
             min={1000}
-            max={32000}
+            max={MAX_CONTEXT_BUDGET_TOKENS}
             step={500}
-            value={p.contextBudgetTokens ?? 4000}
+            value={p.contextBudgetTokens ?? DEFAULT_CONTEXT_BUDGET_TOKENS}
             onChange={(e) => patch({ contextBudgetTokens: Number(e.target.value) })}
           />
         </Field>
