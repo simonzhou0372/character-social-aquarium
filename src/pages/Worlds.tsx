@@ -236,6 +236,7 @@ export function Worlds({
       )}
       {tab === 'overview' && (
         <>
+          <TouhouUpgrade key={worldId} worldId={worldId} />
           <div className="world-grid">
             {worlds?.map((w) => (
               <article className={`world-card ${w.id === worldId ? 'selected' : ''}`} key={w.id}>
@@ -285,7 +286,6 @@ export function Worlds({
               </article>
             ))}
           </div>
-          <TouhouUpgrade key={worldId} worldId={worldId} />
           <StoryProgress worldId={worldId} />
         </>
       )}

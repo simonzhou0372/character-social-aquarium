@@ -146,43 +146,57 @@ test('novel mode requires an ending and persists enforced dependencies without a
   expect(config).toEqual({ major: true, evolution: true, ending: undefined });
 });
 
-test('Touhou rebuild requires both confirmations and clears only that world history', async ({
-  page,
-}) => {
-  await enter(page);
-  await page.evaluate(async () => {
-    const path = '/src/data/db.ts',
-      presetPath = '/src/data/presets/touhou.ts';
-    const { db } = await import(path),
-      { TOUHOU_WORLD_ID } = await import(presetPath);
-    const old = (await db.events.toArray())[0];
-    await db.events.put({
-      ...old,
-      id: 'old-touhou-history',
-      worldId: TOUHOU_WORLD_ID,
-      participants: ['th:reimu'],
-    });
-    await db.settings.update('app', { worldId: TOUHOU_WORLD_ID });
-  });
-  await nav(page);
-  await page.getByText('东方预设 v2 · 人物与关系校准 / 重建旧存档', { exact: true }).click();
-  await page.getByRole('button', { name: '删除旧东方历史并重建此世界', exact: true }).click();
-  await page.getByRole('button', { name: '继续确认', exact: true }).click();
-  const remains = () =>
-    page.evaluate(async () => {
-      const path = '/src/data/db.ts';
-      return !!(await (await import(path)).db.events.get('old-touhou-history'));
-    });
-  expect(await remains()).toBe(true);
-  await page.getByRole('button', { name: '确认永久清除并重建', exact: true }).click();
-  await expect(
-    page.getByText('已重建为 v2 预设，当前暂停；其他世界保留。', { exact: true }),
-  ).toBeVisible();
-  expect(await remains()).toBe(false);
-  expect(
+for (const width of [1440, 390])
+  test(`Touhou rebuild is visible above world cards and needs both confirmations at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await enter(page);
     await page.evaluate(async () => {
-      const path = '/src/data/db.ts';
-      return (await (await import(path)).db.events.where('worldId').equals('w-harbor').count()) > 0;
-    }),
-  ).toBe(true);
-});
+      const path = '/src/data/db.ts',
+        presetPath = '/src/data/presets/touhou.ts';
+      const { db } = await import(path),
+        { TOUHOU_WORLD_ID } = await import(presetPath);
+      const old = (await db.events.toArray())[0];
+      await db.events.put({
+        ...old,
+        id: 'old-touhou-history',
+        worldId: TOUHOU_WORLD_ID,
+        participants: ['th:reimu'],
+      });
+      await db.settings.update('app', { worldId: TOUHOU_WORLD_ID });
+    });
+    await nav(page);
+    const maintenance = page.getByRole('region', { name: '东方预设维护', exact: true });
+    await expect(
+      maintenance.getByRole('button', { name: '删除旧东方历史并重建此世界', exact: true }),
+    ).toBeVisible();
+    expect(
+      await maintenance.evaluate(
+        (el) =>
+          el.getBoundingClientRect().top <
+          document.querySelector('.world-grid')!.getBoundingClientRect().top,
+      ),
+    ).toBe(true);
+    await page.getByRole('button', { name: '删除旧东方历史并重建此世界', exact: true }).click();
+    await page.getByRole('button', { name: '继续确认', exact: true }).click();
+    const remains = () =>
+      page.evaluate(async () => {
+        const path = '/src/data/db.ts';
+        return !!(await (await import(path)).db.events.get('old-touhou-history'));
+      });
+    expect(await remains()).toBe(true);
+    await page.getByRole('button', { name: '确认永久清除并重建', exact: true }).click();
+    await expect(
+      page.getByText('已重建为 v2 预设，当前暂停；其他世界保留。', { exact: true }),
+    ).toBeVisible();
+    expect(await remains()).toBe(false);
+    expect(
+      await page.evaluate(async () => {
+        const path = '/src/data/db.ts';
+        return (
+          (await (await import(path)).db.events.where('worldId').equals('w-harbor').count()) > 0
+        );
+      }),
+    ).toBe(true);
+  });
