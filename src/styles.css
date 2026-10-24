@@ -4328,3 +4328,39 @@ img.world-cover {
     min-width: 0;
   }
 }
+.relationship-graph {
+  margin-block: 20px;
+  padding: 16px;
+  border: 1px solid #d4dfc4;
+  border-radius: 16px;
+  background: #fbfcf5;
+}
+.graph-tools {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.graph-viewport {
+  overflow: hidden;
+  border: 1px solid #d4dfc4;
+  border-radius: 12px;
+  cursor: grab;
+}
+.graph-viewport:active {
+  cursor: grabbing;
+}
+.graph-viewport svg {
+  display: block;
+  user-select: none;
+}
+.graph-viewport [role='button']:focus {
+  outline: none;
+  filter: drop-shadow(0 0 3px #496a2d);
+}
+@media (max-width: 600px) {
+  .relationship-graph {
+    padding: 8px;
+  }
+  .graph-tools select {
+    width: 100%;
+  }
+}

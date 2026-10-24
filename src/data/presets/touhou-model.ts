@@ -39,6 +39,7 @@ export interface CanonGroup {
   background?: boolean;
 }
 export interface CanonEdge {
+  tuning?: { values: [number, number, number]; attitude: string };
   from: string;
   to: string;
   label: string;

@@ -188,7 +188,7 @@ for (const width of [1440, 390])
     expect(await remains()).toBe(true);
     await page.getByRole('button', { name: '确认永久清除并重建', exact: true }).click();
     await expect(
-      page.getByText('已重建为 v2 预设，当前暂停；其他世界保留。', { exact: true }),
+      page.getByText('已重建为 v3 预设，当前暂停；其他世界保留。', { exact: true }),
     ).toBeVisible();
     expect(await remains()).toBe(false);
     expect(

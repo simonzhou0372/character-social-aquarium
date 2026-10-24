@@ -6,7 +6,7 @@ import {
   resetTouhouWorld,
   type PresetDiff,
 } from '../data/presets/touhou-upgrade';
-import { TOUHOU_WORLD_ID, TOUHOU_LEGACY_ID } from '../data/presets/touhou';
+import { TOUHOU_WORLD_ID, TOUHOU_LEGACY_ID, TOUHOU_PRESET_VERSION } from '../data/presets/touhou';
 import { Button, Confirm, Status, Select } from './ui';
 import { MultiSelect } from './MultiSelect';
 export function TouhouUpgrade({ worldId }: { worldId: string }) {
@@ -18,13 +18,13 @@ export function TouhouUpgrade({ worldId }: { worldId: string }) {
   if (![TOUHOU_WORLD_ID, TOUHOU_LEGACY_ID].includes(worldId)) return null;
   return (
     <section className="panel" aria-label="东方预设维护">
-      <h3>东方预设 v2 · 重建旧存档</h3>
-      <p>清除当前东方世界的历史并重建新版预设；其他世界、API 与全局提示词保留。</p>
+      <h3>东方预设 v{TOUHOU_PRESET_VERSION} · 资料更新与维护</h3>
+      <p>可先预览差异补充新版资料，保留现有历史。只有下方重建按钮会清除当前东方世界历史。</p>
       <TouhouPortraitEntry worldId={worldId} />
       <Button variant="danger" onClick={() => setReset(1)}>
         删除旧东方历史并重建此世界
       </Button>
-      <details>
+      <details open>
         <summary>人物与关系校准 · 差异更新</summary>
         <p>
           数值与行为是基于原作的模拟解释，不是官方量表。旧设定不会自动覆盖。锁定关系不可更新，需先在关系编辑中手动解锁。重建可直接使用全套新版默认配置。
@@ -106,7 +106,7 @@ export function TouhouUpgrade({ worldId }: { worldId: string }) {
               await resetTouhouWorld(worldId);
               setRows([]);
               setReset(0);
-              setNotice('已重建为 v2 预设，当前暂停；其他世界保留。');
+              setNotice(`已重建为 v${TOUHOU_PRESET_VERSION} 预设，当前暂停；其他世界保留。`);
             } catch (e) {
               setNotice(String(e));
               setReset(0);

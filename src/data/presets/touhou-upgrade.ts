@@ -1,5 +1,10 @@
 import { db, type AquariumDB } from '../db';
-import { buildTouhouPreset, TOUHOU_WORLD_ID, TOUHOU_LEGACY_ID } from './touhou';
+import {
+  buildTouhouPreset,
+  TOUHOU_WORLD_ID,
+  TOUHOU_LEGACY_ID,
+  TOUHOU_PRESET_VERSION,
+} from './touhou';
 import { recycleEntity, purgeEntity } from '../recycle';
 import { TOUHOU_CATALOG } from './touhou-sources';
 export type PresetDiff = {
@@ -17,6 +22,7 @@ export async function previewTouhouUpgrade(worldId: string, d: AquariumDB = db) 
   if (![TOUHOU_WORLD_ID, TOUHOU_LEGACY_ID].includes(worldId)) return [];
   const legacy = worldId === TOUHOU_LEGACY_ID,
     old = buildTouhouPreset(legacy, 0, 1),
+    previous = buildTouhouPreset(legacy, 0, 2),
     next = buildTouhouPreset(legacy, 0),
     rows: PresetDiff[] = [];
   for (const c of next.characters) {
@@ -42,7 +48,11 @@ export async function previewTouhouUpgrade(worldId: string, d: AquariumDB = db) 
           field,
           before,
           after,
-          blocked: !same(before, baseline[field]) || (!!m.styleOverride && field === 'style'),
+          blocked:
+            ![baseline[field], previous.characters.find((o) => o.id === c.id)?.[field]].some((v) =>
+              same(before, v),
+            ) ||
+            (!!m.styleOverride && field === 'style'),
           reason: '此字段已修改，保留用户设定',
         });
     }
@@ -64,7 +74,9 @@ export async function previewTouhouUpgrade(worldId: string, d: AquariumDB = db) 
       });
       continue;
     }
-    const baseline = old.relationships.find((o) => o.from === r.from && o.to === r.to)!;
+    const baselines = [old, previous].flatMap((p) =>
+      p.relationships.filter((o) => o.from === r.from && o.to === r.to),
+    );
     for (const field of [
       'closeness',
       'trust',
@@ -81,7 +93,7 @@ export async function previewTouhouUpgrade(worldId: string, d: AquariumDB = db) 
           field,
           before: current[field],
           after: r[field],
-          blocked: current.locked || !same(current[field], baseline[field]),
+          blocked: current.locked || !baselines.some((b) => same(current[field], b[field])),
           reason: current.locked ? '关系已锁定，需先手动解锁才能更新' : '此字段已修改',
         });
     }
@@ -123,7 +135,7 @@ export async function applyTouhouUpgrade(
         });
       count++;
     }
-    await d.worlds.update(worldId, { presetVersion: 2 });
+    await d.worlds.update(worldId, { presetVersion: TOUHOU_PRESET_VERSION });
     return count;
   });
 }

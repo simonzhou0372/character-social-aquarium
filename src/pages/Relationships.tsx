@@ -1,6 +1,7 @@
+import { RelationshipGraph } from '../components/RelationshipGraph';
 import { RelationshipAssistant } from '../components/RelationshipAssistant';
 import { PresetDetails } from '../components/PresetDetails';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus, ArrowRight, Lock, Network } from 'lucide-react';
 import { db } from '../data/db';
@@ -34,21 +35,22 @@ export function Relationships({ worldId }: { worldId: string }) {
     [group, setGroup] = useState(''),
     [character, setCharacter] = useState<Character>(),
     [error, setError] = useState('');
+  useEffect(() => {
+    setGroup('');
+    setFocus('');
+    setEdit(undefined);
+    setCharacter(undefined);
+  }, [worldId]);
   const chars =
     data?.chars.filter(
       (c) =>
-        data.members.some((m) => m.characterId === c.id) &&
+        data.members.some((m) => !m.inactive && m.characterId === c.id) &&
         (!group || data.gm.some((m) => m.groupId === group && m.characterId === c.id)),
     ) ?? [];
   const relations =
     data?.relations.filter(
       (r) => chars.some((c) => c.id === r.from) && chars.some((c) => c.id === r.to),
     ) ?? [];
-  const pos = (id: string) => {
-    const index = chars.findIndex((c) => c.id === id);
-    const angle = (index * 2 * Math.PI) / Math.max(chars.length, 1) - Math.PI / 2;
-    return { x: 400 + Math.cos(angle) * 270, y: 275 + Math.sin(angle) * 185 };
-  };
   return (
     <div>
       <div className="page-heading">
@@ -116,100 +118,26 @@ export function Relationships({ worldId }: { worldId: string }) {
           大型世界可先按团体筛选，再高亮某位角色；点击关系可查看有向事实与出处。原设资料中的数值仅用于调度，不是原作好感度。
         </p>
       )}
-      <div className="network-panel">
-        <span className="network-caption">SOCIAL CONSTELLATION · 点击人物或连线</span>
-        {chars.length ? (
-          <svg viewBox="0 0 800 550" className="network" role="img" aria-label="有向人物关系图">
-            <defs>
-              <marker
-                id="arrow"
-                viewBox="0 0 10 10"
-                refX="9"
-                refY="5"
-                markerWidth="5"
-                markerHeight="5"
-                orient="auto"
-              >
-                <path d="M0 0L10 5L0 10" fill="#758767" />
-              </marker>
-            </defs>
-            {relations.map((r, i) => {
-              const a = pos(r.from),
-                b = pos(r.to),
-                mx = (a.x + b.x) / 2,
-                my = (a.y + b.y) / 2;
-              return (
-                <g
-                  key={r.id}
-                  onClick={() => setEdit(r)}
-                  className={`network-edge ${focus && r.from !== focus && r.to !== focus ? 'dim' : ''}`}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`${r.label} ${r.from} 到 ${r.to}`}
-                  onKeyDown={(e) => e.key === 'Enter' && setEdit(r)}
-                >
-                  <path
-                    d={`M${a.x} ${a.y}Q${mx + (i % 2 ? 30 : -30)} ${my - 25} ${b.x} ${b.y}`}
-                    stroke="transparent"
-                    strokeWidth={28}
-                    fill="none"
-                  />
-                  <path
-                    d={`M${a.x} ${a.y}Q${mx + (i % 2 ? 30 : -30)} ${my - 25} ${b.x} ${b.y}`}
-                    stroke="#93a17c"
-                    strokeWidth={2}
-                    fill="none"
-                    markerEnd="url(#arrow)"
-                  />
-                  <rect
-                    x={mx - 32}
-                    y={my - 23 - (i % 2) * 15}
-                    width={64}
-                    height={24}
-                    rx={5}
-                    fill="#f8f8f1"
-                  />
-                  <text x={mx} y={my - 7 - (i % 2) * 15} textAnchor="middle">
-                    {r.label} →
-                  </text>
-                </g>
-              );
-            })}
-            {chars.map((c) => {
-              const p = pos(c.id);
-              return (
-                <g
-                  key={c.id}
-                  className="network-node"
-                  onClick={() => setCharacter(c)}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={c.name}
-                  onKeyDown={(e) => e.key === 'Enter' && setCharacter(c)}
-                >
-                  <circle
-                    cx={p.x}
-                    cy={p.y}
-                    r={44}
-                    fill={c.color}
-                    stroke="#2b322b"
-                    strokeWidth={2}
-                  />
-                  <text x={p.x} y={p.y + 8} textAnchor="middle" fontSize={25} fontWeight="800">
-                    {c.name.replaceAll(' ', '').slice(-2)}
-                  </text>
-                  <rect x={p.x - 52} y={p.y + 51} width={104} height={28} rx={6} fill="#f8f8f1" />
-                  <text x={p.x} y={p.y + 70} textAnchor="middle" fontWeight="700">
-                    {c.name}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        ) : (
-          <Empty title="还没有角色" description="先创建角色，再连接他们的故事。" />
-        )}
-      </div>
+      {chars.length ? (
+        <RelationshipGraph
+          characters={chars}
+          relations={relations}
+          focus={focus}
+          onCharacter={setCharacter}
+          onRelation={setEdit}
+          groups={
+            new Map(
+              chars.flatMap((c) => {
+                const member = data?.gm.find((m) => m.characterId === c.id);
+                const group = data?.groups.find((g) => g.id === member?.groupId);
+                return group ? [[c.id, group.name] as [string, string]] : [];
+              }),
+            )
+          }
+        />
+      ) : (
+        <Empty title="还没有角色" description="先创建角色，再连接他们的故事。" />
+      )}
       <div className="relation-list">
         {relations.map((r) => (
           <button

@@ -282,7 +282,9 @@ it('preset field updates protect user overrides and locks, and apply only within
   await d.characters.update('th:reimu', { style: '用户专属口吻' });
   await d.relationships.bulkPut(baseline.relationships);
   const rows = await previewTouhouUpgrade(TOUHOU_WORLD_ID, d);
-  expect(rows.filter((r) => r.kind === 'relationship').every((r) => r.blocked)).toBe(true);
+  expect(
+    rows.filter((r) => r.kind === 'relationship' && r.field !== 'missing').every((r) => r.blocked),
+  ).toBe(true);
   expect(rows.find((r) => r.id === 'th:reimu' && r.field === 'style')?.blocked).toBe(true);
   await applyTouhouUpgrade(
     TOUHOU_WORLD_ID,
@@ -313,7 +315,7 @@ it('explicit Touhou reset removes old history but preserves unrelated worlds and
   expect(await d.messages.count()).toBe(count);
   expect(await d.events.get('old-touhou-history')).toBeUndefined();
   expect(await d.events.get(oldEvent.id)).toBeDefined();
-  expect((await d.worlds.get(TOUHOU_WORLD_ID))?.presetVersion).toBe(2);
+  expect((await d.worlds.get(TOUHOU_WORLD_ID))?.presetVersion).toBe(3);
   expect((await d.checkpoints.get(TOUHOU_WORLD_ID))?.paused).toBe(true);
   expect((await d.characters.get('th:reimu'))?.style).toBe('其他世界使用的全局风格');
   validateBackup(await exportBackup(d));

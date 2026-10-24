@@ -1,3 +1,5 @@
+import { expandedTouhouEdges, expandedLegacyEdges } from './touhou-expanded-relations';
+import { vividPerson, calibratedSpecificEdge } from './touhou-vivid';
 import { calibratePerson, calibrateEdge } from './touhou-calibration';
 import { db, type AquariumDB } from '../db';
 import { type Character, type World, type Group, type Relationship } from '../../core/types';
@@ -13,7 +15,7 @@ import type { CanonPerson, CanonPlace, CanonGroup, CanonEdge } from './touhou-mo
 
 export const TOUHOU_WORLD_ID = 'w-touhou-windows';
 export const TOUHOU_LEGACY_ID = 'w-touhou-pc98';
-export const TOUHOU_PRESET_VERSION = 2;
+export const TOUHOU_PRESET_VERSION = 3;
 const characterId = (key: string) => `th:${key}`;
 const groupId = (key: string) => `th-group:${key}`;
 const commonRules = `本预设是非官方整理的原作事实资料，不是官方新剧情。只使用资料已确认事实；不引用二次创作、商业衍生手游、同人漫画或网络梗补足设定。
@@ -75,10 +77,25 @@ export function buildTouhouPreset(legacy: boolean, now: number, version = TOUHOU
   const people: CanonPerson[] = legacy ? touhouLegacyPeople : touhouPeople;
   const places: CanonPlace[] = legacy ? touhouLegacyPlaces : touhouPlaces;
   const circles: CanonGroup[] = legacy ? touhouLegacyGroups : touhouGroups;
-  const edges: CanonEdge[] = legacy ? touhouLegacyEdges : touhouEdges;
+  const baseEdges = legacy ? touhouLegacyEdges : touhouEdges;
+  const edges: CanonEdge[] =
+    version >= 3
+      ? [
+          ...new Map(
+            [...baseEdges, ...(legacy ? expandedLegacyEdges : expandedTouhouEdges)].map((e) => [
+              e.from + ':' + e.to,
+              e,
+            ]),
+          ).values(),
+        ]
+      : baseEdges;
   const date = { year: 1, month: 1, day: 1, hour: 9, minute: 0 };
   const characters = people.map((p) =>
-    version >= 2 ? calibratePerson(p, buildCharacter(p, legacy)) : buildCharacter(p, legacy),
+    version >= 3
+      ? vividPerson(p, calibratePerson(p, buildCharacter(p, legacy)))
+      : version >= 2
+        ? calibratePerson(p, buildCharacter(p, legacy))
+        : buildCharacter(p, legacy),
   );
   const world: World = {
     id,
@@ -153,7 +170,11 @@ export function buildTouhouPreset(legacy: boolean, now: number, version = TOUHOU
     characters,
     groups,
     relationships:
-      version >= 2 ? relationships.map((r, i) => calibrateEdge(edges[i], r)) : relationships,
+      version >= 3
+        ? relationships.map((r, i) => calibratedSpecificEdge(edges[i], calibrateEdge(edges[i], r)))
+        : version >= 2
+          ? relationships.map((r, i) => calibrateEdge(edges[i], r))
+          : relationships,
     memberships: characters.map((c) => ({
       id: `${id}:${c.id}`,
       worldId: id,

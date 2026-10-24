@@ -1,5 +1,5 @@
 export const TOUHOU_CATALOG = 'touhou-canon-2026-10';
-export const TOUHOU_AS_OF = '2026-10-24';
+export const TOUHOU_AS_OF = '2026-10-25';
 export interface TouhouSource {
   title: string;
   url: string;

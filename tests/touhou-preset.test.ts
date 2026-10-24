@@ -83,7 +83,7 @@ it('keeps deletions and the install marker across backup restore instead of resu
   await importBackup(backup, d);
   await ensureTouhouPresets(d, now + HOUR);
   expect(await d.worlds.get(TOUHOU_LEGACY_ID)).toBeUndefined();
-  expect((await d.settings.get('app'))?.installedPresets?.[TOUHOU_CATALOG]).toBe(2);
+  expect((await d.settings.get('app'))?.installedPresets?.[TOUHOU_CATALOG]).toBe(3);
 });
 it('does not teleport earth residents to lunar or other restricted locations during local planning', () => {
   const preset = buildTouhouPreset(false, now),
