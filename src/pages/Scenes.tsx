@@ -171,6 +171,7 @@ export function Scenes({ worldId }: { worldId: string }) {
       scenes: await db.scenes.toArray(),
       worlds: await db.worlds.filter((w) => !w.deletedAt).toArray(),
       chars: await db.characters.toArray(),
+      memberships: await db.memberships.toArray(),
       groups: await db.groups.toArray(),
       gm: await db.groupMembers.toArray(),
       checkpoints: await db.checkpoints.toArray(),
@@ -189,6 +190,20 @@ export function Scenes({ worldId }: { worldId: string }) {
   const [from, setFrom] = useState(realLocalDate(Date.now(), 'Asia/Shanghai')),
     [to, setTo] = useState(realLocalDate(Date.now(), 'Asia/Shanghai'));
   const w = data?.worlds.find((w) => w.id === world);
+  const availableWorlds = new Set(data?.worlds.map((w) => w.id));
+  const inScope = (id: string) => availableWorlds.has(id) && (!world || id === world);
+  // Former participants remain searchable in their original world archives.
+  const historicalParticipants = new Set(
+    data?.scenes.filter((s) => inScope(s.worldId)).flatMap((s) => s.participants),
+  );
+  const memberIds = new Set(
+    data?.memberships.filter((m) => !m.inactive && inScope(m.worldId)).map((m) => m.characterId),
+  );
+  const characterOptions = (data?.chars ?? []).filter(
+    (c) =>
+      !c.deletedAt &&
+      ((c.entityMode !== 'background' && memberIds.has(c.id)) || historicalParticipants.has(c.id)),
+  );
   let start: number | undefined, end: number | undefined;
   try {
     if (range && w) {
@@ -241,6 +256,8 @@ export function Scenes({ worldId }: { worldId: string }) {
               value={world}
               onChange={(e) => {
                 setWorld(e.target.value);
+                setPeople([]);
+                setType('');
                 setLocation('');
                 setGroup('');
                 setRange(false);
@@ -258,7 +275,7 @@ export function Scenes({ worldId }: { worldId: string }) {
             <Select value={group} onChange={(e) => setGroup(e.target.value)}>
               <option value="">全部团体</option>
               {data?.groups
-                .filter((g) => !world || g.worldIds.includes(world))
+                .filter((g) => !g.deletedAt && g.worldIds.some(inScope))
                 .map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.name}
@@ -281,18 +298,18 @@ export function Scenes({ worldId }: { worldId: string }) {
           <Field label="场景类型">
             <Select value={type} onChange={(e) => setType(e.target.value)}>
               <option value="">全部类型</option>
-              {[...new Set(data?.scenes.map((s) => s.type))].map((t) => (
-                <option key={t}>{t}</option>
-              ))}
+              {[...new Set(data?.scenes.filter((s) => inScope(s.worldId)).map((s) => s.type))].map(
+                (t) => (
+                  <option key={t}>{t}</option>
+                ),
+              )}
             </Select>
           </Field>
         </div>
         <Field label="参与角色（可多选）">
           <MultiSelect
             label="场景参与者"
-            options={(data?.chars ?? [])
-              .filter((c) => c.entityMode !== 'background')
-              .map((c) => ({ ...c, character: c }))}
+            options={characterOptions.map((c) => ({ ...c, character: c }))}
             value={people}
             onChange={setPeople}
           />

@@ -452,7 +452,7 @@ export default function App() {
             {page === 'recycle' && <RecycleBin />}
             {page === 'relationships' && <Relationships worldId={worldId} />}{' '}
             {page === 'majorEvents' && <MajorEvents worldId={worldId} onOpen={setSelectedMajor} />}
-            {page === 'scenes' && <Scenes worldId={worldId} />}{' '}
+            {page === 'scenes' && <Scenes key={worldId} worldId={worldId} />}{' '}
             {page === 'observation' && <ObservationManager worldId={worldId} />}
             {page === 'reports' && (
               <WorldReports
