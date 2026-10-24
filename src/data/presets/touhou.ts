@@ -65,7 +65,7 @@ function buildCharacter(person: CanonPerson, legacy: boolean): Character {
       catalogId: TOUHOU_CATALOG,
       sourceIds: knownSources,
       continuity: legacy ? 'pc98' : person.background ? 'reference' : 'windows',
-      note: '资料为事实摘要，不是完整剧本；空白性别不推定。作息、活跃度和活动起点仅是调度参数。头像为程序默认绘图，没有收录原作游戏素材。',
+      note: '资料为事实摘要，不是完整剧本；空白性别不推定。作息、活跃度和活动起点仅是调度参数。头像默认使用程序绘图，可在素材入口由用户自选下载并查看原图出处。',
     },
   };
 }

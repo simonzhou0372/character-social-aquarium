@@ -1,3 +1,4 @@
+import { TouhouPortraitEntry } from '../components/TouhouPortraitManager';
 import { ObservationManager } from '../components/ObservationManager';
 import { AvatarUpload } from '../components/AvatarUpload';
 import { useEffect, useState } from 'react';
@@ -353,6 +354,7 @@ function DataSettings() {
         </div>
         <Database size={30} />
       </div>
+      <TouhouPortraitEntry />
       <div className="data-stats">
         <span>
           <b>{counts?.characters ?? 0}</b> 位角色

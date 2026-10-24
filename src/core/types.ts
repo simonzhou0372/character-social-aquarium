@@ -47,6 +47,18 @@ export const CharacterSchema = z.object({
   fame: z.number().min(0).max(100).optional(),
   source: text,
   avatar: z.string().max(1500000),
+  avatarSource: z
+    .object({
+      pack: z.string().max(100),
+      assetId: z.string().max(200),
+      kind: z.enum(['twilight', 'zun']),
+      artist: z.string().max(100),
+      work: z.string().max(100),
+      sourcePage: z.string().url().max(2000),
+      digest: z.string().length(64),
+      downloadedAt: time,
+    })
+    .optional(),
   color: z.string().regex(/^#[0-9a-f]{6}$/i),
   bio: text,
   personality: text,

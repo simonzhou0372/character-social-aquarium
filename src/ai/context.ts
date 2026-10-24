@@ -39,6 +39,7 @@ function stripDecorative(value: unknown): unknown {
           ([k]) =>
             ![
               'avatar',
+              'avatarSource',
               'cover',
               'color',
               'imageData',

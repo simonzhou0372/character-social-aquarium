@@ -234,7 +234,11 @@ export function Avatar({
       style={{ width: size, height: size, background: c?.color ?? '#d7ddd5' }}
     >
       {c?.avatar ? (
-        <img src={c.avatar} alt={c.name ?? ''} />
+        <img
+          src={c.avatar}
+          alt={c.name ?? ''}
+          style={c.avatarSource ? { objectPosition: '50% 12%' } : undefined}
+        />
       ) : (
         <svg viewBox="0 0 120 140" role="img" aria-label={c?.name ?? '默认头像'}>
           <path

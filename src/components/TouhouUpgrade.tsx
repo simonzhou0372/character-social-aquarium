@@ -1,3 +1,4 @@
+import { TouhouPortraitEntry } from './TouhouPortraitManager';
 import { useState } from 'react';
 import {
   previewTouhouUpgrade,
@@ -19,6 +20,7 @@ export function TouhouUpgrade({ worldId }: { worldId: string }) {
     <section className="panel" aria-label="东方预设维护">
       <h3>东方预设 v2 · 重建旧存档</h3>
       <p>清除当前东方世界的历史并重建新版预设；其他世界、API 与全局提示词保留。</p>
+      <TouhouPortraitEntry worldId={worldId} />
       <Button variant="danger" onClick={() => setReset(1)}>
         删除旧东方历史并重建此世界
       </Button>

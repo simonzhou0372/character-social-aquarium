@@ -25,7 +25,7 @@
 
 具体清单在 `src/data/presets/touhou-sources.ts`。例如 [锦上京原作附带文档转录](https://omake.thwiki.cc/translate/东方锦上京_omake.zh.txt) 用于核对新增角色；[儚月抄设定页转录](https://thwiki.cc/index.php?setlang=en&title=东方儚月抄_～_Cage_in_Lunatic_Runagate./设定文档) 用于区分两只铃仙和绵月姐妹的关系。
 
-素材范围遵循 [官方创作使用指南](https://touhou-project.news/guideline/) 的标识要求：明确非官方，不收录游戏立绘、音乐、原始脚本或结局全文。头像使用程序自己的通用绘图。
+本项目明确为非官方，仓库不收录游戏立绘、音乐、原始脚本或结局全文。头像默认使用程序绘图；用户可通过[可选头像素材入口](TOUHOU-PORTRAITS.md)自行选择下载。官方图片不属于本项目开源授权范围，需遵守[官方创作使用指南](https://touhou-project.news/guideline/)及作品方条件。
 
 ## 不混用的设定
 

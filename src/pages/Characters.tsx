@@ -75,7 +75,11 @@ export function CharacterEditor({
     <Modal title={character ? '编辑角色资料' : '认识一位新角色'} onClose={onClose} wide>
       <div className="character-editor">
         <div className="editor-avatar">
-          <AvatarUpload value={c.avatar} name={c.name} onChange={(avatar) => patch({ avatar })} />
+          <AvatarUpload
+            value={c.avatar}
+            name={c.name}
+            onChange={(avatar) => patch({ avatar, avatarSource: undefined })}
+          />
         </div>
         <div className="editor-main">
           <PresetDetails provenance={c.provenance} />

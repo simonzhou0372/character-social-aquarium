@@ -1,0 +1,3594 @@
+[
+  {
+    "characterId": "th:reimu",
+    "name": "博丽灵梦",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "61e57d7daa7c01ce3fd9",
+        "kind": "twilight",
+        "work": "绯想天",
+        "artist": "alphes",
+        "fileTitle": "文件:博丽灵梦（绯想天立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%8D%9A%E4%B8%BD%E7%81%B5%E6%A2%A6%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/9/93/%E5%8D%9A%E4%B8%BD%E7%81%B5%E6%A2%A6%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%8D%9A%E4%B8%BD%E7%81%B5%E6%A2%A6%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 228465
+      },
+      {
+        "id": "03483fce9a01845af0db",
+        "kind": "twilight",
+        "work": "萃梦想",
+        "artist": "alphes",
+        "fileTitle": "文件:博丽灵梦（萃梦想立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%8D%9A%E4%B8%BD%E7%81%B5%E6%A2%A6%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/b/ba/%E5%8D%9A%E4%B8%BD%E7%81%B5%E6%A2%A6%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%8D%9A%E4%B8%BD%E7%81%B5%E6%A2%A6%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 1049236
+      },
+      {
+        "id": "d7107b4c930ed6892c54",
+        "kind": "zun",
+        "work": "锦上京",
+        "artist": "ZUN",
+        "fileTitle": "文件:博丽灵梦（锦上京立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%8D%9A%E4%B8%BD%E7%81%B5%E6%A2%A6%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/7/7f/%E5%8D%9A%E4%B8%BD%E7%81%B5%E6%A2%A6%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%8D%9A%E4%B8%BD%E7%81%B5%E6%A2%A6%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 414244
+      }
+    ]
+  },
+  {
+    "characterId": "th:marisa",
+    "name": "雾雨魔理沙",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "2c33e3d61a7f77a01b14",
+        "kind": "twilight",
+        "work": "绯想天",
+        "artist": "alphes",
+        "fileTitle": "文件:雾雨魔理沙（绯想天立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%9B%BE%E9%9B%A8%E9%AD%94%E7%90%86%E6%B2%99%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/9/99/%E9%9B%BE%E9%9B%A8%E9%AD%94%E7%90%86%E6%B2%99%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%9B%BE%E9%9B%A8%E9%AD%94%E7%90%86%E6%B2%99%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 302144
+      },
+      {
+        "id": "0dbb919639d4930ebe72",
+        "kind": "twilight",
+        "work": "萃梦想",
+        "artist": "alphes",
+        "fileTitle": "文件:雾雨魔理沙（萃梦想立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%9B%BE%E9%9B%A8%E9%AD%94%E7%90%86%E6%B2%99%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/7/71/%E9%9B%BE%E9%9B%A8%E9%AD%94%E7%90%86%E6%B2%99%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%9B%BE%E9%9B%A8%E9%AD%94%E7%90%86%E6%B2%99%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 238665
+      },
+      {
+        "id": "b30033ddb5217b6615b8",
+        "kind": "zun",
+        "work": "锦上京",
+        "artist": "ZUN",
+        "fileTitle": "文件:雾雨魔理沙（锦上京立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%9B%BE%E9%9B%A8%E9%AD%94%E7%90%86%E6%B2%99%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/f/fc/%E9%9B%BE%E9%9B%A8%E9%AD%94%E7%90%86%E6%B2%99%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%9B%BE%E9%9B%A8%E9%AD%94%E7%90%86%E6%B2%99%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 387641
+      }
+    ]
+  },
+  {
+    "characterId": "th:rumia",
+    "name": "露米娅",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "2dd9d197aa293d907d92",
+        "kind": "zun",
+        "work": "红魔乡",
+        "artist": "ZUN",
+        "fileTitle": "文件:露米娅（红魔乡立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%9C%B2%E7%B1%B3%E5%A8%85%EF%BC%88%E7%BA%A2%E9%AD%94%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/5/56/%E9%9C%B2%E7%B1%B3%E5%A8%85%EF%BC%88%E7%BA%A2%E9%AD%94%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 36604
+      }
+    ]
+  },
+  {
+    "characterId": "th:cirno",
+    "name": "琪露诺",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "d35509481e403c4e36e2",
+        "kind": "twilight",
+        "work": "非想天则",
+        "artist": "alphes",
+        "fileTitle": "文件:琪露诺（非想天则立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%90%AA%E9%9C%B2%E8%AF%BA%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/5/54/%E7%90%AA%E9%9C%B2%E8%AF%BA%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%90%AA%E9%9C%B2%E8%AF%BA%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 233009
+      },
+      {
+        "id": "38fdecf800a268a675cd",
+        "kind": "zun",
+        "work": "天空璋",
+        "artist": "ZUN",
+        "fileTitle": "文件:琪露诺（天空璋立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%90%AA%E9%9C%B2%E8%AF%BA%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/d/da/%E7%90%AA%E9%9C%B2%E8%AF%BA%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%90%AA%E9%9C%B2%E8%AF%BA%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 300925
+      }
+    ]
+  },
+  {
+    "characterId": "th:meiling",
+    "name": "红美铃",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "1c86442e1a871dc59780",
+        "kind": "twilight",
+        "work": "非想天则",
+        "artist": "alphes",
+        "fileTitle": "文件:红美铃（非想天则立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%BA%A2%E7%BE%8E%E9%93%83%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/9/99/%E7%BA%A2%E7%BE%8E%E9%93%83%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%BA%A2%E7%BE%8E%E9%93%83%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 296582
+      },
+      {
+        "id": "c38fe5f3d4fc83d98efa",
+        "kind": "twilight",
+        "work": "萃梦想",
+        "artist": "alphes",
+        "fileTitle": "文件:红美铃（萃梦想立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%BA%A2%E7%BE%8E%E9%93%83%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/2/29/%E7%BA%A2%E7%BE%8E%E9%93%83%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%BA%A2%E7%BE%8E%E9%93%83%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 168565
+      },
+      {
+        "id": "8e39e975f3ac6f88fe49",
+        "kind": "zun",
+        "work": "红魔乡",
+        "artist": "ZUN",
+        "fileTitle": "文件:红美铃（红魔乡立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%BA%A2%E7%BE%8E%E9%93%83%EF%BC%88%E7%BA%A2%E9%AD%94%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/0/0b/%E7%BA%A2%E7%BE%8E%E9%93%83%EF%BC%88%E7%BA%A2%E9%AD%94%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 68724
+      }
+    ]
+  },
+  {
+    "characterId": "th:patchouli",
+    "name": "帕秋莉·诺蕾姬",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "3c5c863dc6ace9ac87a1",
+        "kind": "twilight",
+        "work": "绯想天",
+        "artist": "alphes",
+        "fileTitle": "文件:帕秋莉·诺蕾姬（绯想天立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B8%95%E7%A7%8B%E8%8E%89%C2%B7%E8%AF%BA%E8%95%BE%E5%A7%AC%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/f/fc/%E5%B8%95%E7%A7%8B%E8%8E%89%C2%B7%E8%AF%BA%E8%95%BE%E5%A7%AC%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%B8%95%E7%A7%8B%E8%8E%89%C2%B7%E8%AF%BA%E8%95%BE%E5%A7%AC%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 179765
+      },
+      {
+        "id": "4e74a6f26536c63058fe",
+        "kind": "twilight",
+        "work": "萃梦想",
+        "artist": "alphes",
+        "fileTitle": "文件:帕秋莉·诺蕾姬（萃梦想立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B8%95%E7%A7%8B%E8%8E%89%C2%B7%E8%AF%BA%E8%95%BE%E5%A7%AC%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/c/c8/%E5%B8%95%E7%A7%8B%E8%8E%89%C2%B7%E8%AF%BA%E8%95%BE%E5%A7%AC%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%B8%95%E7%A7%8B%E8%8E%89%C2%B7%E8%AF%BA%E8%95%BE%E5%A7%AC%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 197001
+      },
+      {
+        "id": "49b190c496c6881d6cc9",
+        "kind": "zun",
+        "work": "红魔乡",
+        "artist": "ZUN",
+        "fileTitle": "文件:帕秋莉·诺蕾姬（红魔乡立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B8%95%E7%A7%8B%E8%8E%89%C2%B7%E8%AF%BA%E8%95%BE%E5%A7%AC%EF%BC%88%E7%BA%A2%E9%AD%94%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/2/2c/%E5%B8%95%E7%A7%8B%E8%8E%89%C2%B7%E8%AF%BA%E8%95%BE%E5%A7%AC%EF%BC%88%E7%BA%A2%E9%AD%94%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 68562
+      }
+    ]
+  },
+  {
+    "characterId": "th:sakuya",
+    "name": "十六夜咲夜",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "c00e22206e36c0a32b30",
+        "kind": "twilight",
+        "work": "绯想天",
+        "artist": "alphes",
+        "fileTitle": "文件:十六夜咲夜（绯想天立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%8D%81%E5%85%AD%E5%A4%9C%E5%92%B2%E5%A4%9C%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/4/4b/%E5%8D%81%E5%85%AD%E5%A4%9C%E5%92%B2%E5%A4%9C%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%8D%81%E5%85%AD%E5%A4%9C%E5%92%B2%E5%A4%9C%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 192550
+      },
+      {
+        "id": "1639e41033500d858ce5",
+        "kind": "twilight",
+        "work": "萃梦想",
+        "artist": "alphes",
+        "fileTitle": "文件:十六夜咲夜（萃梦想立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%8D%81%E5%85%AD%E5%A4%9C%E5%92%B2%E5%A4%9C%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/c/c9/%E5%8D%81%E5%85%AD%E5%A4%9C%E5%92%B2%E5%A4%9C%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%8D%81%E5%85%AD%E5%A4%9C%E5%92%B2%E5%A4%9C%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 177545
+      },
+      {
+        "id": "8afb6281cc45ae7b6fd1",
+        "kind": "zun",
+        "work": "虹龙洞",
+        "artist": "ZUN",
+        "fileTitle": "文件:十六夜咲夜（虹龙洞立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%8D%81%E5%85%AD%E5%A4%9C%E5%92%B2%E5%A4%9C%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/c/c4/%E5%8D%81%E5%85%AD%E5%A4%9C%E5%92%B2%E5%A4%9C%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%8D%81%E5%85%AD%E5%A4%9C%E5%92%B2%E5%A4%9C%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 437584
+      }
+    ]
+  },
+  {
+    "characterId": "th:remilia",
+    "name": "蕾米莉亚·斯卡蕾特",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "e4ee57fc4dfdc45006ad",
+        "kind": "twilight",
+        "work": "绯想天",
+        "artist": "alphes",
+        "fileTitle": "文件:蕾米莉亚·斯卡蕾特（绯想天立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%95%BE%E7%B1%B3%E8%8E%89%E4%BA%9A%C2%B7%E6%96%AF%E5%8D%A1%E8%95%BE%E7%89%B9%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/d/d1/%E8%95%BE%E7%B1%B3%E8%8E%89%E4%BA%9A%C2%B7%E6%96%AF%E5%8D%A1%E8%95%BE%E7%89%B9%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E8%95%BE%E7%B1%B3%E8%8E%89%E4%BA%9A%C2%B7%E6%96%AF%E5%8D%A1%E8%95%BE%E7%89%B9%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 179059
+      },
+      {
+        "id": "8717e58759a7b079c7b4",
+        "kind": "twilight",
+        "work": "萃梦想",
+        "artist": "alphes",
+        "fileTitle": "文件:蕾米莉亚·斯卡蕾特（萃梦想立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%95%BE%E7%B1%B3%E8%8E%89%E4%BA%9A%C2%B7%E6%96%AF%E5%8D%A1%E8%95%BE%E7%89%B9%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/2/27/%E8%95%BE%E7%B1%B3%E8%8E%89%E4%BA%9A%C2%B7%E6%96%AF%E5%8D%A1%E8%95%BE%E7%89%B9%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E8%95%BE%E7%B1%B3%E8%8E%89%E4%BA%9A%C2%B7%E6%96%AF%E5%8D%A1%E8%95%BE%E7%89%B9%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 177289
+      },
+      {
+        "id": "69293469a8206f1412e5",
+        "kind": "zun",
+        "work": "永夜抄",
+        "artist": "ZUN",
+        "fileTitle": "文件:蕾米莉亚·斯卡蕾特（永夜抄立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%95%BE%E7%B1%B3%E8%8E%89%E4%BA%9A%C2%B7%E6%96%AF%E5%8D%A1%E8%95%BE%E7%89%B9%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/e/e0/%E8%95%BE%E7%B1%B3%E8%8E%89%E4%BA%9A%C2%B7%E6%96%AF%E5%8D%A1%E8%95%BE%E7%89%B9%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 166901
+      }
+    ]
+  },
+  {
+    "characterId": "th:flandre",
+    "name": "芙兰朵露·斯卡蕾特",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "c41ac6d4c5dc464c1196",
+        "kind": "twilight",
+        "work": "刚欲异闻",
+        "artist": "TOKIAME",
+        "fileTitle": "文件:芙兰朵露·斯卡蕾特（刚欲异闻立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%8A%99%E5%85%B0%E6%9C%B5%E9%9C%B2%C2%B7%E6%96%AF%E5%8D%A1%E8%95%BE%E7%89%B9%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/a/a4/%E8%8A%99%E5%85%B0%E6%9C%B5%E9%9C%B2%C2%B7%E6%96%AF%E5%8D%A1%E8%95%BE%E7%89%B9%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E8%8A%99%E5%85%B0%E6%9C%B5%E9%9C%B2%C2%B7%E6%96%AF%E5%8D%A1%E8%95%BE%E7%89%B9%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 169203
+      },
+      {
+        "id": "90270d99812d8fc05821",
+        "kind": "zun",
+        "work": "红魔乡",
+        "artist": "ZUN",
+        "fileTitle": "文件:芙兰朵露·斯卡蕾特（红魔乡立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%8A%99%E5%85%B0%E6%9C%B5%E9%9C%B2%C2%B7%E6%96%AF%E5%8D%A1%E8%95%BE%E7%89%B9%EF%BC%88%E7%BA%A2%E9%AD%94%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/4/4d/%E8%8A%99%E5%85%B0%E6%9C%B5%E9%9C%B2%C2%B7%E6%96%AF%E5%8D%A1%E8%95%BE%E7%89%B9%EF%BC%88%E7%BA%A2%E9%AD%94%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 86015
+      }
+    ]
+  },
+  {
+    "characterId": "th:lake-fairy",
+    "name": "湖畔无名妖精（通称大妖精）",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:library-devil",
+    "name": "图书馆无名恶魔（通称小恶魔）",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:letty",
+    "name": "蕾蒂·霍瓦特洛克",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "06cb5beb36b6bcc093cf",
+        "kind": "zun",
+        "work": "妖妖梦",
+        "artist": "ZUN",
+        "fileTitle": "文件:蕾蒂·霍瓦特洛克（妖妖梦立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%95%BE%E8%92%82%C2%B7%E9%9C%8D%E7%93%A6%E7%89%B9%E6%B4%9B%E5%85%8B%EF%BC%88%E5%A6%96%E5%A6%96%E6%A2%A6%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/0/0a/%E8%95%BE%E8%92%82%C2%B7%E9%9C%8D%E7%93%A6%E7%89%B9%E6%B4%9B%E5%85%8B%EF%BC%88%E5%A6%96%E5%A6%96%E6%A2%A6%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 67323
+      }
+    ]
+  },
+  {
+    "characterId": "th:chen",
+    "name": "橙",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "8ad876673b17936bb15a",
+        "kind": "zun",
+        "work": "妖妖梦",
+        "artist": "ZUN",
+        "fileTitle": "文件:橙（妖妖梦立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%A9%99%EF%BC%88%E5%A6%96%E5%A6%96%E6%A2%A6%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/f/f6/%E6%A9%99%EF%BC%88%E5%A6%96%E5%A6%96%E6%A2%A6%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 58817
+      }
+    ]
+  },
+  {
+    "characterId": "th:alice",
+    "name": "爱丽丝·玛格特洛依德",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "d2681f0dd88a9541580b",
+        "kind": "twilight",
+        "work": "绯想天",
+        "artist": "alphes",
+        "fileTitle": "文件:爱丽丝·玛格特洛依德（绯想天立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%88%B1%E4%B8%BD%E4%B8%9D%C2%B7%E7%8E%9B%E6%A0%BC%E7%89%B9%E6%B4%9B%E4%BE%9D%E5%BE%B7%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/8/84/%E7%88%B1%E4%B8%BD%E4%B8%9D%C2%B7%E7%8E%9B%E6%A0%BC%E7%89%B9%E6%B4%9B%E4%BE%9D%E5%BE%B7%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%88%B1%E4%B8%BD%E4%B8%9D%C2%B7%E7%8E%9B%E6%A0%BC%E7%89%B9%E6%B4%9B%E4%BE%9D%E5%BE%B7%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 269980
+      },
+      {
+        "id": "8af8cd447698bd599e1c",
+        "kind": "twilight",
+        "work": "萃梦想",
+        "artist": "alphes",
+        "fileTitle": "文件:爱丽丝·玛格特洛依德（萃梦想立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%88%B1%E4%B8%BD%E4%B8%9D%C2%B7%E7%8E%9B%E6%A0%BC%E7%89%B9%E6%B4%9B%E4%BE%9D%E5%BE%B7%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/a/a8/%E7%88%B1%E4%B8%BD%E4%B8%9D%C2%B7%E7%8E%9B%E6%A0%BC%E7%89%B9%E6%B4%9B%E4%BE%9D%E5%BE%B7%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%88%B1%E4%B8%BD%E4%B8%9D%C2%B7%E7%8E%9B%E6%A0%BC%E7%89%B9%E6%B4%9B%E4%BE%9D%E5%BE%B7%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 192593
+      },
+      {
+        "id": "fbfe5519111c0a0d4658",
+        "kind": "zun",
+        "work": "永夜抄",
+        "artist": "ZUN",
+        "fileTitle": "文件:爱丽丝·玛格特洛依德（永夜抄立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%88%B1%E4%B8%BD%E4%B8%9D%C2%B7%E7%8E%9B%E6%A0%BC%E7%89%B9%E6%B4%9B%E4%BE%9D%E5%BE%B7%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/6/64/%E7%88%B1%E4%B8%BD%E4%B8%9D%C2%B7%E7%8E%9B%E6%A0%BC%E7%89%B9%E6%B4%9B%E4%BE%9D%E5%BE%B7%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 161619
+      }
+    ]
+  },
+  {
+    "characterId": "th:lily",
+    "name": "莉莉白",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:lunasa",
+    "name": "露娜萨·普莉兹姆利巴",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "163a0f8eff0f0dfac30d",
+        "kind": "zun",
+        "work": "花映塚",
+        "artist": "ZUN",
+        "fileTitle": "文件:露娜萨·普莉兹姆利巴（花映塚立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%9C%B2%E5%A8%9C%E8%90%A8%C2%B7%E6%99%AE%E8%8E%89%E5%85%B9%E5%A7%86%E5%88%A9%E5%B7%B4%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/8/82/%E9%9C%B2%E5%A8%9C%E8%90%A8%C2%B7%E6%99%AE%E8%8E%89%E5%85%B9%E5%A7%86%E5%88%A9%E5%B7%B4%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 99363
+      },
+      {
+        "id": "4342ce5f88e8c7ef4b81",
+        "kind": "zun",
+        "work": "妖妖梦",
+        "artist": "ZUN",
+        "fileTitle": "文件:露娜萨·普莉兹姆利巴（妖妖梦立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%9C%B2%E5%A8%9C%E8%90%A8%C2%B7%E6%99%AE%E8%8E%89%E5%85%B9%E5%A7%86%E5%88%A9%E5%B7%B4%EF%BC%88%E5%A6%96%E5%A6%96%E6%A2%A6%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/4/44/%E9%9C%B2%E5%A8%9C%E8%90%A8%C2%B7%E6%99%AE%E8%8E%89%E5%85%B9%E5%A7%86%E5%88%A9%E5%B7%B4%EF%BC%88%E5%A6%96%E5%A6%96%E6%A2%A6%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 70487
+      }
+    ]
+  },
+  {
+    "characterId": "th:merlin",
+    "name": "梅露兰·普莉兹姆利巴",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "1f96f86eeb1371d57e5a",
+        "kind": "zun",
+        "work": "花映塚",
+        "artist": "ZUN",
+        "fileTitle": "文件:梅露兰·普莉兹姆利巴（花映塚立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%A2%85%E9%9C%B2%E5%85%B0%C2%B7%E6%99%AE%E8%8E%89%E5%85%B9%E5%A7%86%E5%88%A9%E5%B7%B4%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/a/aa/%E6%A2%85%E9%9C%B2%E5%85%B0%C2%B7%E6%99%AE%E8%8E%89%E5%85%B9%E5%A7%86%E5%88%A9%E5%B7%B4%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 111647
+      },
+      {
+        "id": "60ebc345426db58ac301",
+        "kind": "zun",
+        "work": "妖妖梦",
+        "artist": "ZUN",
+        "fileTitle": "文件:梅露兰·普莉兹姆利巴（妖妖梦立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%A2%85%E9%9C%B2%E5%85%B0%C2%B7%E6%99%AE%E8%8E%89%E5%85%B9%E5%A7%86%E5%88%A9%E5%B7%B4%EF%BC%88%E5%A6%96%E5%A6%96%E6%A2%A6%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/b/bf/%E6%A2%85%E9%9C%B2%E5%85%B0%C2%B7%E6%99%AE%E8%8E%89%E5%85%B9%E5%A7%86%E5%88%A9%E5%B7%B4%EF%BC%88%E5%A6%96%E5%A6%96%E6%A2%A6%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 67354
+      }
+    ]
+  },
+  {
+    "characterId": "th:lyrica",
+    "name": "莉莉卡·普莉兹姆利巴",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "2aabb27da21a3a017301",
+        "kind": "zun",
+        "work": "花映塚",
+        "artist": "ZUN",
+        "fileTitle": "文件:莉莉卡·普莉兹姆利巴（花映塚立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%8E%89%E8%8E%89%E5%8D%A1%C2%B7%E6%99%AE%E8%8E%89%E5%85%B9%E5%A7%86%E5%88%A9%E5%B7%B4%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/8/80/%E8%8E%89%E8%8E%89%E5%8D%A1%C2%B7%E6%99%AE%E8%8E%89%E5%85%B9%E5%A7%86%E5%88%A9%E5%B7%B4%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 112169
+      },
+      {
+        "id": "71423529249217d69b81",
+        "kind": "zun",
+        "work": "妖妖梦",
+        "artist": "ZUN",
+        "fileTitle": "文件:莉莉卡·普莉兹姆利巴（妖妖梦立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%8E%89%E8%8E%89%E5%8D%A1%C2%B7%E6%99%AE%E8%8E%89%E5%85%B9%E5%A7%86%E5%88%A9%E5%B7%B4%EF%BC%88%E5%A6%96%E5%A6%96%E6%A2%A6%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/1/1a/%E8%8E%89%E8%8E%89%E5%8D%A1%C2%B7%E6%99%AE%E8%8E%89%E5%85%B9%E5%A7%86%E5%88%A9%E5%B7%B4%EF%BC%88%E5%A6%96%E5%A6%96%E6%A2%A6%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 67341
+      }
+    ]
+  },
+  {
+    "characterId": "th:youmu",
+    "name": "魂魄妖梦",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "4f3d827e4e17dde65390",
+        "kind": "twilight",
+        "work": "绯想天",
+        "artist": "alphes",
+        "fileTitle": "文件:魂魄妖梦（绯想天立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%AD%82%E9%AD%84%E5%A6%96%E6%A2%A6%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/3/3d/%E9%AD%82%E9%AD%84%E5%A6%96%E6%A2%A6%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%AD%82%E9%AD%84%E5%A6%96%E6%A2%A6%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 201230
+      },
+      {
+        "id": "969d41bb29fd13d96305",
+        "kind": "twilight",
+        "work": "萃梦想",
+        "artist": "alphes",
+        "fileTitle": "文件:魂魄妖梦（萃梦想立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%AD%82%E9%AD%84%E5%A6%96%E6%A2%A6%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/e/e3/%E9%AD%82%E9%AD%84%E5%A6%96%E6%A2%A6%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%AD%82%E9%AD%84%E5%A6%96%E6%A2%A6%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 155604
+      },
+      {
+        "id": "a6b938bdd50bc0f34eb9",
+        "kind": "zun",
+        "work": "鬼形兽",
+        "artist": "ZUN",
+        "fileTitle": "文件:魂魄妖梦（鬼形兽立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%AD%82%E9%AD%84%E5%A6%96%E6%A2%A6%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/b/b8/%E9%AD%82%E9%AD%84%E5%A6%96%E6%A2%A6%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%AD%82%E9%AD%84%E5%A6%96%E6%A2%A6%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 634284
+      }
+    ]
+  },
+  {
+    "characterId": "th:yuyuko",
+    "name": "西行寺幽幽子",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "9ca7663c7ff549517fea",
+        "kind": "twilight",
+        "work": "绯想天",
+        "artist": "alphes",
+        "fileTitle": "文件:西行寺幽幽子（绯想天立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%A5%BF%E8%A1%8C%E5%AF%BA%E5%B9%BD%E5%B9%BD%E5%AD%90%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/4/42/%E8%A5%BF%E8%A1%8C%E5%AF%BA%E5%B9%BD%E5%B9%BD%E5%AD%90%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E8%A5%BF%E8%A1%8C%E5%AF%BA%E5%B9%BD%E5%B9%BD%E5%AD%90%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 234145
+      },
+      {
+        "id": "33b7e83e33bfaffaea3b",
+        "kind": "twilight",
+        "work": "萃梦想",
+        "artist": "alphes",
+        "fileTitle": "文件:西行寺幽幽子（萃梦想立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%A5%BF%E8%A1%8C%E5%AF%BA%E5%B9%BD%E5%B9%BD%E5%AD%90%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/2/20/%E8%A5%BF%E8%A1%8C%E5%AF%BA%E5%B9%BD%E5%B9%BD%E5%AD%90%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E8%A5%BF%E8%A1%8C%E5%AF%BA%E5%B9%BD%E5%B9%BD%E5%AD%90%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 227914
+      },
+      {
+        "id": "c8c3a1bf1374cec59694",
+        "kind": "zun",
+        "work": "神灵庙",
+        "artist": "ZUN",
+        "fileTitle": "文件:西行寺幽幽子（神灵庙立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%A5%BF%E8%A1%8C%E5%AF%BA%E5%B9%BD%E5%B9%BD%E5%AD%90%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/3/3b/%E8%A5%BF%E8%A1%8C%E5%AF%BA%E5%B9%BD%E5%B9%BD%E5%AD%90%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 56584
+      }
+    ]
+  },
+  {
+    "characterId": "th:ran",
+    "name": "八云蓝",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "5741186e6ca136830034",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:八云蓝（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%85%AB%E4%BA%91%E8%93%9D%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/d/da/%E5%85%AB%E4%BA%91%E8%93%9D%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%85%AB%E4%BA%91%E8%93%9D%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 390811
+      },
+      {
+        "id": "3e4dbe47afd94fced163",
+        "kind": "zun",
+        "work": "妖妖梦",
+        "artist": "ZUN",
+        "fileTitle": "文件:八云蓝（妖妖梦立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%85%AB%E4%BA%91%E8%93%9D%EF%BC%88%E5%A6%96%E5%A6%96%E6%A2%A6%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/b/b5/%E5%85%AB%E4%BA%91%E8%93%9D%EF%BC%88%E5%A6%96%E5%A6%96%E6%A2%A6%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 118739
+      }
+    ]
+  },
+  {
+    "characterId": "th:yukari",
+    "name": "八云紫",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "f397abea97c86212672f",
+        "kind": "twilight",
+        "work": "绯想天",
+        "artist": "alphes",
+        "fileTitle": "文件:八云紫（绯想天立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%85%AB%E4%BA%91%E7%B4%AB%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/4/4e/%E5%85%AB%E4%BA%91%E7%B4%AB%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%85%AB%E4%BA%91%E7%B4%AB%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 257070
+      },
+      {
+        "id": "cdae4729c8cc0b06ed8f",
+        "kind": "twilight",
+        "work": "萃梦想",
+        "artist": "alphes",
+        "fileTitle": "文件:八云紫（萃梦想立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%85%AB%E4%BA%91%E7%B4%AB%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/f/f1/%E5%85%AB%E4%BA%91%E7%B4%AB%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%85%AB%E4%BA%91%E7%B4%AB%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 277442
+      },
+      {
+        "id": "84119d53ab0c3c2bd4e5",
+        "kind": "zun",
+        "work": "永夜抄",
+        "artist": "ZUN",
+        "fileTitle": "文件:八云紫（永夜抄立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%85%AB%E4%BA%91%E7%B4%AB%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/1/1f/%E5%85%AB%E4%BA%91%E7%B4%AB%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 157844
+      }
+    ]
+  },
+  {
+    "characterId": "th:wriggle",
+    "name": "莉格露·奈特巴格",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "087e714ca6b4a532a449",
+        "kind": "zun",
+        "work": "永夜抄",
+        "artist": "ZUN",
+        "fileTitle": "文件:莉格露·奈特巴格（永夜抄立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%8E%89%E6%A0%BC%E9%9C%B2%C2%B7%E5%A5%88%E7%89%B9%E5%B7%B4%E6%A0%BC%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/1/10/%E8%8E%89%E6%A0%BC%E9%9C%B2%C2%B7%E5%A5%88%E7%89%B9%E5%B7%B4%E6%A0%BC%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 111718
+      }
+    ]
+  },
+  {
+    "characterId": "th:mystia",
+    "name": "米斯蒂娅·萝蕾拉",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "a42062349c6fbd2b35a4",
+        "kind": "zun",
+        "work": "花映塚",
+        "artist": "ZUN",
+        "fileTitle": "文件:米斯蒂娅·萝蕾拉（花映塚立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%B1%B3%E6%96%AF%E8%92%82%E5%A8%85%C2%B7%E8%90%9D%E8%95%BE%E6%8B%89%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/b/bc/%E7%B1%B3%E6%96%AF%E8%92%82%E5%A8%85%C2%B7%E8%90%9D%E8%95%BE%E6%8B%89%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 123272
+      },
+      {
+        "id": "70f3141e2e9f6aced4a0",
+        "kind": "zun",
+        "work": "永夜抄",
+        "artist": "ZUN",
+        "fileTitle": "文件:米斯蒂娅·萝蕾拉（永夜抄立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%B1%B3%E6%96%AF%E8%92%82%E5%A8%85%C2%B7%E8%90%9D%E8%95%BE%E6%8B%89%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/3/35/%E7%B1%B3%E6%96%AF%E8%92%82%E5%A8%85%C2%B7%E8%90%9D%E8%95%BE%E6%8B%89%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 166014
+      }
+    ]
+  },
+  {
+    "characterId": "th:keine",
+    "name": "上白泽慧音",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "20c847e04dc787670845",
+        "kind": "zun",
+        "work": "永夜抄",
+        "artist": "ZUN",
+        "fileTitle": "文件:上白泽慧音（永夜抄立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%B8%8A%E7%99%BD%E6%B3%BD%E6%85%A7%E9%9F%B3%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/f/f1/%E4%B8%8A%E7%99%BD%E6%B3%BD%E6%85%A7%E9%9F%B3%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 182777
+      },
+      {
+        "id": "b8ed740ac7340097d227",
+        "kind": "zun",
+        "work": "永夜抄",
+        "artist": "ZUN",
+        "fileTitle": "文件:上白泽慧音2（永夜抄立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%B8%8A%E7%99%BD%E6%B3%BD%E6%85%A7%E9%9F%B32%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/3/38/%E4%B8%8A%E7%99%BD%E6%B3%BD%E6%85%A7%E9%9F%B32%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 186996
+      }
+    ]
+  },
+  {
+    "characterId": "th:tewi",
+    "name": "因幡天为",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "e65481e3506fe2d48a11",
+        "kind": "zun",
+        "work": "花映塚",
+        "artist": "ZUN",
+        "fileTitle": "文件:因幡帝（花映塚立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%9B%A0%E5%B9%A1%E5%B8%9D%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/2/28/%E5%9B%A0%E5%B9%A1%E5%B8%9D%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 81449
+      },
+      {
+        "id": "e48fe30e3557e3a31149",
+        "kind": "zun",
+        "work": "永夜抄",
+        "artist": "ZUN",
+        "fileTitle": "文件:因幡帝（永夜抄立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%9B%A0%E5%B9%A1%E5%B8%9D%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/6/69/%E5%9B%A0%E5%B9%A1%E5%B8%9D%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%9B%A0%E5%B9%A1%E5%B8%9D%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 162809
+      }
+    ]
+  },
+  {
+    "characterId": "th:reisen",
+    "name": "铃仙·优昙华院·因幡",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "61788b5663e434481742",
+        "kind": "twilight",
+        "work": "非想天则",
+        "artist": "alphes",
+        "fileTitle": "文件:铃仙·优昙华院·因幡（非想天则立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%93%83%E4%BB%99%C2%B7%E4%BC%98%E6%98%99%E5%8D%8E%E9%99%A2%C2%B7%E5%9B%A0%E5%B9%A1%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/8/80/%E9%93%83%E4%BB%99%C2%B7%E4%BC%98%E6%98%99%E5%8D%8E%E9%99%A2%C2%B7%E5%9B%A0%E5%B9%A1%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%93%83%E4%BB%99%C2%B7%E4%BC%98%E6%98%99%E5%8D%8E%E9%99%A2%C2%B7%E5%9B%A0%E5%B9%A1%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 206741
+      },
+      {
+        "id": "53306bfb291ec55ee9b1",
+        "kind": "twilight",
+        "work": "绯想天",
+        "artist": "alphes",
+        "fileTitle": "文件:铃仙·优昙华院·因幡（绯想天立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%93%83%E4%BB%99%C2%B7%E4%BC%98%E6%98%99%E5%8D%8E%E9%99%A2%C2%B7%E5%9B%A0%E5%B9%A1%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/1/16/%E9%93%83%E4%BB%99%C2%B7%E4%BC%98%E6%98%99%E5%8D%8E%E9%99%A2%C2%B7%E5%9B%A0%E5%B9%A1%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%93%83%E4%BB%99%C2%B7%E4%BC%98%E6%98%99%E5%8D%8E%E9%99%A2%C2%B7%E5%9B%A0%E5%B9%A1%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 200428
+      },
+      {
+        "id": "42edde117c500b8b032c",
+        "kind": "zun",
+        "work": "绀珠传",
+        "artist": "ZUN",
+        "fileTitle": "文件:铃仙·优昙华院·因幡（绀珠传立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%93%83%E4%BB%99%C2%B7%E4%BC%98%E6%98%99%E5%8D%8E%E9%99%A2%C2%B7%E5%9B%A0%E5%B9%A1%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/a/a3/%E9%93%83%E4%BB%99%C2%B7%E4%BC%98%E6%98%99%E5%8D%8E%E9%99%A2%C2%B7%E5%9B%A0%E5%B9%A1%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%93%83%E4%BB%99%C2%B7%E4%BC%98%E6%98%99%E5%8D%8E%E9%99%A2%C2%B7%E5%9B%A0%E5%B9%A1%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 285066
+      }
+    ]
+  },
+  {
+    "characterId": "th:eirin",
+    "name": "八意永琳",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "62be2c8cb7ace5b5390d",
+        "kind": "zun",
+        "work": "永夜抄",
+        "artist": "ZUN",
+        "fileTitle": "文件:八意永琳（永夜抄立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%85%AB%E6%84%8F%E6%B0%B8%E7%90%B3%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/9/9e/%E5%85%AB%E6%84%8F%E6%B0%B8%E7%90%B3%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%85%AB%E6%84%8F%E6%B0%B8%E7%90%B3%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 186988
+      }
+    ]
+  },
+  {
+    "characterId": "th:kaguya",
+    "name": "蓬莱山辉夜",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "ea21e9bf65274965302f",
+        "kind": "zun",
+        "work": "永夜抄",
+        "artist": "ZUN",
+        "fileTitle": "文件:蓬莱山辉夜（永夜抄立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%93%AC%E8%8E%B1%E5%B1%B1%E8%BE%89%E5%A4%9C%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/9/9c/%E8%93%AC%E8%8E%B1%E5%B1%B1%E8%BE%89%E5%A4%9C%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E8%93%AC%E8%8E%B1%E5%B1%B1%E8%BE%89%E5%A4%9C%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 497050
+      }
+    ]
+  },
+  {
+    "characterId": "th:mokou",
+    "name": "藤原妹红",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "b08e4a64565b38d2ae1a",
+        "kind": "twilight",
+        "work": "深秘录凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:藤原妹红（深秘录凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%97%A4%E5%8E%9F%E5%A6%B9%E7%BA%A2%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/8/8c/%E8%97%A4%E5%8E%9F%E5%A6%B9%E7%BA%A2%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E8%97%A4%E5%8E%9F%E5%A6%B9%E7%BA%A2%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 317639
+      },
+      {
+        "id": "2040fdd9c753e0208d65",
+        "kind": "zun",
+        "work": "永夜抄",
+        "artist": "ZUN",
+        "fileTitle": "文件:藤原妹红（永夜抄立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%97%A4%E5%8E%9F%E5%A6%B9%E7%BA%A2%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/6/6b/%E8%97%A4%E5%8E%9F%E5%A6%B9%E7%BA%A2%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E8%97%A4%E5%8E%9F%E5%A6%B9%E7%BA%A2%EF%BC%88%E6%B0%B8%E5%A4%9C%E6%8A%84%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 188208
+      }
+    ]
+  },
+  {
+    "characterId": "th:aya",
+    "name": "射命丸文",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "b988a7bdc68b0d589446",
+        "kind": "twilight",
+        "work": "非想天则",
+        "artist": "alphes",
+        "fileTitle": "文件:射命丸文（非想天则立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B0%84%E5%91%BD%E4%B8%B8%E6%96%87%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/d/d3/%E5%B0%84%E5%91%BD%E4%B8%B8%E6%96%87%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%B0%84%E5%91%BD%E4%B8%B8%E6%96%87%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 245332
+      },
+      {
+        "id": "9f43caade77fb4240601",
+        "kind": "twilight",
+        "work": "绯想天",
+        "artist": "alphes",
+        "fileTitle": "文件:射命丸文（绯想天立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B0%84%E5%91%BD%E4%B8%B8%E6%96%87%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/7/7c/%E5%B0%84%E5%91%BD%E4%B8%B8%E6%96%87%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%B0%84%E5%91%BD%E4%B8%B8%E6%96%87%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 193610
+      },
+      {
+        "id": "d88cfac5bfdd6ac017f3",
+        "kind": "zun",
+        "work": "天空璋",
+        "artist": "ZUN",
+        "fileTitle": "文件:射命丸文（天空璋立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B0%84%E5%91%BD%E4%B8%B8%E6%96%87%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/1/10/%E5%B0%84%E5%91%BD%E4%B8%B8%E6%96%87%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%B0%84%E5%91%BD%E4%B8%B8%E6%96%87%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 239078
+      }
+    ]
+  },
+  {
+    "characterId": "th:medicine",
+    "name": "梅蒂欣·梅兰可莉",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "a08ad6c5cec98b056eac",
+        "kind": "zun",
+        "work": "花映塚",
+        "artist": "ZUN",
+        "fileTitle": "文件:梅蒂欣·梅兰可莉（花映塚立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%A2%85%E8%92%82%E6%AC%A3%C2%B7%E6%A2%85%E5%85%B0%E5%8F%AF%E8%8E%89%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/7/7b/%E6%A2%85%E8%92%82%E6%AC%A3%C2%B7%E6%A2%85%E5%85%B0%E5%8F%AF%E8%8E%89%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 119344
+      }
+    ]
+  },
+  {
+    "characterId": "th:yuuka",
+    "name": "风见幽香",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "6a741caeb155834effa5",
+        "kind": "zun",
+        "work": "花映塚",
+        "artist": "ZUN",
+        "fileTitle": "文件:风见幽香（花映塚立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%A3%8E%E8%A7%81%E5%B9%BD%E9%A6%99%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/d/d5/%E9%A3%8E%E8%A7%81%E5%B9%BD%E9%A6%99%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 143007
+      }
+    ]
+  },
+  {
+    "characterId": "th:komachi",
+    "name": "小野塚小町",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "19d7c7f3dec1916875db",
+        "kind": "twilight",
+        "work": "非想天则",
+        "artist": "alphes",
+        "fileTitle": "文件:小野塚小町（非想天则立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B0%8F%E9%87%8E%E5%A1%9A%E5%B0%8F%E7%94%BA%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/5/5d/%E5%B0%8F%E9%87%8E%E5%A1%9A%E5%B0%8F%E7%94%BA%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%B0%8F%E9%87%8E%E5%A1%9A%E5%B0%8F%E7%94%BA%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 191740
+      },
+      {
+        "id": "365b26aa58e4eaf34d11",
+        "kind": "twilight",
+        "work": "绯想天",
+        "artist": "alphes",
+        "fileTitle": "文件:小野塚小町（绯想天立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B0%8F%E9%87%8E%E5%A1%9A%E5%B0%8F%E7%94%BA%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/5/50/%E5%B0%8F%E9%87%8E%E5%A1%9A%E5%B0%8F%E7%94%BA%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%B0%8F%E9%87%8E%E5%A1%9A%E5%B0%8F%E7%94%BA%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 266516
+      },
+      {
+        "id": "4bffdddfd23f3e7c52f8",
+        "kind": "zun",
+        "work": "花映塚",
+        "artist": "ZUN",
+        "fileTitle": "文件:小野塚小町（花映塚立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B0%8F%E9%87%8E%E5%A1%9A%E5%B0%8F%E7%94%BA%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/2/2e/%E5%B0%8F%E9%87%8E%E5%A1%9A%E5%B0%8F%E7%94%BA%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 129382
+      }
+    ]
+  },
+  {
+    "characterId": "th:eiki",
+    "name": "四季映姬·夜摩仙那度",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "d4fbecb5cb7adfbc0b7a",
+        "kind": "zun",
+        "work": "花映塚",
+        "artist": "ZUN",
+        "fileTitle": "文件:四季映姬（花映塚立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%9B%9B%E5%AD%A3%E6%98%A0%E5%A7%AC%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/e/e5/%E5%9B%9B%E5%AD%A3%E6%98%A0%E5%A7%AC%EF%BC%88%E8%8A%B1%E6%98%A0%E5%A1%9A%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 187621
+      }
+    ]
+  },
+  {
+    "characterId": "th:shizuha",
+    "name": "秋静叶",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "492c15df5bc548a0252d",
+        "kind": "zun",
+        "work": "风神录",
+        "artist": "ZUN",
+        "fileTitle": "文件:秋静叶（风神录立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%A7%8B%E9%9D%99%E5%8F%B6%EF%BC%88%E9%A3%8E%E7%A5%9E%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/0/05/%E7%A7%8B%E9%9D%99%E5%8F%B6%EF%BC%88%E9%A3%8E%E7%A5%9E%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 52344
+      }
+    ]
+  },
+  {
+    "characterId": "th:minoriko",
+    "name": "秋穰子",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "4959c5463e4a68dadec5",
+        "kind": "zun",
+        "work": "风神录",
+        "artist": "ZUN",
+        "fileTitle": "文件:秋穰子（风神录立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%A7%8B%E7%A9%B0%E5%AD%90%EF%BC%88%E9%A3%8E%E7%A5%9E%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/d/d1/%E7%A7%8B%E7%A9%B0%E5%AD%90%EF%BC%88%E9%A3%8E%E7%A5%9E%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 45877
+      }
+    ]
+  },
+  {
+    "characterId": "th:hina",
+    "name": "键山雏",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "01c12535f9606d76461a",
+        "kind": "zun",
+        "work": "风神录",
+        "artist": "ZUN",
+        "fileTitle": "文件:键山雏（风神录立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%94%AE%E5%B1%B1%E9%9B%8F%EF%BC%88%E9%A3%8E%E7%A5%9E%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/1/12/%E9%94%AE%E5%B1%B1%E9%9B%8F%EF%BC%88%E9%A3%8E%E7%A5%9E%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 56112
+      }
+    ]
+  },
+  {
+    "characterId": "th:nitori",
+    "name": "河城荷取",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "c486c698210f08f7f599",
+        "kind": "twilight",
+        "work": "心绮楼",
+        "artist": "alphes",
+        "fileTitle": "文件:河城荷取（心绮楼立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%B2%B3%E5%9F%8E%E8%8D%B7%E5%8F%96%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/7/75/%E6%B2%B3%E5%9F%8E%E8%8D%B7%E5%8F%96%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E6%B2%B3%E5%9F%8E%E8%8D%B7%E5%8F%96%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 307750
+      },
+      {
+        "id": "215d594a43e146823d28",
+        "kind": "twilight",
+        "work": "深秘录凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:河城荷取（深秘录凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%B2%B3%E5%9F%8E%E8%8D%B7%E5%8F%96%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/b/b4/%E6%B2%B3%E5%9F%8E%E8%8D%B7%E5%8F%96%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E6%B2%B3%E5%9F%8E%E8%8D%B7%E5%8F%96%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 236809
+      },
+      {
+        "id": "a30f21951ea06bf29042",
+        "kind": "zun",
+        "work": "风神录",
+        "artist": "ZUN",
+        "fileTitle": "文件:河城荷取（风神录立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%B2%B3%E5%9F%8E%E8%8D%B7%E5%8F%96%EF%BC%88%E9%A3%8E%E7%A5%9E%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/b/bc/%E6%B2%B3%E5%9F%8E%E8%8D%B7%E5%8F%96%EF%BC%88%E9%A3%8E%E7%A5%9E%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 70130
+      }
+    ]
+  },
+  {
+    "characterId": "th:momiji",
+    "name": "犬走椛",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:sanae",
+    "name": "东风谷早苗",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "38049bb19b9f8a710e8b",
+        "kind": "twilight",
+        "work": "非想天则",
+        "artist": "alphes",
+        "fileTitle": "文件:东风谷早苗（非想天则立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%B8%9C%E9%A3%8E%E8%B0%B7%E6%97%A9%E8%8B%97%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/d/d5/%E4%B8%9C%E9%A3%8E%E8%B0%B7%E6%97%A9%E8%8B%97%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%B8%9C%E9%A3%8E%E8%B0%B7%E6%97%A9%E8%8B%97%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 1049236
+      },
+      {
+        "id": "5149dd3868ce7bc80f22",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:东风谷早苗（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%B8%9C%E9%A3%8E%E8%B0%B7%E6%97%A9%E8%8B%97%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/7/79/%E4%B8%9C%E9%A3%8E%E8%B0%B7%E6%97%A9%E8%8B%97%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%B8%9C%E9%A3%8E%E8%B0%B7%E6%97%A9%E8%8B%97%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 369188
+      }
+    ]
+  },
+  {
+    "characterId": "th:kanako",
+    "name": "八坂神奈子",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "d53b402425b84da7629c",
+        "kind": "twilight",
+        "work": "刚欲异闻",
+        "artist": "TOKIAME",
+        "fileTitle": "文件:八坂神奈子（刚欲异闻立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%85%AB%E5%9D%82%E7%A5%9E%E5%A5%88%E5%AD%90%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/1/17/%E5%85%AB%E5%9D%82%E7%A5%9E%E5%A5%88%E5%AD%90%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%85%AB%E5%9D%82%E7%A5%9E%E5%A5%88%E5%AD%90%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 345075
+      },
+      {
+        "id": "72cdbae146debb7f7854",
+        "kind": "zun",
+        "work": "风神录",
+        "artist": "ZUN",
+        "fileTitle": "文件:八坂神奈子（风神录立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%85%AB%E5%9D%82%E7%A5%9E%E5%A5%88%E5%AD%90%EF%BC%88%E9%A3%8E%E7%A5%9E%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/3/3e/%E5%85%AB%E5%9D%82%E7%A5%9E%E5%A5%88%E5%AD%90%EF%BC%88%E9%A3%8E%E7%A5%9E%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%85%AB%E5%9D%82%E7%A5%9E%E5%A5%88%E5%AD%90%EF%BC%88%E9%A3%8E%E7%A5%9E%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 103297
+      }
+    ]
+  },
+  {
+    "characterId": "th:suwako",
+    "name": "泄矢诹访子",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "d717a0d213dd633c0786",
+        "kind": "twilight",
+        "work": "非想天则",
+        "artist": "alphes",
+        "fileTitle": "文件:洩矢诹访子（非想天则立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%B4%A9%E7%9F%A2%E8%AF%B9%E8%AE%BF%E5%AD%90%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/9/97/%E6%B4%A9%E7%9F%A2%E8%AF%B9%E8%AE%BF%E5%AD%90%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E6%B4%A9%E7%9F%A2%E8%AF%B9%E8%AE%BF%E5%AD%90%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 232856
+      },
+      {
+        "id": "e93071bda4363d249995",
+        "kind": "zun",
+        "work": "风神录",
+        "artist": "ZUN",
+        "fileTitle": "文件:洩矢诹访子（风神录立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%B4%A9%E7%9F%A2%E8%AF%B9%E8%AE%BF%E5%AD%90%EF%BC%88%E9%A3%8E%E7%A5%9E%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/7/71/%E6%B4%A9%E7%9F%A2%E8%AF%B9%E8%AE%BF%E5%AD%90%EF%BC%88%E9%A3%8E%E7%A5%9E%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 63382
+      }
+    ]
+  },
+  {
+    "characterId": "th:kisume",
+    "name": "琪斯美",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "312adc70c03c4d457a56",
+        "kind": "zun",
+        "work": "地灵殿",
+        "artist": "ZUN",
+        "fileTitle": "文件:琪斯美（地灵殿立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%90%AA%E6%96%AF%E7%BE%8E%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/b/b8/%E7%90%AA%E6%96%AF%E7%BE%8E%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 45151
+      }
+    ]
+  },
+  {
+    "characterId": "th:yamame",
+    "name": "黑谷山女",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "fa53635fcb1c360d7c5a",
+        "kind": "twilight",
+        "work": "刚欲异闻",
+        "artist": "TOKIAME",
+        "fileTitle": "文件:黑谷山女（刚欲异闻立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%BB%91%E8%B0%B7%E5%B1%B1%E5%A5%B3%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/c/c3/%E9%BB%91%E8%B0%B7%E5%B1%B1%E5%A5%B3%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%BB%91%E8%B0%B7%E5%B1%B1%E5%A5%B3%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 129622
+      },
+      {
+        "id": "acb4fe659ad51504b5ce",
+        "kind": "zun",
+        "work": "地灵殿",
+        "artist": "ZUN",
+        "fileTitle": "文件:黑谷山女（地灵殿立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%BB%91%E8%B0%B7%E5%B1%B1%E5%A5%B3%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/7/7c/%E9%BB%91%E8%B0%B7%E5%B1%B1%E5%A5%B3%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 31179
+      }
+    ]
+  },
+  {
+    "characterId": "th:parsee",
+    "name": "水桥帕露西",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "b2bb970d9d52f73c229e",
+        "kind": "zun",
+        "work": "地灵殿",
+        "artist": "ZUN",
+        "fileTitle": "文件:水桥帕露西（地灵殿立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%B0%B4%E6%A1%A5%E5%B8%95%E9%9C%B2%E8%A5%BF%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/e/e2/%E6%B0%B4%E6%A1%A5%E5%B8%95%E9%9C%B2%E8%A5%BF%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 53185
+      }
+    ]
+  },
+  {
+    "characterId": "th:yuugi",
+    "name": "星熊勇仪",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "e9deb2fe9e8737be5038",
+        "kind": "twilight",
+        "work": "刚欲异闻",
+        "artist": "TOKIAME",
+        "fileTitle": "文件:星熊勇仪（刚欲异闻立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%98%9F%E7%86%8A%E5%8B%87%E4%BB%AA%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/0/0b/%E6%98%9F%E7%86%8A%E5%8B%87%E4%BB%AA%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E6%98%9F%E7%86%8A%E5%8B%87%E4%BB%AA%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 140907
+      },
+      {
+        "id": "daec6730d9aa82f11755",
+        "kind": "zun",
+        "work": "地灵殿",
+        "artist": "ZUN",
+        "fileTitle": "文件:星熊勇仪（地灵殿立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%98%9F%E7%86%8A%E5%8B%87%E4%BB%AA%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/5/5e/%E6%98%9F%E7%86%8A%E5%8B%87%E4%BB%AA%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 67004
+      }
+    ]
+  },
+  {
+    "characterId": "th:satori",
+    "name": "古明地觉",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "bc62ca54058e146931ba",
+        "kind": "zun",
+        "work": "地灵殿",
+        "artist": "ZUN",
+        "fileTitle": "文件:古明地觉（地灵殿立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%8F%A4%E6%98%8E%E5%9C%B0%E8%A7%89%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/c/cf/%E5%8F%A4%E6%98%8E%E5%9C%B0%E8%A7%89%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 54369
+      }
+    ]
+  },
+  {
+    "characterId": "th:rin",
+    "name": "火焰猫燐",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "8a1bce92546d4427188c",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:火焰猫燐（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%81%AB%E7%84%B0%E7%8C%AB%E7%87%90%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/0/03/%E7%81%AB%E7%84%B0%E7%8C%AB%E7%87%90%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%81%AB%E7%84%B0%E7%8C%AB%E7%87%90%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 320014
+      },
+      {
+        "id": "95e24653075dd4b46ae0",
+        "kind": "zun",
+        "work": "地灵殿",
+        "artist": "ZUN",
+        "fileTitle": "文件:火焰猫燐（地灵殿立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%81%AB%E7%84%B0%E7%8C%AB%E7%87%90%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/4/4d/%E7%81%AB%E7%84%B0%E7%8C%AB%E7%87%90%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%81%AB%E7%84%B0%E7%8C%AB%E7%87%90%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 187614
+      }
+    ]
+  },
+  {
+    "characterId": "th:utsuho",
+    "name": "灵乌路空",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "13b51f6de5dc747ba768",
+        "kind": "twilight",
+        "work": "非想天则",
+        "artist": "alphes",
+        "fileTitle": "文件:灵乌路空（非想天则立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%81%B5%E4%B9%8C%E8%B7%AF%E7%A9%BA%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/d/df/%E7%81%B5%E4%B9%8C%E8%B7%AF%E7%A9%BA%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%81%B5%E4%B9%8C%E8%B7%AF%E7%A9%BA%EF%BC%88%E9%9D%9E%E6%83%B3%E5%A4%A9%E5%88%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 350858
+      },
+      {
+        "id": "6bc573a44b402a1f518e",
+        "kind": "twilight",
+        "work": "刚欲异闻",
+        "artist": "TOKIAME",
+        "fileTitle": "文件:灵乌路空（刚欲异闻立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%81%B5%E4%B9%8C%E8%B7%AF%E7%A9%BA%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/7/78/%E7%81%B5%E4%B9%8C%E8%B7%AF%E7%A9%BA%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%81%B5%E4%B9%8C%E8%B7%AF%E7%A9%BA%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 189774
+      },
+      {
+        "id": "6fb4115c9f298a722ed3",
+        "kind": "zun",
+        "work": "地灵殿",
+        "artist": "ZUN",
+        "fileTitle": "文件:灵乌路空（地灵殿立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%81%B5%E4%B9%8C%E8%B7%AF%E7%A9%BA%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/0/09/%E7%81%B5%E4%B9%8C%E8%B7%AF%E7%A9%BA%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%81%B5%E4%B9%8C%E8%B7%AF%E7%A9%BA%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 299406
+      }
+    ]
+  },
+  {
+    "characterId": "th:koishi",
+    "name": "古明地恋",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "93ea0a0a3cb59a7d3c2e",
+        "kind": "twilight",
+        "work": "心绮楼",
+        "artist": "alphes",
+        "fileTitle": "文件:古明地恋（心绮楼立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%8F%A4%E6%98%8E%E5%9C%B0%E6%81%8B%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/e/e7/%E5%8F%A4%E6%98%8E%E5%9C%B0%E6%81%8B%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%8F%A4%E6%98%8E%E5%9C%B0%E6%81%8B%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 252409
+      },
+      {
+        "id": "32586e7c979d23514c61",
+        "kind": "twilight",
+        "work": "深秘录凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:古明地恋（深秘录凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%8F%A4%E6%98%8E%E5%9C%B0%E6%81%8B%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/2/22/%E5%8F%A4%E6%98%8E%E5%9C%B0%E6%81%8B%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%8F%A4%E6%98%8E%E5%9C%B0%E6%81%8B%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 299780
+      },
+      {
+        "id": "7f5aeb8fe6f0ef0cdf2f",
+        "kind": "zun",
+        "work": "地灵殿",
+        "artist": "ZUN",
+        "fileTitle": "文件:古明地恋（地灵殿立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%8F%A4%E6%98%8E%E5%9C%B0%E6%81%8B%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/c/cb/%E5%8F%A4%E6%98%8E%E5%9C%B0%E6%81%8B%EF%BC%88%E5%9C%B0%E7%81%B5%E6%AE%BF%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 124788
+      }
+    ]
+  },
+  {
+    "characterId": "th:nazrin",
+    "name": "娜兹玲",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "897f4aa1238e83c5427e",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:娜兹玲（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%A8%9C%E5%85%B9%E7%8E%B2%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/3/30/%E5%A8%9C%E5%85%B9%E7%8E%B2%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%A8%9C%E5%85%B9%E7%8E%B2%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 358058
+      },
+      {
+        "id": "9ff26470417b3c759e58",
+        "kind": "zun",
+        "work": "星莲船",
+        "artist": "ZUN",
+        "fileTitle": "文件:娜兹玲（星莲船立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%A8%9C%E5%85%B9%E7%8E%B2%EF%BC%88%E6%98%9F%E8%8E%B2%E8%88%B9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/4/42/%E5%A8%9C%E5%85%B9%E7%8E%B2%EF%BC%88%E6%98%9F%E8%8E%B2%E8%88%B9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%A8%9C%E5%85%B9%E7%8E%B2%EF%BC%88%E6%98%9F%E8%8E%B2%E8%88%B9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 29998
+      }
+    ]
+  },
+  {
+    "characterId": "th:kogasa",
+    "name": "多多良小伞",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "20a2ffb74eb5a5f23c2d",
+        "kind": "twilight",
+        "work": "刚欲异闻",
+        "artist": "TOKIAME",
+        "fileTitle": "文件:多多良小伞（刚欲异闻立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%A4%9A%E5%A4%9A%E8%89%AF%E5%B0%8F%E4%BC%9E%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/6/67/%E5%A4%9A%E5%A4%9A%E8%89%AF%E5%B0%8F%E4%BC%9E%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%A4%9A%E5%A4%9A%E8%89%AF%E5%B0%8F%E4%BC%9E%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 138832
+      },
+      {
+        "id": "b0ec1c9c6c16e1eb4647",
+        "kind": "zun",
+        "work": "神灵庙",
+        "artist": "ZUN",
+        "fileTitle": "文件:多多良小伞（神灵庙立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%A4%9A%E5%A4%9A%E8%89%AF%E5%B0%8F%E4%BC%9E%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/7/7f/%E5%A4%9A%E5%A4%9A%E8%89%AF%E5%B0%8F%E4%BC%9E%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%A4%9A%E5%A4%9A%E8%89%AF%E5%B0%8F%E4%BC%9E%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 128172
+      }
+    ]
+  },
+  {
+    "characterId": "th:ichirin",
+    "name": "云居一轮",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "3de215039d26462c73c3",
+        "kind": "twilight",
+        "work": "心绮楼",
+        "artist": "alphes",
+        "fileTitle": "文件:云居一轮（心绮楼立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%BA%91%E5%B1%85%E4%B8%80%E8%BD%AE%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/7/70/%E4%BA%91%E5%B1%85%E4%B8%80%E8%BD%AE%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%BA%91%E5%B1%85%E4%B8%80%E8%BD%AE%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 244554
+      },
+      {
+        "id": "08ad997de8d446d10c12",
+        "kind": "twilight",
+        "work": "深秘录凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:云居一轮（深秘录凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%BA%91%E5%B1%85%E4%B8%80%E8%BD%AE%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/6/6c/%E4%BA%91%E5%B1%85%E4%B8%80%E8%BD%AE%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%BA%91%E5%B1%85%E4%B8%80%E8%BD%AE%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 240793
+      }
+    ]
+  },
+  {
+    "characterId": "th:unzan",
+    "name": "云山",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:murasa",
+    "name": "村纱水蜜",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "296bf3a5ed9504d1602d",
+        "kind": "twilight",
+        "work": "刚欲异闻",
+        "artist": "TOKIAME",
+        "fileTitle": "文件:村纱水蜜（刚欲异闻立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%9D%91%E7%BA%B1%E6%B0%B4%E8%9C%9C%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/8/85/%E6%9D%91%E7%BA%B1%E6%B0%B4%E8%9C%9C%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E6%9D%91%E7%BA%B1%E6%B0%B4%E8%9C%9C%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 202636
+      },
+      {
+        "id": "aa224339677f5b35e565",
+        "kind": "zun",
+        "work": "星莲船",
+        "artist": "ZUN",
+        "fileTitle": "文件:村纱水蜜（星莲船立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%9D%91%E7%BA%B1%E6%B0%B4%E8%9C%9C%EF%BC%88%E6%98%9F%E8%8E%B2%E8%88%B9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/8/86/%E6%9D%91%E7%BA%B1%E6%B0%B4%E8%9C%9C%EF%BC%88%E6%98%9F%E8%8E%B2%E8%88%B9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 41251
+      }
+    ]
+  },
+  {
+    "characterId": "th:shou",
+    "name": "寅丸星",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "97990e53d0ebd84f948c",
+        "kind": "zun",
+        "work": "星莲船",
+        "artist": "ZUN",
+        "fileTitle": "文件:寅丸星（星莲船立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%AF%85%E4%B8%B8%E6%98%9F%EF%BC%88%E6%98%9F%E8%8E%B2%E8%88%B9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/3/3c/%E5%AF%85%E4%B8%B8%E6%98%9F%EF%BC%88%E6%98%9F%E8%8E%B2%E8%88%B9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%AF%85%E4%B8%B8%E6%98%9F%EF%BC%88%E6%98%9F%E8%8E%B2%E8%88%B9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 63413
+      }
+    ]
+  },
+  {
+    "characterId": "th:byakuren",
+    "name": "圣白莲",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "83176f5d3ed06f74e7fa",
+        "kind": "twilight",
+        "work": "心绮楼",
+        "artist": "alphes",
+        "fileTitle": "文件:圣白莲（心绮楼立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%9C%A3%E7%99%BD%E8%8E%B2%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/8/82/%E5%9C%A3%E7%99%BD%E8%8E%B2%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%9C%A3%E7%99%BD%E8%8E%B2%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 300613
+      },
+      {
+        "id": "a92aa6e22fa95ab37af2",
+        "kind": "twilight",
+        "work": "深秘录凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:圣白莲（深秘录凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%9C%A3%E7%99%BD%E8%8E%B2%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/7/78/%E5%9C%A3%E7%99%BD%E8%8E%B2%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%9C%A3%E7%99%BD%E8%8E%B2%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 386710
+      },
+      {
+        "id": "b7e6beb06b07c1bdd26d",
+        "kind": "zun",
+        "work": "星莲船",
+        "artist": "ZUN",
+        "fileTitle": "文件:圣白莲（星莲船立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%9C%A3%E7%99%BD%E8%8E%B2%EF%BC%88%E6%98%9F%E8%8E%B2%E8%88%B9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/7/74/%E5%9C%A3%E7%99%BD%E8%8E%B2%EF%BC%88%E6%98%9F%E8%8E%B2%E8%88%B9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%9C%A3%E7%99%BD%E8%8E%B2%EF%BC%88%E6%98%9F%E8%8E%B2%E8%88%B9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 56569
+      }
+    ]
+  },
+  {
+    "characterId": "th:nue",
+    "name": "封兽鵺",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "1115e848dd1fd1761367",
+        "kind": "zun",
+        "work": "神灵庙",
+        "artist": "ZUN",
+        "fileTitle": "文件:封兽鵺（神灵庙立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B0%81%E5%85%BD%E9%B5%BA%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/d/d4/%E5%B0%81%E5%85%BD%E9%B5%BA%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%B0%81%E5%85%BD%E9%B5%BA%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 113845
+      },
+      {
+        "id": "fcdde3658603ff4f8f2f",
+        "kind": "zun",
+        "work": "星莲船",
+        "artist": "ZUN",
+        "fileTitle": "文件:封兽鵺（星莲船立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B0%81%E5%85%BD%E9%B5%BA%EF%BC%88%E6%98%9F%E8%8E%B2%E8%88%B9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/9/95/%E5%B0%81%E5%85%BD%E9%B5%BA%EF%BC%88%E6%98%9F%E8%8E%B2%E8%88%B9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%B0%81%E5%85%BD%E9%B5%BA%EF%BC%88%E6%98%9F%E8%8E%B2%E8%88%B9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 54673
+      }
+    ]
+  },
+  {
+    "characterId": "th:kyouko",
+    "name": "幽谷响子",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "737797251a6986e29a46",
+        "kind": "zun",
+        "work": "神灵庙",
+        "artist": "ZUN",
+        "fileTitle": "文件:幽谷响子（神灵庙立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B9%BD%E8%B0%B7%E5%93%8D%E5%AD%90%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/7/7c/%E5%B9%BD%E8%B0%B7%E5%93%8D%E5%AD%90%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 89671
+      }
+    ]
+  },
+  {
+    "characterId": "th:yoshika",
+    "name": "宫古芳香",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "c9b0a6abe8fdbfc8ab6b",
+        "kind": "zun",
+        "work": "神灵庙",
+        "artist": "ZUN",
+        "fileTitle": "文件:宫古芳香（神灵庙立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%AE%AB%E5%8F%A4%E8%8A%B3%E9%A6%99%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/c/ca/%E5%AE%AB%E5%8F%A4%E8%8A%B3%E9%A6%99%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 95141
+      }
+    ]
+  },
+  {
+    "characterId": "th:seiga",
+    "name": "霍青娥",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "7454499f204b20b0e170",
+        "kind": "zun",
+        "work": "神灵庙",
+        "artist": "ZUN",
+        "fileTitle": "文件:霍青娥（神灵庙立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%9C%8D%E9%9D%92%E5%A8%A5%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/1/18/%E9%9C%8D%E9%9D%92%E5%A8%A5%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%9C%8D%E9%9D%92%E5%A8%A5%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 96554
+      }
+    ]
+  },
+  {
+    "characterId": "th:tojiko",
+    "name": "苏我屠自古",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "59fb9f21cded7d69a841",
+        "kind": "zun",
+        "work": "神灵庙",
+        "artist": "ZUN",
+        "fileTitle": "文件:苏我屠自古（神灵庙立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%8B%8F%E6%88%91%E5%B1%A0%E8%87%AA%E5%8F%A4%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/b/bb/%E8%8B%8F%E6%88%91%E5%B1%A0%E8%87%AA%E5%8F%A4%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E8%8B%8F%E6%88%91%E5%B1%A0%E8%87%AA%E5%8F%A4%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 126858
+      }
+    ]
+  },
+  {
+    "characterId": "th:futo",
+    "name": "物部布都",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "f5b83051379ffa8971e7",
+        "kind": "twilight",
+        "work": "心绮楼",
+        "artist": "alphes",
+        "fileTitle": "文件:物部布都（心绮楼立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%89%A9%E9%83%A8%E5%B8%83%E9%83%BD%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/2/24/%E7%89%A9%E9%83%A8%E5%B8%83%E9%83%BD%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%89%A9%E9%83%A8%E5%B8%83%E9%83%BD%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 258307
+      },
+      {
+        "id": "22ee9d6871bc29187844",
+        "kind": "twilight",
+        "work": "深秘录凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:物部布都（深秘录凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%89%A9%E9%83%A8%E5%B8%83%E9%83%BD%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/a/a7/%E7%89%A9%E9%83%A8%E5%B8%83%E9%83%BD%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%89%A9%E9%83%A8%E5%B8%83%E9%83%BD%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 269711
+      },
+      {
+        "id": "2f3537191a23131b71da",
+        "kind": "zun",
+        "work": "神灵庙",
+        "artist": "ZUN",
+        "fileTitle": "文件:物部布都（神灵庙立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%89%A9%E9%83%A8%E5%B8%83%E9%83%BD%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/a/a9/%E7%89%A9%E9%83%A8%E5%B8%83%E9%83%BD%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%89%A9%E9%83%A8%E5%B8%83%E9%83%BD%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 131191
+      }
+    ]
+  },
+  {
+    "characterId": "th:miko",
+    "name": "丰聪耳神子",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "2ff7f33a0ae4b4a6c758",
+        "kind": "twilight",
+        "work": "心绮楼",
+        "artist": "alphes",
+        "fileTitle": "文件:丰聪耳神子（心绮楼立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%B8%B0%E8%81%AA%E8%80%B3%E7%A5%9E%E5%AD%90%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/d/dc/%E4%B8%B0%E8%81%AA%E8%80%B3%E7%A5%9E%E5%AD%90%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%B8%B0%E8%81%AA%E8%80%B3%E7%A5%9E%E5%AD%90%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 338514
+      },
+      {
+        "id": "da0e0133f3d8ceb4ebbc",
+        "kind": "twilight",
+        "work": "深秘录凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:丰聪耳神子（深秘录凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%B8%B0%E8%81%AA%E8%80%B3%E7%A5%9E%E5%AD%90%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/1/15/%E4%B8%B0%E8%81%AA%E8%80%B3%E7%A5%9E%E5%AD%90%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%B8%B0%E8%81%AA%E8%80%B3%E7%A5%9E%E5%AD%90%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 357175
+      },
+      {
+        "id": "6e9bae28dc10d3f8c050",
+        "kind": "zun",
+        "work": "神灵庙",
+        "artist": "ZUN",
+        "fileTitle": "文件:丰聪耳神子（神灵庙立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%B8%B0%E8%81%AA%E8%80%B3%E7%A5%9E%E5%AD%90%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/3/38/%E4%B8%B0%E8%81%AA%E8%80%B3%E7%A5%9E%E5%AD%90%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%B8%B0%E8%81%AA%E8%80%B3%E7%A5%9E%E5%AD%90%EF%BC%88%E7%A5%9E%E7%81%B5%E5%BA%99%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 113127
+      }
+    ]
+  },
+  {
+    "characterId": "th:mamizou",
+    "name": "二岩猯藏",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "1a22d53d0bea10354bc1",
+        "kind": "twilight",
+        "work": "心绮楼",
+        "artist": "alphes",
+        "fileTitle": "文件:二岩猯藏（心绮楼立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%BA%8C%E5%B2%A9%E7%8C%AF%E8%97%8F%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/0/06/%E4%BA%8C%E5%B2%A9%E7%8C%AF%E8%97%8F%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%BA%8C%E5%B2%A9%E7%8C%AF%E8%97%8F%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 311438
+      },
+      {
+        "id": "a607f64e8b72d1214a2e",
+        "kind": "twilight",
+        "work": "深秘录凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:二岩猯藏（深秘录凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%BA%8C%E5%B2%A9%E7%8C%AF%E8%97%8F%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/6/6b/%E4%BA%8C%E5%B2%A9%E7%8C%AF%E8%97%8F%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%BA%8C%E5%B2%A9%E7%8C%AF%E8%97%8F%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 279860
+      },
+      {
+        "id": "3927e91f4116e8b58ba0",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:二岩猯藏（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%BA%8C%E5%B2%A9%E7%8C%AF%E8%97%8F%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/c/ca/%E4%BA%8C%E5%B2%A9%E7%8C%AF%E8%97%8F%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%BA%8C%E5%B2%A9%E7%8C%AF%E8%97%8F%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 319667
+      }
+    ]
+  },
+  {
+    "characterId": "th:wakasagihime",
+    "name": "若鹭姬",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "055533b8e2a9d4c559c1",
+        "kind": "zun",
+        "work": "辉针城",
+        "artist": "ZUN",
+        "fileTitle": "文件:若鹭姬（辉针城立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%8B%A5%E9%B9%AD%E5%A7%AC%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/1/14/%E8%8B%A5%E9%B9%AD%E5%A7%AC%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E8%8B%A5%E9%B9%AD%E5%A7%AC%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 125901
+      }
+    ]
+  },
+  {
+    "characterId": "th:sekibanki",
+    "name": "赤蛮奇",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "b054bde3e4c1121c271f",
+        "kind": "zun",
+        "work": "辉针城",
+        "artist": "ZUN",
+        "fileTitle": "文件:赤蛮奇（辉针城立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%B5%A4%E8%9B%AE%E5%A5%87%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/8/87/%E8%B5%A4%E8%9B%AE%E5%A5%87%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 58917
+      }
+    ]
+  },
+  {
+    "characterId": "th:kagerou",
+    "name": "今泉影狼",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "fec23b3ff14fb34fe7e3",
+        "kind": "zun",
+        "work": "辉针城",
+        "artist": "ZUN",
+        "fileTitle": "文件:今泉影狼（辉针城立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%BB%8A%E6%B3%89%E5%BD%B1%E7%8B%BC%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/d/d3/%E4%BB%8A%E6%B3%89%E5%BD%B1%E7%8B%BC%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%BB%8A%E6%B3%89%E5%BD%B1%E7%8B%BC%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 90477
+      }
+    ]
+  },
+  {
+    "characterId": "th:benben",
+    "name": "九十九弁弁",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "f2c35fb71365ce0c1b8d",
+        "kind": "zun",
+        "work": "辉针城",
+        "artist": "ZUN",
+        "fileTitle": "文件:九十九弁弁（辉针城立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%BC%81%E5%BC%81%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/8/86/%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%BC%81%E5%BC%81%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%BC%81%E5%BC%81%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 114094
+      }
+    ]
+  },
+  {
+    "characterId": "th:yatsuhashi",
+    "name": "九十九八桥",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "cacef4335f0da9436f87",
+        "kind": "zun",
+        "work": "辉针城",
+        "artist": "ZUN",
+        "fileTitle": "文件:九十九八桥（辉针城立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%85%AB%E6%A1%A5%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/7/7c/%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%85%AB%E6%A1%A5%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%B9%9D%E5%8D%81%E4%B9%9D%E5%85%AB%E6%A1%A5%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 84289
+      }
+    ]
+  },
+  {
+    "characterId": "th:seija",
+    "name": "鬼人正邪",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "018c2a7d330d0cc85a5a",
+        "kind": "zun",
+        "work": "辉针城",
+        "artist": "ZUN",
+        "fileTitle": "文件:鬼人正邪（辉针城立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%AC%BC%E4%BA%BA%E6%AD%A3%E9%82%AA%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/7/7b/%E9%AC%BC%E4%BA%BA%E6%AD%A3%E9%82%AA%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 93459
+      },
+      {
+        "id": "70c09bffd3531eea699f",
+        "kind": "zun",
+        "work": "天邪鬼",
+        "artist": "ZUN",
+        "fileTitle": "文件:鬼人正邪（天邪鬼立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%AC%BC%E4%BA%BA%E6%AD%A3%E9%82%AA%EF%BC%88%E5%A4%A9%E9%82%AA%E9%AC%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/f/f2/%E9%AC%BC%E4%BA%BA%E6%AD%A3%E9%82%AA%EF%BC%88%E5%A4%A9%E9%82%AA%E9%AC%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%AC%BC%E4%BA%BA%E6%AD%A3%E9%82%AA%EF%BC%88%E5%A4%A9%E9%82%AA%E9%AC%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 327251
+      }
+    ]
+  },
+  {
+    "characterId": "th:shinmyoumaru",
+    "name": "少名针妙丸",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "4ec5c544234445d303ee",
+        "kind": "twilight",
+        "work": "深秘录凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:少名针妙丸（深秘录凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B0%91%E5%90%8D%E9%92%88%E5%A6%99%E4%B8%B8%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/e/e8/%E5%B0%91%E5%90%8D%E9%92%88%E5%A6%99%E4%B8%B8%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%B0%91%E5%90%8D%E9%92%88%E5%A6%99%E4%B8%B8%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 212842
+      },
+      {
+        "id": "80676b735d6486591e1f",
+        "kind": "zun",
+        "work": "辉针城",
+        "artist": "ZUN",
+        "fileTitle": "文件:少名针妙丸（辉针城立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B0%91%E5%90%8D%E9%92%88%E5%A6%99%E4%B8%B8%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/3/34/%E5%B0%91%E5%90%8D%E9%92%88%E5%A6%99%E4%B8%B8%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%B0%91%E5%90%8D%E9%92%88%E5%A6%99%E4%B8%B8%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 262401
+      }
+    ]
+  },
+  {
+    "characterId": "th:raiko",
+    "name": "堀川雷鼓",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "c59e3afc8136d1f99d8a",
+        "kind": "zun",
+        "work": "辉针城",
+        "artist": "ZUN",
+        "fileTitle": "文件:堀川雷鼓（辉针城立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%A0%80%E5%B7%9D%E9%9B%B7%E9%BC%93%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/a/ae/%E5%A0%80%E5%B7%9D%E9%9B%B7%E9%BC%93%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%A0%80%E5%B7%9D%E9%9B%B7%E9%BC%93%EF%BC%88%E8%BE%89%E9%92%88%E5%9F%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 172852
+      }
+    ]
+  },
+  {
+    "characterId": "th:seiran",
+    "name": "清兰",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "39d82b7172626aa8ce8f",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:清兰（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%B8%85%E5%85%B0%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/7/7a/%E6%B8%85%E5%85%B0%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E6%B8%85%E5%85%B0%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 405990
+      },
+      {
+        "id": "5e7d111c35062eb41bd2",
+        "kind": "zun",
+        "work": "绀珠传",
+        "artist": "ZUN",
+        "fileTitle": "文件:清兰（绀珠传立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%B8%85%E5%85%B0%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/4/4c/%E6%B8%85%E5%85%B0%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E6%B8%85%E5%85%B0%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 125214
+      }
+    ]
+  },
+  {
+    "characterId": "th:ringo",
+    "name": "铃瑚",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "480c6383aef8a817a3ec",
+        "kind": "zun",
+        "work": "绀珠传",
+        "artist": "ZUN",
+        "fileTitle": "文件:铃瑚（绀珠传立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%93%83%E7%91%9A%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/e/ed/%E9%93%83%E7%91%9A%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 97198
+      }
+    ]
+  },
+  {
+    "characterId": "th:doremy",
+    "name": "哆来咪·苏伊特",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "616c36944455a01f4568",
+        "kind": "twilight",
+        "work": "凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:哆来咪·苏伊特（凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%93%86%E6%9D%A5%E5%92%AA%C2%B7%E8%8B%8F%E4%BC%8A%E7%89%B9%EF%BC%88%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/6/68/%E5%93%86%E6%9D%A5%E5%92%AA%C2%B7%E8%8B%8F%E4%BC%8A%E7%89%B9%EF%BC%88%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%93%86%E6%9D%A5%E5%92%AA%C2%B7%E8%8B%8F%E4%BC%8A%E7%89%B9%EF%BC%88%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 391091
+      },
+      {
+        "id": "7ac4fb59033ac3863190",
+        "kind": "zun",
+        "work": "绀珠传",
+        "artist": "ZUN",
+        "fileTitle": "文件:哆来咪·苏伊特（绀珠传立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%93%86%E6%9D%A5%E5%92%AA%C2%B7%E8%8B%8F%E4%BC%8A%E7%89%B9%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/9/93/%E5%93%86%E6%9D%A5%E5%92%AA%C2%B7%E8%8B%8F%E4%BC%8A%E7%89%B9%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%93%86%E6%9D%A5%E5%92%AA%C2%B7%E8%8B%8F%E4%BC%8A%E7%89%B9%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 97487
+      }
+    ]
+  },
+  {
+    "characterId": "th:sagume",
+    "name": "稀神探女",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "68df64d2e9a806e7ca9f",
+        "kind": "zun",
+        "work": "绀珠传",
+        "artist": "ZUN",
+        "fileTitle": "文件:稀神探女（绀珠传立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%A8%80%E7%A5%9E%E6%8E%A2%E5%A5%B3%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/9/96/%E7%A8%80%E7%A5%9E%E6%8E%A2%E5%A5%B3%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%A8%80%E7%A5%9E%E6%8E%A2%E5%A5%B3%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 134051
+      }
+    ]
+  },
+  {
+    "characterId": "th:clownpiece",
+    "name": "克劳恩皮丝",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "ff5d848ee1ed9ba4318c",
+        "kind": "zun",
+        "work": "绀珠传",
+        "artist": "ZUN",
+        "fileTitle": "文件:克劳恩皮丝（绀珠传立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%85%8B%E5%8A%B3%E6%81%A9%E7%9A%AE%E4%B8%9D%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/d/da/%E5%85%8B%E5%8A%B3%E6%81%A9%E7%9A%AE%E4%B8%9D%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%85%8B%E5%8A%B3%E6%81%A9%E7%9A%AE%E4%B8%9D%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 151262
+      }
+    ]
+  },
+  {
+    "characterId": "th:junko",
+    "name": "纯狐",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "47d707d145b7de80c097",
+        "kind": "zun",
+        "work": "绀珠传",
+        "artist": "ZUN",
+        "fileTitle": "文件:纯狐（绀珠传立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%BA%AF%E7%8B%90%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/f/fd/%E7%BA%AF%E7%8B%90%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%BA%AF%E7%8B%90%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 188161
+      }
+    ]
+  },
+  {
+    "characterId": "th:hecatia",
+    "name": "赫卡提亚·拉碧斯拉祖利",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "19ef88af9871ffa46e12",
+        "kind": "zun",
+        "work": "绀珠传",
+        "artist": "ZUN",
+        "fileTitle": "文件:赫卡提亚·拉碧斯拉祖利（绀珠传立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%B5%AB%E5%8D%A1%E6%8F%90%E4%BA%9A%C2%B7%E6%8B%89%E7%A2%A7%E6%96%AF%E6%8B%89%E7%A5%96%E5%88%A9%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/5/54/%E8%B5%AB%E5%8D%A1%E6%8F%90%E4%BA%9A%C2%B7%E6%8B%89%E7%A2%A7%E6%96%AF%E6%8B%89%E7%A5%96%E5%88%A9%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E8%B5%AB%E5%8D%A1%E6%8F%90%E4%BA%9A%C2%B7%E6%8B%89%E7%A2%A7%E6%96%AF%E6%8B%89%E7%A5%96%E5%88%A9%EF%BC%88%E7%BB%80%E7%8F%A0%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 128526
+      }
+    ]
+  },
+  {
+    "characterId": "th:eternity",
+    "name": "爱塔妮缇拉尔瓦",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "1add4618bbee734280cf",
+        "kind": "zun",
+        "work": "天空璋",
+        "artist": "ZUN",
+        "fileTitle": "文件:爱塔妮缇拉尔瓦（天空璋立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%88%B1%E5%A1%94%E5%A6%AE%E7%BC%87%E6%8B%89%E5%B0%94%E7%93%A6%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/b/ba/%E7%88%B1%E5%A1%94%E5%A6%AE%E7%BC%87%E6%8B%89%E5%B0%94%E7%93%A6%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%88%B1%E5%A1%94%E5%A6%AE%E7%BC%87%E6%8B%89%E5%B0%94%E7%93%A6%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 160988
+      }
+    ]
+  },
+  {
+    "characterId": "th:nemuno",
+    "name": "坂田合欢",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "57d1f916f5ee4f039bc5",
+        "kind": "zun",
+        "work": "天空璋",
+        "artist": "ZUN",
+        "fileTitle": "文件:坂田合欢（天空璋立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%9D%82%E7%94%B0%E5%90%88%E6%AC%A2%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/a/a8/%E5%9D%82%E7%94%B0%E5%90%88%E6%AC%A2%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%9D%82%E7%94%B0%E5%90%88%E6%AC%A2%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 145605
+      }
+    ]
+  },
+  {
+    "characterId": "th:aunn",
+    "name": "高丽野阿吽",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "9c81798171b368149b15",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:高丽野阿吽（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%AB%98%E4%B8%BD%E9%87%8E%E9%98%BF%E5%90%BD%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/f/f4/%E9%AB%98%E4%B8%BD%E9%87%8E%E9%98%BF%E5%90%BD%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%AB%98%E4%B8%BD%E9%87%8E%E9%98%BF%E5%90%BD%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 317939
+      },
+      {
+        "id": "2c8b55ca12b0683e3a39",
+        "kind": "zun",
+        "work": "天空璋",
+        "artist": "ZUN",
+        "fileTitle": "文件:高丽野阿吽（天空璋立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%AB%98%E4%B8%BD%E9%87%8E%E9%98%BF%E5%90%BD%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/e/e2/%E9%AB%98%E4%B8%BD%E9%87%8E%E9%98%BF%E5%90%BD%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 130123
+      }
+    ]
+  },
+  {
+    "characterId": "th:narumi",
+    "name": "矢田寺成美",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "4e840a99d8ae339fe77a",
+        "kind": "zun",
+        "work": "天空璋",
+        "artist": "ZUN",
+        "fileTitle": "文件:矢田寺成美（天空璋立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%9F%A2%E7%94%B0%E5%AF%BA%E6%88%90%E7%BE%8E%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/8/82/%E7%9F%A2%E7%94%B0%E5%AF%BA%E6%88%90%E7%BE%8E%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 114378
+      }
+    ]
+  },
+  {
+    "characterId": "th:satono",
+    "name": "尔子田里乃",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "fbe2f115f466240b7833",
+        "kind": "zun",
+        "work": "天空璋",
+        "artist": "ZUN",
+        "fileTitle": "文件:尔子田里乃（天空璋立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B0%94%E5%AD%90%E7%94%B0%E9%87%8C%E4%B9%83%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/4/47/%E5%B0%94%E5%AD%90%E7%94%B0%E9%87%8C%E4%B9%83%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%B0%94%E5%AD%90%E7%94%B0%E9%87%8C%E4%B9%83%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 157531
+      }
+    ]
+  },
+  {
+    "characterId": "th:mai",
+    "name": "丁礼田舞",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "e33e4933d25814dcd110",
+        "kind": "zun",
+        "work": "天空璋",
+        "artist": "ZUN",
+        "fileTitle": "文件:丁礼田舞（天空璋立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%B8%81%E7%A4%BC%E7%94%B0%E8%88%9E%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/4/4d/%E4%B8%81%E7%A4%BC%E7%94%B0%E8%88%9E%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%B8%81%E7%A4%BC%E7%94%B0%E8%88%9E%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 168385
+      }
+    ]
+  },
+  {
+    "characterId": "th:okina",
+    "name": "摩多罗隐岐奈",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "d226e26a20f16039c6a0",
+        "kind": "twilight",
+        "work": "刚欲异闻",
+        "artist": "TOKIAME",
+        "fileTitle": "文件:摩多罗隐岐奈（刚欲异闻立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%91%A9%E5%A4%9A%E7%BD%97%E9%9A%90%E5%B2%90%E5%A5%88%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/8/86/%E6%91%A9%E5%A4%9A%E7%BD%97%E9%9A%90%E5%B2%90%E5%A5%88%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E6%91%A9%E5%A4%9A%E7%BD%97%E9%9A%90%E5%B2%90%E5%A5%88%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 157081
+      },
+      {
+        "id": "a8a01c61f07efe935ea9",
+        "kind": "zun",
+        "work": "天空璋",
+        "artist": "ZUN",
+        "fileTitle": "文件:摩多罗隐岐奈（天空璋立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%91%A9%E5%A4%9A%E7%BD%97%E9%9A%90%E5%B2%90%E5%A5%88%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/5/5e/%E6%91%A9%E5%A4%9A%E7%BD%97%E9%9A%90%E5%B2%90%E5%A5%88%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E6%91%A9%E5%A4%9A%E7%BD%97%E9%9A%90%E5%B2%90%E5%A5%88%EF%BC%88%E5%A4%A9%E7%A9%BA%E7%92%8B%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 247493
+      }
+    ]
+  },
+  {
+    "characterId": "th:eika",
+    "name": "戎璎花",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "d15140ad8b75294ea3da",
+        "kind": "zun",
+        "work": "鬼形兽",
+        "artist": "ZUN",
+        "fileTitle": "文件:戎璎花（鬼形兽立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%88%8E%E7%92%8E%E8%8A%B1%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/c/cd/%E6%88%8E%E7%92%8E%E8%8A%B1%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 108085
+      }
+    ]
+  },
+  {
+    "characterId": "th:urumi",
+    "name": "牛崎润美",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "f4fb078dafe5e54a0f9a",
+        "kind": "zun",
+        "work": "鬼形兽",
+        "artist": "ZUN",
+        "fileTitle": "文件:牛崎润美（鬼形兽立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%89%9B%E5%B4%8E%E6%B6%A6%E7%BE%8E%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/f/f4/%E7%89%9B%E5%B4%8E%E6%B6%A6%E7%BE%8E%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%89%9B%E5%B4%8E%E6%B6%A6%E7%BE%8E%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 134640
+      }
+    ]
+  },
+  {
+    "characterId": "th:kutaka",
+    "name": "庭渡久侘歌",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "afc43ff2afe67b1c1fe9",
+        "kind": "twilight",
+        "work": "刚欲异闻",
+        "artist": "TOKIAME",
+        "fileTitle": "文件:庭渡久侘歌（刚欲异闻立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%BA%AD%E6%B8%A1%E4%B9%85%E4%BE%98%E6%AD%8C%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/b/bc/%E5%BA%AD%E6%B8%A1%E4%B9%85%E4%BE%98%E6%AD%8C%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%BA%AD%E6%B8%A1%E4%B9%85%E4%BE%98%E6%AD%8C%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 134364
+      },
+      {
+        "id": "b8ff87897ec0fc07d236",
+        "kind": "zun",
+        "work": "鬼形兽",
+        "artist": "ZUN",
+        "fileTitle": "文件:庭渡久侘歌（鬼形兽立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%BA%AD%E6%B8%A1%E4%B9%85%E4%BE%98%E6%AD%8C%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/1/12/%E5%BA%AD%E6%B8%A1%E4%B9%85%E4%BE%98%E6%AD%8C%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%BA%AD%E6%B8%A1%E4%B9%85%E4%BE%98%E6%AD%8C%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 162807
+      }
+    ]
+  },
+  {
+    "characterId": "th:yachie",
+    "name": "吉吊八千慧",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "7198361407b0410137c5",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:吉吊八千慧（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%90%89%E5%90%8A%E5%85%AB%E5%8D%83%E6%85%A7%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/f/f2/%E5%90%89%E5%90%8A%E5%85%AB%E5%8D%83%E6%85%A7%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%90%89%E5%90%8A%E5%85%AB%E5%8D%83%E6%85%A7%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 420093
+      },
+      {
+        "id": "51388a6f49135475169e",
+        "kind": "zun",
+        "work": "鬼形兽",
+        "artist": "ZUN",
+        "fileTitle": "文件:吉吊八千慧（鬼形兽立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%90%89%E5%90%8A%E5%85%AB%E5%8D%83%E6%85%A7%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/e/ed/%E5%90%89%E5%90%8A%E5%85%AB%E5%8D%83%E6%85%A7%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%90%89%E5%90%8A%E5%85%AB%E5%8D%83%E6%85%A7%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 161385
+      }
+    ]
+  },
+  {
+    "characterId": "th:mayumi",
+    "name": "杖刀偶磨弓",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "d9b71814c147cc42984a",
+        "kind": "zun",
+        "work": "鬼形兽",
+        "artist": "ZUN",
+        "fileTitle": "文件:杖刀偶磨弓（鬼形兽立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%9D%96%E5%88%80%E5%81%B6%E7%A3%A8%E5%BC%93%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/3/3b/%E6%9D%96%E5%88%80%E5%81%B6%E7%A3%A8%E5%BC%93%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 148945
+      }
+    ]
+  },
+  {
+    "characterId": "th:keiki",
+    "name": "埴安神袿姬",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "3ff5c112da58c4638ff5",
+        "kind": "zun",
+        "work": "鬼形兽",
+        "artist": "ZUN",
+        "fileTitle": "文件:埴安神袿姬（鬼形兽立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%9F%B4%E5%AE%89%E7%A5%9E%E8%A2%BF%E5%A7%AC%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/a/ac/%E5%9F%B4%E5%AE%89%E7%A5%9E%E8%A2%BF%E5%A7%AC%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%9F%B4%E5%AE%89%E7%A5%9E%E8%A2%BF%E5%A7%AC%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 208360
+      }
+    ]
+  },
+  {
+    "characterId": "th:saki",
+    "name": "骊驹早鬼",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "9f826cd43da224336820",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:骊驹早鬼（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%AA%8A%E9%A9%B9%E6%97%A9%E9%AC%BC%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/9/96/%E9%AA%8A%E9%A9%B9%E6%97%A9%E9%AC%BC%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%AA%8A%E9%A9%B9%E6%97%A9%E9%AC%BC%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 343914
+      },
+      {
+        "id": "e30e8ebbddf34ac64435",
+        "kind": "zun",
+        "work": "鬼形兽",
+        "artist": "ZUN",
+        "fileTitle": "文件:骊驹早鬼（鬼形兽立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%AA%8A%E9%A9%B9%E6%97%A9%E9%AC%BC%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/c/c4/%E9%AA%8A%E9%A9%B9%E6%97%A9%E9%AC%BC%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%AA%8A%E9%A9%B9%E6%97%A9%E9%AC%BC%EF%BC%88%E9%AC%BC%E5%BD%A2%E5%85%BD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 170408
+      }
+    ]
+  },
+  {
+    "characterId": "th:mike",
+    "name": "豪德寺三花",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "83412b73be7118350b55",
+        "kind": "zun",
+        "work": "虹龙洞",
+        "artist": "ZUN",
+        "fileTitle": "文件:豪德寺三花（虹龙洞立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%B1%AA%E5%BE%B7%E5%AF%BA%E4%B8%89%E8%8A%B1%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/1/1c/%E8%B1%AA%E5%BE%B7%E5%AF%BA%E4%B8%89%E8%8A%B1%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 113287
+      }
+    ]
+  },
+  {
+    "characterId": "th:takane",
+    "name": "山城高岭",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "0854426612e4579fb8b1",
+        "kind": "zun",
+        "work": "虹龙洞",
+        "artist": "ZUN",
+        "fileTitle": "文件:山城高岭（虹龙洞立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B1%B1%E5%9F%8E%E9%AB%98%E5%B2%AD%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/e/e0/%E5%B1%B1%E5%9F%8E%E9%AB%98%E5%B2%AD%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%B1%B1%E5%9F%8E%E9%AB%98%E5%B2%AD%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 118863
+      }
+    ]
+  },
+  {
+    "characterId": "th:sannyo",
+    "name": "驹草山如",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "cce77bbf0d9d441ce700",
+        "kind": "zun",
+        "work": "虹龙洞",
+        "artist": "ZUN",
+        "fileTitle": "文件:驹草山如（虹龙洞立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%A9%B9%E8%8D%89%E5%B1%B1%E5%A6%82%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/b/b5/%E9%A9%B9%E8%8D%89%E5%B1%B1%E5%A6%82%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%A9%B9%E8%8D%89%E5%B1%B1%E5%A6%82%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 114326
+      }
+    ]
+  },
+  {
+    "characterId": "th:misumaru",
+    "name": "玉造魅须丸",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "b1488d5cbb43567212ef",
+        "kind": "zun",
+        "work": "虹龙洞",
+        "artist": "ZUN",
+        "fileTitle": "文件:玉造魅须丸（虹龙洞立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%8E%89%E9%80%A0%E9%AD%85%E9%A1%BB%E4%B8%B8%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/9/9c/%E7%8E%89%E9%80%A0%E9%AD%85%E9%A1%BB%E4%B8%B8%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 107954
+      }
+    ]
+  },
+  {
+    "characterId": "th:megumu",
+    "name": "饭纲丸龙",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "d3a3f066203cad469b6f",
+        "kind": "zun",
+        "work": "虹龙洞",
+        "artist": "ZUN",
+        "fileTitle": "文件:饭纲丸龙（虹龙洞立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%A5%AD%E7%BA%B2%E4%B8%B8%E9%BE%99%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/9/93/%E9%A5%AD%E7%BA%B2%E4%B8%B8%E9%BE%99%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 88349
+      }
+    ]
+  },
+  {
+    "characterId": "th:tsukasa",
+    "name": "菅牧典",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "1176d3c7fbf46e0b409a",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:菅牧典（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%8F%85%E7%89%A7%E5%85%B8%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/e/e0/%E8%8F%85%E7%89%A7%E5%85%B8%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E8%8F%85%E7%89%A7%E5%85%B8%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 251971
+      },
+      {
+        "id": "04b5eb4af63079501810",
+        "kind": "zun",
+        "work": "虹龙洞",
+        "artist": "ZUN",
+        "fileTitle": "文件:菅牧典（虹龙洞立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%8F%85%E7%89%A7%E5%85%B8%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/7/7f/%E8%8F%85%E7%89%A7%E5%85%B8%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 92824
+      }
+    ]
+  },
+  {
+    "characterId": "th:chimata",
+    "name": "天弓千亦",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "e6d69882aebce6d07e9c",
+        "kind": "zun",
+        "work": "虹龙洞",
+        "artist": "ZUN",
+        "fileTitle": "文件:天弓千亦（虹龙洞立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%A4%A9%E5%BC%93%E5%8D%83%E4%BA%A6%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/c/cd/%E5%A4%A9%E5%BC%93%E5%8D%83%E4%BA%A6%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%A4%A9%E5%BC%93%E5%8D%83%E4%BA%A6%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 164841
+      }
+    ]
+  },
+  {
+    "characterId": "th:momoyo",
+    "name": "姬虫百百世",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "0ed76a20cf685a6b2ccf",
+        "kind": "zun",
+        "work": "虹龙洞",
+        "artist": "ZUN",
+        "fileTitle": "文件:姬虫百百世（虹龙洞立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%A7%AC%E8%99%AB%E7%99%BE%E7%99%BE%E4%B8%96%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/6/62/%E5%A7%AC%E8%99%AB%E7%99%BE%E7%99%BE%E4%B8%96%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%A7%AC%E8%99%AB%E7%99%BE%E7%99%BE%E4%B8%96%EF%BC%88%E8%99%B9%E9%BE%99%E6%B4%9E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 180623
+      }
+    ]
+  },
+  {
+    "characterId": "th:biten",
+    "name": "孙美天",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "ab905f93a943f4168091",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:孙美天（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%AD%99%E7%BE%8E%E5%A4%A9%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/2/2a/%E5%AD%99%E7%BE%8E%E5%A4%A9%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%AD%99%E7%BE%8E%E5%A4%A9%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 322068
+      }
+    ]
+  },
+  {
+    "characterId": "th:enoko",
+    "name": "三头慧之子",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "d0c89d015c5ee2afbd88",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:三头慧之子（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%B8%89%E5%A4%B4%E6%85%A7%E4%B9%8B%E5%AD%90%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/a/a1/%E4%B8%89%E5%A4%B4%E6%85%A7%E4%B9%8B%E5%AD%90%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%B8%89%E5%A4%B4%E6%85%A7%E4%B9%8B%E5%AD%90%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 340333
+      }
+    ]
+  },
+  {
+    "characterId": "th:chiyari",
+    "name": "天火人血枪",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "68a8a361d29fe5ff1d41",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:天火人血枪（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%A4%A9%E7%81%AB%E4%BA%BA%E8%A1%80%E6%9E%AA%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/e/ec/%E5%A4%A9%E7%81%AB%E4%BA%BA%E8%A1%80%E6%9E%AA%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%A4%A9%E7%81%AB%E4%BA%BA%E8%A1%80%E6%9E%AA%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 355326
+      }
+    ]
+  },
+  {
+    "characterId": "th:hisami",
+    "name": "豫母都日狭美",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "d4ac89695a770564d0d4",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:豫母都日狭美（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%B1%AB%E6%AF%8D%E9%83%BD%E6%97%A5%E7%8B%AD%E7%BE%8E%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/3/34/%E8%B1%AB%E6%AF%8D%E9%83%BD%E6%97%A5%E7%8B%AD%E7%BE%8E%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E8%B1%AB%E6%AF%8D%E9%83%BD%E6%97%A5%E7%8B%AD%E7%BE%8E%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 618345
+      }
+    ]
+  },
+  {
+    "characterId": "th:zanmu",
+    "name": "日白残无",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "7303c2ae07435f5510d1",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:日白残无（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%97%A5%E7%99%BD%E6%AE%8B%E6%97%A0%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/8/80/%E6%97%A5%E7%99%BD%E6%AE%8B%E6%97%A0%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E6%97%A5%E7%99%BD%E6%AE%8B%E6%97%A0%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 558330
+      }
+    ]
+  },
+  {
+    "characterId": "th:ubame",
+    "name": "尘塚姥芽",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "d75ab07ee77bfaa95449",
+        "kind": "zun",
+        "work": "锦上京",
+        "artist": "ZUN",
+        "fileTitle": "文件:尘塚姥芽（锦上京立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B0%98%E5%A1%9A%E5%A7%A5%E8%8A%BD%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/b/b2/%E5%B0%98%E5%A1%9A%E5%A7%A5%E8%8A%BD%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%B0%98%E5%A1%9A%E5%A7%A5%E8%8A%BD%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 122331
+      }
+    ]
+  },
+  {
+    "characterId": "th:chimi",
+    "name": "封兽魑魅",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "e192484f53184cfd3142",
+        "kind": "zun",
+        "work": "锦上京",
+        "artist": "ZUN",
+        "fileTitle": "文件:封兽魑魅（锦上京立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B0%81%E5%85%BD%E9%AD%91%E9%AD%85%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/7/71/%E5%B0%81%E5%85%BD%E9%AD%91%E9%AD%85%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 100597
+      }
+    ]
+  },
+  {
+    "characterId": "th:nareko",
+    "name": "道神驯子",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "07dd0d0c34615368a881",
+        "kind": "zun",
+        "work": "锦上京",
+        "artist": "ZUN",
+        "fileTitle": "文件:道神驯子（锦上京立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%81%93%E7%A5%9E%E9%A9%AF%E5%AD%90%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/8/8b/%E9%81%93%E7%A5%9E%E9%A9%AF%E5%AD%90%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 75462
+      }
+    ]
+  },
+  {
+    "characterId": "th:asama",
+    "name": "维缦·浅间",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "8375a1d971cedfe5d631",
+        "kind": "zun",
+        "work": "锦上京",
+        "artist": "ZUN",
+        "fileTitle": "文件:维缦·浅间（锦上京立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%BB%B4%E7%BC%A6%C2%B7%E6%B5%85%E9%97%B4%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/d/d0/%E7%BB%B4%E7%BC%A6%C2%B7%E6%B5%85%E9%97%B4%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%BB%B4%E7%BC%A6%C2%B7%E6%B5%85%E9%97%B4%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 129635
+      }
+    ]
+  },
+  {
+    "characterId": "th:ariya",
+    "name": "磐永阿梨夜",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "cc08e07cf0f1a745ac38",
+        "kind": "zun",
+        "work": "锦上京",
+        "artist": "ZUN",
+        "fileTitle": "文件:磐永阿梨夜（锦上京立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%A3%90%E6%B0%B8%E9%98%BF%E6%A2%A8%E5%A4%9C%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/6/6c/%E7%A3%90%E6%B0%B8%E9%98%BF%E6%A2%A8%E5%A4%9C%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%A3%90%E6%B0%B8%E9%98%BF%E6%A2%A8%E5%A4%9C%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 258096
+      }
+    ]
+  },
+  {
+    "characterId": "th:nina",
+    "name": "渡里贝子",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "ec8fa81294b621a202d3",
+        "kind": "zun",
+        "work": "锦上京",
+        "artist": "ZUN",
+        "fileTitle": "文件:渡里贝子（锦上京立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%B8%A1%E9%87%8C%E8%B4%9D%E5%AD%90%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/5/5c/%E6%B8%A1%E9%87%8C%E8%B4%9D%E5%AD%90%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E6%B8%A1%E9%87%8C%E8%B4%9D%E5%AD%90%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 196305
+      }
+    ]
+  },
+  {
+    "characterId": "th:suika",
+    "name": "伊吹萃香",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "e96b436911af4ea9ec1e",
+        "kind": "twilight",
+        "work": "绯想天",
+        "artist": "alphes",
+        "fileTitle": "文件:伊吹萃香（绯想天立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%BC%8A%E5%90%B9%E8%90%83%E9%A6%99%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/9/9f/%E4%BC%8A%E5%90%B9%E8%90%83%E9%A6%99%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%BC%8A%E5%90%B9%E8%90%83%E9%A6%99%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 225344
+      },
+      {
+        "id": "449a6909121d26ccdcbd",
+        "kind": "twilight",
+        "work": "萃梦想",
+        "artist": "alphes",
+        "fileTitle": "文件:伊吹萃香（萃梦想立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%BC%8A%E5%90%B9%E8%90%83%E9%A6%99%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/f/fd/%E4%BC%8A%E5%90%B9%E8%90%83%E9%A6%99%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%BC%8A%E5%90%B9%E8%90%83%E9%A6%99%EF%BC%88%E8%90%83%E6%A2%A6%E6%83%B3%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 220959
+      },
+      {
+        "id": "4e9490de26bc5cba39d4",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:伊吹萃香（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%BC%8A%E5%90%B9%E8%90%83%E9%A6%99%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/2/2d/%E4%BC%8A%E5%90%B9%E8%90%83%E9%A6%99%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%BC%8A%E5%90%B9%E8%90%83%E9%A6%99%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 419283
+      }
+    ]
+  },
+  {
+    "characterId": "th:iku",
+    "name": "永江衣玖",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "05155941668993e3c925",
+        "kind": "twilight",
+        "work": "绯想天",
+        "artist": "alphes",
+        "fileTitle": "文件:永江衣玖（绯想天立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%B0%B8%E6%B1%9F%E8%A1%A3%E7%8E%96%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/9/95/%E6%B0%B8%E6%B1%9F%E8%A1%A3%E7%8E%96%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E6%B0%B8%E6%B1%9F%E8%A1%A3%E7%8E%96%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 226727
+      }
+    ]
+  },
+  {
+    "characterId": "th:tenshi",
+    "name": "比那名居天子",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "8459ff185c32f77c5088",
+        "kind": "twilight",
+        "work": "绯想天",
+        "artist": "alphes",
+        "fileTitle": "文件:比那名居天子（绯想天立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%AF%94%E9%82%A3%E5%90%8D%E5%B1%85%E5%A4%A9%E5%AD%90%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/0/06/%E6%AF%94%E9%82%A3%E5%90%8D%E5%B1%85%E5%A4%A9%E5%AD%90%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E6%AF%94%E9%82%A3%E5%90%8D%E5%B1%85%E5%A4%A9%E5%AD%90%EF%BC%88%E7%BB%AF%E6%83%B3%E5%A4%A9%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 206897
+      },
+      {
+        "id": "ddeaf6a17ce5992dc8f7",
+        "kind": "twilight",
+        "work": "凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:比那名居天子（凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%AF%94%E9%82%A3%E5%90%8D%E5%B1%85%E5%A4%A9%E5%AD%90%EF%BC%88%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/6/62/%E6%AF%94%E9%82%A3%E5%90%8D%E5%B1%85%E5%A4%A9%E5%AD%90%EF%BC%88%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E6%AF%94%E9%82%A3%E5%90%8D%E5%B1%85%E5%A4%A9%E5%AD%90%EF%BC%88%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 423827
+      }
+    ]
+  },
+  {
+    "characterId": "th:hatate",
+    "name": "姬海棠果",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "934d67be903424006e8b",
+        "kind": "zun",
+        "work": "文花帖DS",
+        "artist": "ZUN",
+        "fileTitle": "文件:姬海棠果（文花帖DS立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%A7%AC%E6%B5%B7%E6%A3%A0%E6%9E%9C%EF%BC%88%E6%96%87%E8%8A%B1%E5%B8%96DS%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/5/5e/%E5%A7%AC%E6%B5%B7%E6%A3%A0%E6%9E%9C%EF%BC%88%E6%96%87%E8%8A%B1%E5%B8%96DS%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 69867
+      }
+    ]
+  },
+  {
+    "characterId": "th:sunny",
+    "name": "桑尼米尔克",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "妖精大战争立绘为比良坂真琴绘，不冒充黄昏绘或 ZUN 绘；可自行上传。"
+  },
+  {
+    "characterId": "th:luna",
+    "name": "露娜切露德",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "妖精大战争立绘为比良坂真琴绘，不冒充黄昏绘或 ZUN 绘；可自行上传。"
+  },
+  {
+    "characterId": "th:star",
+    "name": "斯塔萨菲雅",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "妖精大战争立绘为比良坂真琴绘，不冒充黄昏绘或 ZUN 绘；可自行上传。"
+  },
+  {
+    "characterId": "th:kokoro",
+    "name": "秦心",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "124964ce42bde9a822a1",
+        "kind": "twilight",
+        "work": "心绮楼",
+        "artist": "alphes",
+        "fileTitle": "文件:秦心（心绮楼立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%A7%A6%E5%BF%83%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/f/f3/%E7%A7%A6%E5%BF%83%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%A7%A6%E5%BF%83%EF%BC%88%E5%BF%83%E7%BB%AE%E6%A5%BC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 496659
+      },
+      {
+        "id": "abedc7a36f5b49480ba8",
+        "kind": "twilight",
+        "work": "深秘录凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:秦心（深秘录凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%A7%A6%E5%BF%83%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/8/89/%E7%A7%A6%E5%BF%83%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%A7%A6%E5%BF%83%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 419128
+      }
+    ]
+  },
+  {
+    "characterId": "th:sumireko",
+    "name": "宇佐见堇子",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "f29f059ccc1cb1ceeb5e",
+        "kind": "twilight",
+        "work": "深秘录凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:宇佐见堇子（深秘录凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%AE%87%E4%BD%90%E8%A7%81%E5%A0%87%E5%AD%90%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/b/bf/%E5%AE%87%E4%BD%90%E8%A7%81%E5%A0%87%E5%AD%90%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%AE%87%E4%BD%90%E8%A7%81%E5%A0%87%E5%AD%90%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 292276
+      },
+      {
+        "id": "84a25a7bf447adc87e2f",
+        "kind": "zun",
+        "work": "噩梦日记",
+        "artist": "ZUN",
+        "fileTitle": "文件:宇佐见堇子（噩梦日记立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%AE%87%E4%BD%90%E8%A7%81%E5%A0%87%E5%AD%90%EF%BC%88%E5%99%A9%E6%A2%A6%E6%97%A5%E8%AE%B0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/4/45/%E5%AE%87%E4%BD%90%E8%A7%81%E5%A0%87%E5%AD%90%EF%BC%88%E5%99%A9%E6%A2%A6%E6%97%A5%E8%AE%B0%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%AE%87%E4%BD%90%E8%A7%81%E5%A0%87%E5%AD%90%EF%BC%88%E5%99%A9%E6%A2%A6%E6%97%A5%E8%AE%B0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 424274
+      }
+    ]
+  },
+  {
+    "characterId": "th:joon",
+    "name": "依神女苑",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "000ab3f5c0cd85e6bc6e",
+        "kind": "twilight",
+        "work": "凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:依神女苑（凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%BE%9D%E7%A5%9E%E5%A5%B3%E8%8B%91%EF%BC%88%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/0/02/%E4%BE%9D%E7%A5%9E%E5%A5%B3%E8%8B%91%EF%BC%88%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%BE%9D%E7%A5%9E%E5%A5%B3%E8%8B%91%EF%BC%88%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 591186
+      }
+    ]
+  },
+  {
+    "characterId": "th:shion",
+    "name": "依神紫苑",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "6354c4a0c0fb6ff56253",
+        "kind": "twilight",
+        "work": "凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:依神紫苑（凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%BE%9D%E7%A5%9E%E7%B4%AB%E8%8B%91%EF%BC%88%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/0/01/%E4%BE%9D%E7%A5%9E%E7%B4%AB%E8%8B%91%EF%BC%88%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%BE%9D%E7%A5%9E%E7%B4%AB%E8%8B%91%EF%BC%88%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 509833
+      }
+    ]
+  },
+  {
+    "characterId": "th:yuma",
+    "name": "饕餮尤魔",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "a65087da264f8dd7e80c",
+        "kind": "twilight",
+        "work": "刚欲异闻",
+        "artist": "TOKIAME",
+        "fileTitle": "文件:饕餮尤魔（刚欲异闻立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%A5%95%E9%A4%AE%E5%B0%A4%E9%AD%94%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/c/cc/%E9%A5%95%E9%A4%AE%E5%B0%A4%E9%AD%94%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%A5%95%E9%A4%AE%E5%B0%A4%E9%AD%94%EF%BC%88%E5%88%9A%E6%AC%B2%E5%BC%82%E9%97%BB%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 140402
+      },
+      {
+        "id": "4a1bd57e701da32d9a5c",
+        "kind": "zun",
+        "work": "兽王园",
+        "artist": "ZUN",
+        "fileTitle": "文件:饕餮尤魔（兽王园立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%A5%95%E9%A4%AE%E5%B0%A4%E9%AD%94%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/e/e1/%E9%A5%95%E9%A4%AE%E5%B0%A4%E9%AD%94%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E9%A5%95%E9%A4%AE%E5%B0%A4%E9%AD%94%EF%BC%88%E5%85%BD%E7%8E%8B%E5%9B%AD%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 442461
+      }
+    ]
+  },
+  {
+    "characterId": "th:rinnosuke",
+    "name": "森近霖之助",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:akyuu",
+    "name": "稗田阿求",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:kosuzu",
+    "name": "本居小铃",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:kasen",
+    "name": "茨木华扇",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "c13b39d7caa0d96cf423",
+        "kind": "twilight",
+        "work": "深秘录凭依华",
+        "artist": "春河萌",
+        "fileTitle": "文件:茨木华扇（深秘录凭依华立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%8C%A8%E6%9C%A8%E5%8D%8E%E6%89%87%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/3/30/%E8%8C%A8%E6%9C%A8%E5%8D%8E%E6%89%87%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E8%8C%A8%E6%9C%A8%E5%8D%8E%E6%89%87%EF%BC%88%E6%B7%B1%E7%A7%98%E5%BD%95%E5%87%AD%E4%BE%9D%E5%8D%8E%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 205042
+      }
+    ]
+  },
+  {
+    "characterId": "th:miyoi",
+    "name": "奥野田美宵",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:mizuchi",
+    "name": "宫出口瑞灵",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:toyohime",
+    "name": "绵月丰姬",
+    "continuity": "windows",
+    "candidates": [
+      {
+        "id": "9978807270af321cba4a",
+        "kind": "zun",
+        "work": "锦上京",
+        "artist": "ZUN",
+        "fileTitle": "文件:绵月丰姬（锦上京立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%BB%B5%E6%9C%88%E4%B8%B0%E5%A7%AC%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/a/a8/%E7%BB%B5%E6%9C%88%E4%B8%B0%E5%A7%AC%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%BB%B5%E6%9C%88%E4%B8%B0%E5%A7%AC%EF%BC%88%E9%94%A6%E4%B8%8A%E4%BA%AC%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 157196
+      }
+    ]
+  },
+  {
+    "characterId": "th:yorihime",
+    "name": "绵月依姬",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:reisen-moon",
+    "name": "铃仙（月都的另一只月兔）",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:renko",
+    "name": "宇佐见莲子",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:maribel",
+    "name": "玛艾露贝莉·赫恩",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:youki",
+    "name": "魂魄妖忌",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:layla",
+    "name": "蕾拉·普莉兹姆利巴",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:myouren",
+    "name": "命莲",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:tsukuyomi",
+    "name": "月夜见",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:change",
+    "name": "嫦娥",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:dragon-god",
+    "name": "龙神",
+    "continuity": "windows",
+    "candidates": [],
+    "missingReason": "未找到可确认的黄昏作品或 ZUN 单人立绘；保留默认头像，不挪用他人形象或同人图。"
+  },
+  {
+    "characterId": "th:old-reimu",
+    "name": "博丽灵梦（旧作档案）",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "4eba00b8b68045464c93",
+        "kind": "zun",
+        "work": "怪绮谈",
+        "artist": "ZUN",
+        "fileTitle": "文件:博丽灵梦1（怪绮谈立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%8D%9A%E4%B8%BD%E7%81%B5%E6%A2%A61%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/d/d3/%E5%8D%9A%E4%B8%BD%E7%81%B5%E6%A2%A61%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 7258
+      },
+      {
+        "id": "5b0ecde6c5d422547212",
+        "kind": "zun",
+        "work": "封魔录",
+        "artist": "ZUN",
+        "fileTitle": "文件:博丽灵梦（封魔录立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%8D%9A%E4%B8%BD%E7%81%B5%E6%A2%A6%EF%BC%88%E5%B0%81%E9%AD%94%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/8/82/%E5%8D%9A%E4%B8%BD%E7%81%B5%E6%A2%A6%EF%BC%88%E5%B0%81%E9%AD%94%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 4641
+      }
+    ]
+  },
+  {
+    "characterId": "th:old-marisa",
+    "name": "雾雨魔理沙（旧作档案）",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "2960d83c0ed18332b22d",
+        "kind": "zun",
+        "work": "怪绮谈",
+        "artist": "ZUN",
+        "fileTitle": "文件:雾雨魔理沙1（怪绮谈立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%9B%BE%E9%9B%A8%E9%AD%94%E7%90%86%E6%B2%991%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/d/d8/%E9%9B%BE%E9%9B%A8%E9%AD%94%E7%90%86%E6%B2%991%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 6574
+      },
+      {
+        "id": "b8f5a98314542c249336",
+        "kind": "zun",
+        "work": "梦时空",
+        "artist": "ZUN",
+        "fileTitle": "文件:雾雨魔理沙（梦时空立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%9B%BE%E9%9B%A8%E9%AD%94%E7%90%86%E6%B2%99%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/a/a7/%E9%9B%BE%E9%9B%A8%E9%AD%94%E7%90%86%E6%B2%99%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 9955
+      }
+    ]
+  },
+  {
+    "characterId": "th:genjii",
+    "name": "玄爷",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "e8ee946e9166e44a0288",
+        "kind": "zun",
+        "work": "封魔录",
+        "artist": "ZUN",
+        "fileTitle": "文件:玄爷（封魔录立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%8E%84%E7%88%B7%EF%BC%88%E5%B0%81%E9%AD%94%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/9/90/%E7%8E%84%E7%88%B7%EF%BC%88%E5%B0%81%E9%AD%94%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 1454
+      }
+    ]
+  },
+  {
+    "characterId": "th:shingyoku",
+    "name": "神玉",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "23db91f6e1a1cb75bca1",
+        "kind": "zun",
+        "work": "灵异传",
+        "artist": "ZUN",
+        "fileTitle": "文件:神玉2（灵异传立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%A5%9E%E7%8E%892%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/1/1d/%E7%A5%9E%E7%8E%892%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%A5%9E%E7%8E%892%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 163874
+      }
+    ]
+  },
+  {
+    "characterId": "th:yuugenmagan",
+    "name": "幽玄魔眼",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "e580ade949d41bea6b1f",
+        "kind": "zun",
+        "work": "灵异传",
+        "artist": "ZUN",
+        "fileTitle": "文件:幽幻魔眼（灵异传立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B9%BD%E5%B9%BB%E9%AD%94%E7%9C%BC%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/6/65/%E5%B9%BD%E5%B9%BB%E9%AD%94%E7%9C%BC%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E5%B9%BD%E5%B9%BB%E9%AD%94%E7%9C%BC%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 317759
+      }
+    ]
+  },
+  {
+    "characterId": "th:elis",
+    "name": "依莉斯",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "b467e9c64d5501814a5a",
+        "kind": "zun",
+        "work": "灵异传",
+        "artist": "ZUN",
+        "fileTitle": "文件:依莉丝（灵异传立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E4%BE%9D%E8%8E%89%E4%B8%9D%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/5/52/%E4%BE%9D%E8%8E%89%E4%B8%9D%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E4%BE%9D%E8%8E%89%E4%B8%9D%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 217819
+      }
+    ]
+  },
+  {
+    "characterId": "th:sariel",
+    "name": "萨丽爱尔",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "6881b1c25f8cafd4e3eb",
+        "kind": "zun",
+        "work": "灵异传",
+        "artist": "ZUN",
+        "fileTitle": "文件:萨丽艾尔（灵异传立绘）2.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%90%A8%E4%B8%BD%E8%89%BE%E5%B0%94%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%892.png",
+        "url": "https://upload.thbwiki.cc/thumb/c/ce/%E8%90%A8%E4%B8%BD%E8%89%BE%E5%B0%94%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%892.png/256px-%E8%90%A8%E4%B8%BD%E8%89%BE%E5%B0%94%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%892.png",
+        "bytes": 157288
+      }
+    ]
+  },
+  {
+    "characterId": "th:mima",
+    "name": "魅魔",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "a2700940d2bbe35c88f8",
+        "kind": "zun",
+        "work": "怪绮谈",
+        "artist": "ZUN",
+        "fileTitle": "文件:魅魔1（怪绮谈立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%AD%85%E9%AD%941%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/8/85/%E9%AD%85%E9%AD%941%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 7458
+      },
+      {
+        "id": "d1bf0f00477dfa76bd6c",
+        "kind": "zun",
+        "work": "怪绮谈",
+        "artist": "ZUN",
+        "fileTitle": "文件:魅魔2（怪绮谈立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%AD%85%E9%AD%942%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/e/e9/%E9%AD%85%E9%AD%942%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 6440
+      }
+    ]
+  },
+  {
+    "characterId": "th:kikuri",
+    "name": "菊理",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "0f3e83d443d9d90bfb29",
+        "kind": "zun",
+        "work": "灵异传",
+        "artist": "ZUN",
+        "fileTitle": "文件:菊理（灵异传立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%8F%8A%E7%90%86%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/0/0a/%E8%8F%8A%E7%90%86%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E8%8F%8A%E7%90%86%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 157907
+      }
+    ]
+  },
+  {
+    "characterId": "th:konngara",
+    "name": "矜羯罗",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "4e44c83a690e116e9674",
+        "kind": "zun",
+        "work": "灵异传",
+        "artist": "ZUN",
+        "fileTitle": "文件:矜羯罗（灵异传立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%9F%9C%E7%BE%AF%E7%BD%97%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/thumb/a/af/%E7%9F%9C%E7%BE%AF%E7%BD%97%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png/256px-%E7%9F%9C%E7%BE%AF%E7%BD%97%EF%BC%88%E7%81%B5%E5%BC%82%E4%BC%A0%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 298743
+      }
+    ]
+  },
+  {
+    "characterId": "th:rika",
+    "name": "里香",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "79e01a705927db9610ce",
+        "kind": "zun",
+        "work": "封魔录",
+        "artist": "ZUN",
+        "fileTitle": "文件:里香（封魔录立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%87%8C%E9%A6%99%EF%BC%88%E5%B0%81%E9%AD%94%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/b/b2/%E9%87%8C%E9%A6%99%EF%BC%88%E5%B0%81%E9%AD%94%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 4514
+      },
+      {
+        "id": "8a45f2994031bd2b1ffe",
+        "kind": "zun",
+        "work": "封魔录",
+        "artist": "ZUN",
+        "fileTitle": "文件:里香2（封魔录立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%87%8C%E9%A6%992%EF%BC%88%E5%B0%81%E9%AD%94%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/6/6a/%E9%87%8C%E9%A6%992%EF%BC%88%E5%B0%81%E9%AD%94%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 4562
+      }
+    ]
+  },
+  {
+    "characterId": "th:meira",
+    "name": "明罗",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "515e41e83ed118f16606",
+        "kind": "zun",
+        "work": "封魔录",
+        "artist": "ZUN",
+        "fileTitle": "文件:明罗（封魔录立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%98%8E%E7%BD%97%EF%BC%88%E5%B0%81%E9%AD%94%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/c/cd/%E6%98%8E%E7%BD%97%EF%BC%88%E5%B0%81%E9%AD%94%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 4441
+      }
+    ]
+  },
+  {
+    "characterId": "th:evil-eye-sigma",
+    "name": "邪眼西格玛",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "f266d0c45b43b2db77b9",
+        "kind": "zun",
+        "work": "封魔录",
+        "artist": "ZUN",
+        "fileTitle": "文件:邪眼西格玛（封魔录立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%82%AA%E7%9C%BC%E8%A5%BF%E6%A0%BC%E7%8E%9B%EF%BC%88%E5%B0%81%E9%AD%94%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/f/f8/%E9%82%AA%E7%9C%BC%E8%A5%BF%E6%A0%BC%E7%8E%9B%EF%BC%88%E5%B0%81%E9%AD%94%E5%BD%95%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 3409
+      }
+    ]
+  },
+  {
+    "characterId": "th:ellen",
+    "name": "爱莲",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "af092b34a808cb4f1c5d",
+        "kind": "zun",
+        "work": "梦时空",
+        "artist": "ZUN",
+        "fileTitle": "文件:爱莲（梦时空立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%88%B1%E8%8E%B2%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/b/b7/%E7%88%B1%E8%8E%B2%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 9423
+      }
+    ]
+  },
+  {
+    "characterId": "th:kotohime",
+    "name": "小兔姬",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "77275723f5801db5da4c",
+        "kind": "zun",
+        "work": "梦时空",
+        "artist": "ZUN",
+        "fileTitle": "文件:小兔姬（梦时空立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B0%8F%E5%85%94%E5%A7%AC%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/1/18/%E5%B0%8F%E5%85%94%E5%A7%AC%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 8251
+      }
+    ]
+  },
+  {
+    "characterId": "th:kana",
+    "name": "卡娜·安娜贝拉尔",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "142a9053d4c13364de4b",
+        "kind": "zun",
+        "work": "梦时空",
+        "artist": "ZUN",
+        "fileTitle": "文件:卡娜·安娜贝拉尔（梦时空立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%8D%A1%E5%A8%9C%C2%B7%E5%AE%89%E5%A8%9C%E8%B4%9D%E6%8B%89%E5%B0%94%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/0/0c/%E5%8D%A1%E5%A8%9C%C2%B7%E5%AE%89%E5%A8%9C%E8%B4%9D%E6%8B%89%E5%B0%94%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 10035
+      }
+    ]
+  },
+  {
+    "characterId": "th:rikako",
+    "name": "朝仓理香子",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "c53779449fea6cf2fb08",
+        "kind": "zun",
+        "work": "梦时空",
+        "artist": "ZUN",
+        "fileTitle": "文件:朝仓理香子（梦时空立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%9C%9D%E4%BB%93%E7%90%86%E9%A6%99%E5%AD%90%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/1/1a/%E6%9C%9D%E4%BB%93%E7%90%86%E9%A6%99%E5%AD%90%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 9256
+      }
+    ]
+  },
+  {
+    "characterId": "th:chiyuri",
+    "name": "北白河千百合",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "4247eecfacbf0f8c8597",
+        "kind": "zun",
+        "work": "梦时空",
+        "artist": "ZUN",
+        "fileTitle": "文件:北白河千百合（梦时空立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%8C%97%E7%99%BD%E6%B2%B3%E5%8D%83%E7%99%BE%E5%90%88%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/c/c9/%E5%8C%97%E7%99%BD%E6%B2%B3%E5%8D%83%E7%99%BE%E5%90%88%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 9911
+      }
+    ]
+  },
+  {
+    "characterId": "th:yumemi",
+    "name": "冈崎梦美",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "c61147ef353d637d37e2",
+        "kind": "zun",
+        "work": "梦时空",
+        "artist": "ZUN",
+        "fileTitle": "文件:冈崎梦美（梦时空立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%86%88%E5%B4%8E%E6%A2%A6%E7%BE%8E%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/f/fc/%E5%86%88%E5%B4%8E%E6%A2%A6%E7%BE%8E%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 8720
+      }
+    ]
+  },
+  {
+    "characterId": "th:socrates",
+    "name": "苏格拉底",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "841d6bda8b0d20d60041",
+        "kind": "zun",
+        "work": "梦时空",
+        "artist": "ZUN",
+        "fileTitle": "文件:苏格拉底（梦时空立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%8B%8F%E6%A0%BC%E6%8B%89%E5%BA%95%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/9/94/%E8%8B%8F%E6%A0%BC%E6%8B%89%E5%BA%95%EF%BC%88%E6%A2%A6%E6%97%B6%E7%A9%BA%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 7183
+      }
+    ]
+  },
+  {
+    "characterId": "th:orange",
+    "name": "奥莲姬",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "1a98b36a53fe4c3fbfd6",
+        "kind": "zun",
+        "work": "幻想乡",
+        "artist": "ZUN",
+        "fileTitle": "文件:奥莲姬（幻想乡立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%A5%A5%E8%8E%B2%E5%A7%AC%EF%BC%88%E5%B9%BB%E6%83%B3%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/8/83/%E5%A5%A5%E8%8E%B2%E5%A7%AC%EF%BC%88%E5%B9%BB%E6%83%B3%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 4544
+      }
+    ]
+  },
+  {
+    "characterId": "th:kurumi",
+    "name": "胡桃",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "1b7d76a21c8dc8848f6c",
+        "kind": "zun",
+        "work": "幻想乡",
+        "artist": "ZUN",
+        "fileTitle": "文件:胡桃（幻想乡立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%83%A1%E6%A1%83%EF%BC%88%E5%B9%BB%E6%83%B3%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/f/f0/%E8%83%A1%E6%A1%83%EF%BC%88%E5%B9%BB%E6%83%B3%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 4274
+      }
+    ]
+  },
+  {
+    "characterId": "th:elly",
+    "name": "艾丽",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "9bb7555426fd8d14cb71",
+        "kind": "zun",
+        "work": "幻想乡",
+        "artist": "ZUN",
+        "fileTitle": "文件:艾丽（幻想乡立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%89%BE%E4%B8%BD%EF%BC%88%E5%B9%BB%E6%83%B3%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/6/61/%E8%89%BE%E4%B8%BD%EF%BC%88%E5%B9%BB%E6%83%B3%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 8140
+      }
+    ]
+  },
+  {
+    "characterId": "th:old-yuuka",
+    "name": "幽香（旧作档案）",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "7988456bb08e295324bc",
+        "kind": "zun",
+        "work": "怪绮谈",
+        "artist": "ZUN",
+        "fileTitle": "文件:幽香1（怪绮谈立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B9%BD%E9%A6%991%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/2/25/%E5%B9%BD%E9%A6%991%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 6854
+      },
+      {
+        "id": "869b8554a5e9ddab06d1",
+        "kind": "zun",
+        "work": "怪绮谈",
+        "artist": "ZUN",
+        "fileTitle": "文件:幽香2（怪绮谈立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B9%BD%E9%A6%992%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/9/92/%E5%B9%BD%E9%A6%992%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 6299
+      }
+    ]
+  },
+  {
+    "characterId": "th:mugetsu",
+    "name": "梦月",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "db625e4dba12728586dd",
+        "kind": "zun",
+        "work": "幻想乡",
+        "artist": "ZUN",
+        "fileTitle": "文件:梦月（幻想乡立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%A2%A6%E6%9C%88%EF%BC%88%E5%B9%BB%E6%83%B3%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/d/de/%E6%A2%A6%E6%9C%88%EF%BC%88%E5%B9%BB%E6%83%B3%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 6542
+      }
+    ]
+  },
+  {
+    "characterId": "th:gengetsu",
+    "name": "幻月",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "4e489fd85b8533ee7061",
+        "kind": "zun",
+        "work": "幻想乡",
+        "artist": "ZUN",
+        "fileTitle": "文件:幻月（幻想乡立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E5%B9%BB%E6%9C%88%EF%BC%88%E5%B9%BB%E6%83%B3%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/a/a2/%E5%B9%BB%E6%9C%88%EF%BC%88%E5%B9%BB%E6%83%B3%E4%B9%A1%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 7678
+      }
+    ]
+  },
+  {
+    "characterId": "th:sara",
+    "name": "萨拉",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "831f6ed35af4f1694a00",
+        "kind": "zun",
+        "work": "怪绮谈",
+        "artist": "ZUN",
+        "fileTitle": "文件:萨拉（怪绮谈立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%90%A8%E6%8B%89%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/4/4a/%E8%90%A8%E6%8B%89%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 6965
+      }
+    ]
+  },
+  {
+    "characterId": "th:louise",
+    "name": "露易兹",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "5c74cf1ce56115b9a00d",
+        "kind": "zun",
+        "work": "怪绮谈",
+        "artist": "ZUN",
+        "fileTitle": "文件:露易兹（怪绮谈立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%9C%B2%E6%98%93%E5%85%B9%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/1/14/%E9%9C%B2%E6%98%93%E5%85%B9%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 6378
+      }
+    ]
+  },
+  {
+    "characterId": "th:old-alice",
+    "name": "爱丽丝（旧作档案）",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "476f9e3834a0238ca248",
+        "kind": "zun",
+        "work": "怪绮谈",
+        "artist": "ZUN",
+        "fileTitle": "文件:爱丽丝1（怪绮谈立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%88%B1%E4%B8%BD%E4%B8%9D1%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/3/31/%E7%88%B1%E4%B8%BD%E4%B8%9D1%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 7426
+      },
+      {
+        "id": "81c10d635d0b8eb81331",
+        "kind": "zun",
+        "work": "怪绮谈",
+        "artist": "ZUN",
+        "fileTitle": "文件:爱丽丝2（怪绮谈立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%88%B1%E4%B8%BD%E4%B8%9D2%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/c/c5/%E7%88%B1%E4%B8%BD%E4%B8%9D2%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 6804
+      }
+    ]
+  },
+  {
+    "characterId": "th:yuki",
+    "name": "雪",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "2148e1d873caa7d23794",
+        "kind": "zun",
+        "work": "怪绮谈",
+        "artist": "ZUN",
+        "fileTitle": "文件:雪（怪绮谈立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E9%9B%AA%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/c/cb/%E9%9B%AA%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 6538
+      }
+    ]
+  },
+  {
+    "characterId": "th:mai-old",
+    "name": "舞",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "2395dc0bc4746068501d",
+        "kind": "zun",
+        "work": "怪绮谈",
+        "artist": "ZUN",
+        "fileTitle": "文件:舞（怪绮谈立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E8%88%9E%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/b/b8/%E8%88%9E%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 7038
+      }
+    ]
+  },
+  {
+    "characterId": "th:yumeko",
+    "name": "梦子",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "aab73bd2c44105fef8ad",
+        "kind": "zun",
+        "work": "怪绮谈",
+        "artist": "ZUN",
+        "fileTitle": "文件:梦子（怪绮谈立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E6%A2%A6%E5%AD%90%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/b/be/%E6%A2%A6%E5%AD%90%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 7203
+      }
+    ]
+  },
+  {
+    "characterId": "th:shinki",
+    "name": "神绮",
+    "continuity": "pc98",
+    "candidates": [
+      {
+        "id": "1b6a2f6840de6e2c89a3",
+        "kind": "zun",
+        "work": "怪绮谈",
+        "artist": "ZUN",
+        "fileTitle": "文件:神绮（怪绮谈立绘）.png",
+        "sourcePage": "https://thwiki.cc/%E6%96%87%E4%BB%B6:%E7%A5%9E%E7%BB%AE%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "url": "https://upload.thbwiki.cc/e/e3/%E7%A5%9E%E7%BB%AE%EF%BC%88%E6%80%AA%E7%BB%AE%E8%B0%88%E7%AB%8B%E7%BB%98%EF%BC%89.png",
+        "bytes": 6700
+      }
+    ]
+  }
+]
