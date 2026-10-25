@@ -145,7 +145,7 @@ export async function budgetedCompletion(
   task: TaskKind,
   snapshot: PromptConfig,
   signal?: AbortSignal,
-  options?: { outputBudget?: number; tightContext?: boolean },
+  options?: { outputBudget?: number; tightContext?: boolean; priority?: number },
 ): Promise<Completion> {
   if (signal?.aborted) throw new ProviderError('cancelled', '任务已取消');
   const usageId = dayKey(Date.now());
@@ -207,6 +207,7 @@ export async function budgetedCompletion(
           maxOutputTokens: reservedOutput,
         }),
       signal,
+      options?.priority ?? 0,
     );
     await d.transaction('rw', d.usage, d.taskLogs, async () => {
       const u = (await d.usage.get(usageId))!;
@@ -422,6 +423,7 @@ export async function persistDialogue(
   eventId?: string,
   offsets?: number[],
   extras: Partial<Message> & {
+    gifMessageIndex?: number;
     mentionTargets?: { messageIndex: number; characterId: string }[];
     reactions?: { messageId: string; emoji: string }[];
   } = {},
@@ -464,9 +466,10 @@ export async function persistDialogue(
         source,
         eventId,
         backfilled: extras.backfilled,
+        planVersion: extras.planVersion,
         replyToMessageId: extras.replyToMessageId,
-        gifAssetId: i === 0 ? extras.gifAssetId : undefined,
-        messageType: i === 0 && extras.gifAssetId ? 'gif' : 'text',
+        gifAssetId: i === (extras.gifMessageIndex ?? 0) ? extras.gifAssetId : undefined,
+        messageType: i === (extras.gifMessageIndex ?? 0) && extras.gifAssetId ? 'gif' : 'text',
       }));
       for (const m of messages) {
         const i = messages.indexOf(m);
@@ -618,6 +621,14 @@ export async function sendUserMessage(
 export async function replyToUser(conversationId: string, d: AquariumDB = db) {
   const c = await d.conversations.get(conversationId);
   if (!c || c.kind === 'notes' || !(await conversationAvailable(c.id, d))) return;
+  if (
+    await d.contentJobs
+      .where('worldId')
+      .equals(c.worldId)
+      .and((j) => j.kind === 'chat' && j.conversation?.id === c.id && j.status !== 'complete')
+      .first()
+  )
+    throw new Error('这段会话的较早内容正在补全；你的消息已保存，补全后可继续回复。');
   const provider = await liveProvider(d);
   const snapshot = await getPrompts(d);
   const cp = await d.checkpoints.get(c.worldId);
@@ -835,7 +846,7 @@ export async function knownBackground(
   );
 }
 
-async function validateGenerated(
+export async function validateGenerated(
   d: AquariumDB,
   c: Conversation,
   at: number,

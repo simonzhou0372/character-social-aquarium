@@ -195,10 +195,12 @@ export async function rewindWorld(worldId: string, at: number, d: AquariumDB = d
             createdAt: Math.min(c.createdAt, at),
             lastAt: messages.reduce((latest, m) => Math.max(latest, m.simAt), 0),
             controlledId: undefined,
+            plannedHistory: [],
           });
           await d.messages.bulkAdd(
             messages.map((m, i) => ({
               ...m,
+              planVersion: undefined,
               id: messageIds.get(m.id)!,
               replyToMessageId: m.replyToMessageId ? messageIds.get(m.replyToMessageId) : undefined,
               gifAssetId: m.gifAssetId ? (gifIds.get(m.gifAssetId) ?? m.gifAssetId) : undefined,
@@ -251,16 +253,41 @@ export async function rewindWorld(worldId: string, at: number, d: AquariumDB = d
             ),
           );
         }
-        for (const job of await d.contentJobs.where('worldId').equals(worldId).toArray()) {
-          if (job.status === 'complete' || job.at > at || !eventIds.has(job.event.id)) continue;
+        const pendingJobs = (await d.contentJobs.where('worldId').equals(worldId).toArray())
+          .filter(
+            (job) =>
+              job.status !== 'complete' &&
+              job.at <= at &&
+              eventIds.has(job.event.id) &&
+              (!job.plan || job.event.end <= at),
+          )
+          .sort((a, b) => a.at - b.at);
+        const jobIds = new Map(
+          pendingJobs.map((job) => [
+            job.id,
+            job.kind === 'major' ? 'major-content:' + eventIds.get(job.event.id)! : uid('job'),
+          ]),
+        );
+        for (const job of pendingJobs) {
           const event = await d.events.get(eventIds.get(job.event.id)!);
           if (!event) continue;
           const conversation = job.conversation
             ? await d.conversations.get(convIds.get(job.conversation.id)!)
             : undefined;
+          const partial = structuredClone(job.partial);
+          if (partial?.dialogue) {
+            const dialogue = partial.dialogue as any;
+            dialogue.replyToMessageId = messageIds.get(dialogue.replyToMessageId);
+            dialogue.gifAssetId = gifIds.get(dialogue.gifAssetId) ?? dialogue.gifAssetId;
+            dialogue.reactions = dialogue.reactions
+              ?.filter((r: any) => messageIds.has(r.messageId))
+              .map((r: any) => ({ ...r, messageId: messageIds.get(r.messageId) }));
+          }
           await d.contentJobs.add({
             ...job,
-            id: uid('job'),
+            id: jobIds.get(job.id)!,
+            dependsOn: job.dependsOn?.flatMap((dep) => (jobIds.has(dep) ? [jobIds.get(dep)!] : [])),
+            partial,
             worldId: id,
             event,
             conversation,
@@ -277,6 +304,21 @@ export async function rewindWorld(worldId: string, at: number, d: AquariumDB = d
             nextAttemptAt: 0,
             error: undefined,
           });
+          if (job.plan && job.kind === 'chat' && conversation) {
+            const current = await d.conversations.get(conversation.id);
+            await d.conversations.update(conversation.id, {
+              plannedHistory: [
+                ...(current?.plannedHistory ?? []),
+                {
+                  id: jobIds.get(job.id)!,
+                  speaker: job.speakerId!,
+                  at: job.at,
+                  count: job.plan.expectedMessages,
+                  eventId: event.id,
+                },
+              ].slice(-36),
+            });
+          }
         }
         const memories = await d.memories.where('worldId').equals(worldId).toArray();
         await d.memories.bulkAdd(

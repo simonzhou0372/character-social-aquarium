@@ -1,0 +1,467 @@
+{
+  "schemaVersion": 1,
+  "measuredDate": "2026-10-26",
+  "fixture": "deterministic local Provider; no paid API calls",
+  "seed": 42,
+  "durationVirtualHours": 24,
+  "tokenAccounting": "estimated by fixture JSON character count; not provider-billed tokens",
+  "runtimeMetrics": "single local run; time, throughput and heap delta depend on CPU load and GC; heap delta is not peak memory",
+  "plannerCases": [
+    {
+      "characters": 5,
+      "speed": 1,
+      "enabled": false,
+      "tasks": 70,
+      "messages": 128,
+      "dialogue": 14
+    },
+    {
+      "characters": 5,
+      "speed": 1,
+      "enabled": true,
+      "tasks": 70,
+      "messages": 128,
+      "dialogue": 14
+    },
+    {
+      "characters": 5,
+      "speed": 100,
+      "enabled": false,
+      "tasks": 70,
+      "messages": 128,
+      "dialogue": 14
+    },
+    {
+      "characters": 5,
+      "speed": 100,
+      "enabled": true,
+      "tasks": 70,
+      "messages": 128,
+      "dialogue": 14
+    },
+    {
+      "characters": 5,
+      "speed": 300,
+      "enabled": false,
+      "tasks": 70,
+      "messages": 128,
+      "dialogue": 14
+    },
+    {
+      "characters": 5,
+      "speed": 300,
+      "enabled": true,
+      "tasks": 70,
+      "messages": 128,
+      "dialogue": 14
+    },
+    {
+      "characters": 5,
+      "speed": 1000,
+      "enabled": false,
+      "tasks": 70,
+      "messages": 128,
+      "dialogue": 14
+    },
+    {
+      "characters": 5,
+      "speed": 1000,
+      "enabled": true,
+      "tasks": 70,
+      "messages": 128,
+      "dialogue": 14
+    },
+    {
+      "characters": 5,
+      "speed": 3000,
+      "enabled": false,
+      "tasks": 70,
+      "messages": 128,
+      "dialogue": 14
+    },
+    {
+      "characters": 5,
+      "speed": 3000,
+      "enabled": true,
+      "tasks": 70,
+      "messages": 128,
+      "dialogue": 14
+    },
+    {
+      "characters": 20,
+      "speed": 1,
+      "enabled": false,
+      "tasks": 73,
+      "messages": 132,
+      "dialogue": 28
+    },
+    {
+      "characters": 20,
+      "speed": 1,
+      "enabled": true,
+      "tasks": 73,
+      "messages": 132,
+      "dialogue": 28
+    },
+    {
+      "characters": 20,
+      "speed": 100,
+      "enabled": false,
+      "tasks": 73,
+      "messages": 132,
+      "dialogue": 28
+    },
+    {
+      "characters": 20,
+      "speed": 100,
+      "enabled": true,
+      "tasks": 73,
+      "messages": 132,
+      "dialogue": 28
+    },
+    {
+      "characters": 20,
+      "speed": 300,
+      "enabled": false,
+      "tasks": 73,
+      "messages": 132,
+      "dialogue": 28
+    },
+    {
+      "characters": 20,
+      "speed": 300,
+      "enabled": true,
+      "tasks": 73,
+      "messages": 132,
+      "dialogue": 28
+    },
+    {
+      "characters": 20,
+      "speed": 1000,
+      "enabled": false,
+      "tasks": 73,
+      "messages": 132,
+      "dialogue": 28
+    },
+    {
+      "characters": 20,
+      "speed": 1000,
+      "enabled": true,
+      "tasks": 73,
+      "messages": 132,
+      "dialogue": 28
+    },
+    {
+      "characters": 20,
+      "speed": 3000,
+      "enabled": false,
+      "tasks": 73,
+      "messages": 132,
+      "dialogue": 28
+    },
+    {
+      "characters": 20,
+      "speed": 3000,
+      "enabled": true,
+      "tasks": 73,
+      "messages": 132,
+      "dialogue": 28
+    },
+    {
+      "characters": 50,
+      "speed": 1,
+      "enabled": false,
+      "tasks": 70,
+      "messages": 135,
+      "dialogue": 7
+    },
+    {
+      "characters": 50,
+      "speed": 1,
+      "enabled": true,
+      "tasks": 70,
+      "messages": 135,
+      "dialogue": 7
+    },
+    {
+      "characters": 50,
+      "speed": 100,
+      "enabled": false,
+      "tasks": 70,
+      "messages": 135,
+      "dialogue": 7
+    },
+    {
+      "characters": 50,
+      "speed": 100,
+      "enabled": true,
+      "tasks": 70,
+      "messages": 135,
+      "dialogue": 7
+    },
+    {
+      "characters": 50,
+      "speed": 300,
+      "enabled": false,
+      "tasks": 70,
+      "messages": 135,
+      "dialogue": 7
+    },
+    {
+      "characters": 50,
+      "speed": 300,
+      "enabled": true,
+      "tasks": 70,
+      "messages": 135,
+      "dialogue": 7
+    },
+    {
+      "characters": 50,
+      "speed": 1000,
+      "enabled": false,
+      "tasks": 70,
+      "messages": 135,
+      "dialogue": 7
+    },
+    {
+      "characters": 50,
+      "speed": 1000,
+      "enabled": true,
+      "tasks": 70,
+      "messages": 135,
+      "dialogue": 7
+    },
+    {
+      "characters": 50,
+      "speed": 3000,
+      "enabled": false,
+      "tasks": 70,
+      "messages": 135,
+      "dialogue": 7
+    },
+    {
+      "characters": 50,
+      "speed": 3000,
+      "enabled": true,
+      "tasks": 70,
+      "messages": 135,
+      "dialogue": 7
+    }
+  ],
+  "executionBenchmarks": [
+    {
+      "kind": "natural",
+      "rows": [
+        {
+          "characters": 5,
+          "elapsedMs": 5968,
+          "backlogPeak": 70,
+          "meanWaitMs": 4566,
+          "p95WaitMs": 6428,
+          "p95RequestMs": 15,
+          "completedJobsPerMinute": 704,
+          "heapDeltaMiB": -36,
+          "enabled": false,
+          "requests": 70,
+          "input": 198264,
+          "output": 2535,
+          "messages": 128,
+          "scenes": 2,
+          "phases": 2
+        },
+        {
+          "characters": 5,
+          "elapsedMs": 5428,
+          "backlogPeak": 70,
+          "meanWaitMs": 5535,
+          "p95WaitMs": 6784,
+          "p95RequestMs": 15,
+          "completedJobsPerMinute": 774,
+          "heapDeltaMiB": -48,
+          "enabled": true,
+          "requests": 69,
+          "input": 198009,
+          "output": 2633,
+          "messages": 128,
+          "scenes": 2,
+          "phases": 2
+        },
+        {
+          "characters": 20,
+          "elapsedMs": 6814,
+          "backlogPeak": 73,
+          "meanWaitMs": 6232,
+          "p95WaitMs": 8219,
+          "p95RequestMs": 15,
+          "completedJobsPerMinute": 643,
+          "heapDeltaMiB": -40,
+          "enabled": false,
+          "requests": 73,
+          "input": 203778,
+          "output": 3104,
+          "messages": 132,
+          "scenes": 4,
+          "phases": 4
+        },
+        {
+          "characters": 20,
+          "elapsedMs": 5932,
+          "backlogPeak": 73,
+          "meanWaitMs": 5649,
+          "p95WaitMs": 7195,
+          "p95RequestMs": 12,
+          "completedJobsPerMinute": 738,
+          "heapDeltaMiB": 33,
+          "enabled": true,
+          "requests": 73,
+          "input": 203778,
+          "output": 3104,
+          "messages": 132,
+          "scenes": 4,
+          "phases": 4
+        },
+        {
+          "characters": 50,
+          "elapsedMs": 5174,
+          "backlogPeak": 70,
+          "meanWaitMs": 7296,
+          "p95WaitMs": 7701,
+          "p95RequestMs": 9,
+          "completedJobsPerMinute": 812,
+          "heapDeltaMiB": 55,
+          "enabled": false,
+          "requests": 70,
+          "input": 205236,
+          "output": 2343,
+          "messages": 135,
+          "scenes": 1,
+          "phases": 1
+        },
+        {
+          "characters": 50,
+          "elapsedMs": 5338,
+          "backlogPeak": 70,
+          "meanWaitMs": 6938,
+          "p95WaitMs": 7640,
+          "p95RequestMs": 10,
+          "completedJobsPerMinute": 787,
+          "heapDeltaMiB": 50,
+          "enabled": true,
+          "requests": 69,
+          "input": 204980,
+          "output": 2441,
+          "messages": 135,
+          "scenes": 1,
+          "phases": 1
+        }
+      ]
+    },
+    {
+      "kind": "complex",
+      "rows": [
+        {
+          "elapsedMs": 1076,
+          "backlogPeak": 20,
+          "meanWaitMs": 577,
+          "p95WaitMs": 1051,
+          "p95RequestMs": 9,
+          "completedJobsPerMinute": 1115,
+          "heapDeltaMiB": 24,
+          "speed": 300,
+          "enabled": false,
+          "requests": 36,
+          "input": 69406,
+          "output": 5792,
+          "phases": 24,
+          "messages": 24,
+          "dialogue": 144
+        },
+        {
+          "elapsedMs": 633,
+          "backlogPeak": 20,
+          "meanWaitMs": 358,
+          "p95WaitMs": 622,
+          "p95RequestMs": 10,
+          "completedJobsPerMinute": 1896,
+          "heapDeltaMiB": 10,
+          "speed": 300,
+          "enabled": true,
+          "requests": 17,
+          "input": 44223,
+          "output": 6628,
+          "phases": 24,
+          "messages": 24,
+          "dialogue": 144
+        },
+        {
+          "elapsedMs": 1552,
+          "backlogPeak": 20,
+          "meanWaitMs": 734,
+          "p95WaitMs": 1526,
+          "p95RequestMs": 12,
+          "completedJobsPerMinute": 773,
+          "heapDeltaMiB": 23,
+          "speed": 1000,
+          "enabled": false,
+          "requests": 36,
+          "input": 69406,
+          "output": 5792,
+          "phases": 24,
+          "messages": 24,
+          "dialogue": 144
+        },
+        {
+          "elapsedMs": 595,
+          "backlogPeak": 20,
+          "meanWaitMs": 367,
+          "p95WaitMs": 594,
+          "p95RequestMs": 8,
+          "completedJobsPerMinute": 2017,
+          "heapDeltaMiB": 10,
+          "speed": 1000,
+          "enabled": true,
+          "requests": 17,
+          "input": 44223,
+          "output": 6628,
+          "phases": 24,
+          "messages": 24,
+          "dialogue": 144
+        },
+        {
+          "elapsedMs": 1104,
+          "backlogPeak": 20,
+          "meanWaitMs": 580,
+          "p95WaitMs": 1063,
+          "p95RequestMs": 6,
+          "completedJobsPerMinute": 1087,
+          "heapDeltaMiB": 21,
+          "speed": 3000,
+          "enabled": false,
+          "requests": 36,
+          "input": 69406,
+          "output": 5792,
+          "phases": 24,
+          "messages": 24,
+          "dialogue": 144
+        },
+        {
+          "elapsedMs": 631,
+          "backlogPeak": 20,
+          "meanWaitMs": 378,
+          "p95WaitMs": 626,
+          "p95RequestMs": 10,
+          "completedJobsPerMinute": 1902,
+          "heapDeltaMiB": 10,
+          "speed": 3000,
+          "enabled": true,
+          "requests": 17,
+          "input": 44223,
+          "output": 6628,
+          "phases": 24,
+          "messages": 24,
+          "dialogue": 144
+        }
+      ]
+    }
+  ]
+}

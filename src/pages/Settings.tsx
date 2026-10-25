@@ -1,3 +1,4 @@
+import { GenerationPerformance } from '../components/GenerationPerformance';
 import { DEFAULT_CONTEXT_BUDGET_TOKENS, MAX_CONTEXT_BUDGET_TOKENS } from '../core/ai-limits';
 import { TouhouPortraitEntry } from '../components/TouhouPortraitManager';
 import { ObservationManager } from '../components/ObservationManager';
@@ -329,6 +330,7 @@ function SimulationSettings() {
           ))}
         </div>
       </details>
+      <GenerationPerformance worldId={s.worldId} />
       <TimeControls worldId={s.worldId} />
       {notice && <Status>{notice}</Status>}
     </section>

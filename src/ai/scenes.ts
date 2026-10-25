@@ -1,3 +1,5 @@
+import { generatePlannedScene } from './planned-scenes';
+import type { ContentJob } from '../core/types';
 import { historicalCharacter } from '../core/selective-observation';
 import { sceneDialogueBudget, validateScene } from '../core/scenes';
 export { sceneDialogueBudget, validateScene } from '../core/scenes';
@@ -49,6 +51,7 @@ export async function generateScene(
   provider: Provider,
   recovery = false,
   signal?: AbortSignal,
+  plannedJob?: ContentJob,
 ): Promise<InPersonScene> {
   if (event.participants.length < 2) throw new Error('线下场景至少两人');
   const world = await d.worlds.get(event.worldId);
@@ -96,6 +99,15 @@ export async function generateScene(
       };
     }),
   );
+  if (plannedJob?.plan)
+    return generatePlannedScene(
+      d,
+      plannedJob,
+      snapshot,
+      { world, relationships: relations, input: { event, actors } },
+      provider,
+      signal,
+    );
   const limit = sceneDialogueBudget(event),
     duration = (event.end - event.start) / 1000;
   const task = recovery ? 'offlineScene' : 'inPerson';

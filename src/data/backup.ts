@@ -5,6 +5,7 @@ import { realLocalDate } from '../core/calendar';
 import { BackupSchema, type Backup } from '../core/types';
 import { db, dataTables, type AquariumDB } from './db';
 const names = [
+  'taskSnapshots',
   'expansionJobs',
   'observationConfigs',
   'observationCoverage',
@@ -238,6 +239,12 @@ export function validateBackup(input: unknown): Backup {
   });
   b.contentJobs.forEach((j) =>
     assert(
+      !j.snapshotId || b.taskSnapshots.some((s) => s.id === j.snapshotId),
+      '生成任务提示词快照',
+    ),
+  );
+  b.contentJobs.forEach((j) =>
+    assert(
       events.has(j.event.id) &&
         worlds.has(j.worldId) &&
         (!j.conversation || convs.has(j.conversation.id)),
@@ -404,7 +411,7 @@ export async function importBackup(input: unknown, d: AquariumDB = db) {
       j.nextAttemptAt = 0;
     });
     await d.profiles.clear();
-    await d.taskSnapshots.clear();
+    await d.taskSnapshots.filter((s) => !s.id.startsWith('content:')).delete();
     await d.taskLogs.clear();
     await d.checkpoints.toCollection().modify({
       paused: true,

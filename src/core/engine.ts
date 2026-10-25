@@ -1,3 +1,5 @@
+import Dexie from 'dexie';
+import { contentPlan, planningHistory, MAX_PENDING_CONTENT } from './adaptive-batching';
 import { simulatedReaction } from './reaction-emojis';
 import { dormantInfluence } from './dormant-influence';
 import {
@@ -43,6 +45,7 @@ export interface RunOptions {
   maxSegments?: number;
   foregroundSince?: number;
   deferContent?: boolean;
+  dispatchContent?: boolean;
 }
 const demoLines = [
   '风好像变大了。',
@@ -181,6 +184,26 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
       const cachedMembers = observation.members.filter((m) =>
         observation.activeIds.has(m.characterId),
       );
+      const historyCache = new Map<string, import('./types').Message[]>();
+      const cursorCache = new Map<string, import('./types').ReadCursor | undefined>();
+      const majorReadFacts = options.deferContent
+        ? await d.majorEvents.where('worldId').equals(worldId).toArray()
+        : undefined;
+      const schedulerHistory = async (c: Conversation) => {
+        let saved = options.deferContent ? historyCache.get(c.id) : undefined;
+        if (!saved) {
+          saved = (
+            await d.messages
+              .where('[conversationId+seq]')
+              .between([c.id, Dexie.minKey], [c.id, Dexie.maxKey])
+              .reverse()
+              .limit(48)
+              .toArray()
+          ).reverse();
+          if (options.deferContent) historyCache.set(c.id, saved);
+        }
+        return options.deferContent ? planningHistory(saved, c.plannedHistory ?? [], c.id) : saved;
+      };
       let settings = (await d.settings.get('app'))!;
       let provider = options.provider;
       let eventCount = 0,
@@ -188,6 +211,26 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
         steps = 0;
       while (cp.simTime < target && steps++ < (options.maxSegments ?? 240)) {
         if (options.signal?.aborted) return;
+        if (options.deferContent) {
+          const pending = (
+            await Promise.all(
+              ['pending', 'running', 'failed'].map((status) =>
+                d.contentJobs
+                  .where('[worldId+status+at]')
+                  .between([worldId, status, Dexie.minKey], [worldId, status, Dexie.maxKey])
+                  .count(),
+              ),
+            )
+          ).reduce((a, b) => a + b, 0);
+          const barrier = await d.contentJobs
+            .where('[worldId+kind+status]')
+            .anyOf(['pending', 'running', 'failed'].map((status) => [worldId, 'major', status]))
+            .first();
+          if (pending >= MAX_PENDING_CONTENT || barrier) {
+            diagnostic(worldId, { queueLength: pending, phase: 'idle', planningBlocked: true });
+            break; // The unexpanded interval is retained by recoveryTarget / the clock anchor.
+          }
+        }
         const world = await d.worlds.get(worldId);
         if (
           !world ||
@@ -308,7 +351,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                 c.kind === 'direct' && c.participants.some((id) => observation.fullIds.has(id)),
             )
             .slice(0, 24)) {
-            const history = await d.messages.where('conversationId').equals(c.id).sortBy('seq');
+            const history = await schedulerHistory(c);
             const last = history.filter((m) => m.simAt <= end).at(-1);
             if (!last || !observation.fullIds.has(last.senderId) || end - last.simAt > 6 * HOUR)
               continue;
@@ -407,7 +450,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
           for (const c of allConvs.filter(
             (c) => !c.groupId || !backgroundGroups.includes(c.groupId),
           )) {
-            const history = await d.messages.where('conversationId').equals(c.id).sortBy('seq');
+            const history = await schedulerHistory(c);
             const last = history.at(-1);
             const rhythm = random(seed);
             seed = rhythm.seed;
@@ -515,9 +558,20 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             id: `${kind}:${event.id}:${chosen?.speaker ?? ''}`,
             worldId,
             kind,
+            plan: contentPlan(
+              kind,
+              seed,
+              snapshot,
+              event,
+              characters.find((c) => c.id === chosen?.speaker),
+            ),
+            createdAt: Date.now(),
             event,
             at: kind === 'chat' ? (chosen?.at ?? event.start) : event.start,
-            conversation: kind === 'chat' ? chosen?.c : undefined,
+            conversation:
+              kind === 'chat' && chosen
+                ? { ...chosen.c, avatar: undefined, plannedHistory: undefined }
+                : undefined,
             speakerId: kind === 'chat' ? chosen?.speaker : undefined,
             state:
               kind === 'chat'
@@ -566,7 +620,8 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
         }
         const canGenerate =
           cp.mode === 'live' &&
-          (settings.unlimitedUsage ||
+          (options.deferContent ||
+            settings.unlimitedUsage ||
             ((usage?.messages ?? 0) + snapshot.rules.maxMessages <= settings.dailyMessages &&
               (!recovery || cp.recoveryRequests < settings.recoveryBudget)));
         let generated:
@@ -691,7 +746,9 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
           .between(Math.max(0, end - 6 * HOUR), end, true, true)
           .and(
             (m) =>
-              !!m.mentionCharacterIds?.length && allConvs.some((c) => c.id === m.conversationId),
+              (!options.deferContent || m.source === 'user') &&
+              !!m.mentionCharacterIds?.length &&
+              allConvs.some((c) => c.id === m.conversationId),
           )
           .toArray();
         const before = cp;
@@ -706,6 +763,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             d.readStates,
             d.reactions,
             d.contentJobs,
+            d.taskSnapshots,
             d.checkpoints,
             d.events,
             d.scenes,
@@ -759,7 +817,41 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             for (const job of queued) {
               if (job.conversation && !(await d.conversations.get(job.conversation.id)))
                 await d.conversations.add(job.conversation);
-              await d.contentJobs.put(job);
+              const snapshotId = `content:${worldId}:${snapshot.version}:${snapshot.updatedAt}`;
+              if (!(await d.taskSnapshots.get(snapshotId)))
+                await d.taskSnapshots.put({ id: snapshotId, config: snapshot });
+              const conversation = job.conversation
+                ? await d.conversations.get(job.conversation.id)
+                : undefined;
+              const predecessor = conversation?.plannedHistory?.at(-1);
+              await d.contentJobs.put({
+                ...job,
+                snapshotId,
+                snapshot: { ...snapshot, entries: [] },
+                dependsOn: [
+                  ...(predecessor && (await d.contentJobs.get(predecessor.id))
+                    ? [predecessor.id]
+                    : []),
+                  ...(job.event.type === 'major' && job.kind !== 'major'
+                    ? ['major-content:' + job.event.id]
+                    : []),
+                ],
+              });
+              if (job.kind === 'chat' && job.conversation && job.plan) {
+                const c = await d.conversations.get(job.conversation.id);
+                await d.conversations.update(job.conversation.id, {
+                  plannedHistory: [
+                    ...(c?.plannedHistory ?? []),
+                    {
+                      id: job.id,
+                      speaker: job.speakerId!,
+                      at: job.at,
+                      count: job.plan.expectedMessages,
+                      eventId: job.event.id,
+                    },
+                  ].slice(-36),
+                });
+              }
               if (job.kind === 'chat' && chosen) {
                 const state = plan.states.find((s) => s.characterId === chosen!.speaker);
                 if (state) {
@@ -836,11 +928,11 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                 )
               ) {
                 state.lastPhone = end;
-                for (const major of await d.majorEvents
-                  .where('worldId')
-                  .equals(worldId)
-                  .and((e) => e.timestamp <= end && e.participantIds.includes(state.characterId))
-                  .toArray()) {
+                for (const major of (
+                  majorReadFacts ?? (await d.majorEvents.where('worldId').equals(worldId).toArray())
+                ).filter(
+                  (e) => e.timestamp <= end && e.participantIds.includes(state.characterId),
+                )) {
                   const id = `major-read:${major.id}:${state.characterId}`;
                   if (!(await d.memories.get(id)))
                     await d.memories.put({
@@ -862,14 +954,22 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                 for (const conv of allConvs.filter((c) =>
                   c.participants.includes(state.characterId),
                 )) {
+                  const cursorId = `character:${conv.id}:${state.characterId}`;
+                  if (!cursorCache.has(cursorId))
+                    cursorCache.set(cursorId, await d.cursors.get(cursorId));
+                  const old = options.deferContent
+                    ? cursorCache.get(cursorId)
+                    : await d.cursors.get(cursorId);
+                  const known = historyCache.get(conv.id)?.at(-1)?.seq;
+                  if (options.deferContent && known !== undefined && (old?.seq ?? 0) >= known)
+                    continue;
                   const messages = await d.messages
-                    .where('conversationId')
-                    .equals(conv.id)
-                    .sortBy('seq');
+                    .where('[conversationId+seq]')
+                    .between([conv.id, old?.seq ?? 0], [conv.id, Dexie.maxKey], false, true)
+                    .limit(200)
+                    .toArray();
                   const joinedAt = conv.participantJoinedAt?.[state.characterId] ?? 0;
                   const visible = messages.filter((m) => m.simAt <= end && m.simAt >= joinedAt);
-                  const cursorId = `character:${conv.id}:${state.characterId}`,
-                    old = await d.cursors.get(cursorId);
                   for (const message of visible.filter((m) => m.seq > (old?.seq ?? 0))) {
                     const readId = `character:${message.id}:${state.characterId}`;
                     if (await d.readStates.get(readId)) continue;
@@ -880,8 +980,15 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                       kind: 'character',
                       readAt: end,
                     });
-                    const reactionRoll = random(seed);
-                    seed = reactionRoll.seed;
+                    const reactionRoll = random(
+                      options.deferContent
+                        ? Array.from(message.id + state.characterId).reduce(
+                            (n, c) => (n * 31 + c.charCodeAt(0)) >>> 0,
+                            1,
+                          )
+                        : seed,
+                    );
+                    if (!options.deferContent) seed = reactionRoll.seed;
                     if (
                       conv.controlledId !== state.characterId &&
                       message.senderId !== state.characterId &&
@@ -909,7 +1016,15 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                     if (message.simAt > end && message.simAt >= joinedAt) break;
                     seq = message.seq;
                   }
-                  if (seq > (old?.seq ?? 0))
+                  if (seq > (old?.seq ?? 0)) {
+                    cursorCache.set(cursorId, {
+                      id: cursorId,
+                      conversationId: conv.id,
+                      readerId: state.characterId,
+                      kind: 'character',
+                      seq,
+                      at: end,
+                    });
                     await d.cursors.put({
                       id: cursorId,
                       conversationId: conv.id,
@@ -918,6 +1033,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                       seq,
                       at: end,
                     });
+                  }
                 }
               }
             }
@@ -1013,10 +1129,6 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
           lastCommittedAt: Date.now(),
           commitLatencyMs: Date.now() - commitStarted,
         });
-        if (options.deferContent)
-          void drainContent(worldId, d, provider).catch((e) =>
-            diagnostic(worldId, { phase: 'error', error: String(e) }),
-          );
         eventCount += plan.events.length;
         options.onProgress?.({
           worldId,
@@ -1032,6 +1144,10 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
       if (cp!.simTime >= target) await d.taskSnapshots.delete(worldId);
     } finally {
       task.done();
+      if (options.deferContent && options.dispatchContent !== false)
+        void drainContent(worldId, d, options.provider).catch((e) =>
+          diagnostic(worldId, { phase: 'error', error: String(e) }),
+        );
     }
   });
 }

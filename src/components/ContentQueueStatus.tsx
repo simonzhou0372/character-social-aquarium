@@ -1,16 +1,27 @@
+import Dexie from 'dexie';
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../data/db';
 import { retryContent } from '../ai/content-queue';
 import { Button, Modal, Status } from './ui';
 export function ContentQueueStatus({ worldId }: { worldId: string }) {
-  const jobs = useLiveQuery(
-    () =>
+  const pendingRanges = () =>
+    ['pending', 'running', 'failed'].map((status) =>
       db.contentJobs
-        .where('worldId')
-        .equals(worldId)
-        .and((j) => j.status !== 'complete')
-        .toArray(),
+        .where('[worldId+status+at]')
+        .between([worldId, status, Dexie.minKey], [worldId, status, Dexie.maxKey]),
+    );
+  const jobs = useLiveQuery(
+    async () =>
+      (await Promise.all(pendingRanges().map((r) => r.limit(50).toArray())))
+        .flat()
+        .sort((a, b) => a.at - b.at)
+        .slice(0, 50),
+    [worldId],
+  );
+  const count = useLiveQuery(
+    async () =>
+      (await Promise.all(pendingRanges().map((r) => r.count()))).reduce((a, b) => a + b, 0),
     [worldId],
   );
   const [open, setOpen] = useState(false),
@@ -23,8 +34,8 @@ export function ContentQueueStatus({ worldId }: { worldId: string }) {
           ? 'AI 等待'
           : jobs.some((j) => j.status === 'failed')
             ? '生成待恢复'
-            : '内容积压'}{' '}
-        · {jobs.length}
+            : '后台内容生成中'}{' '}
+        · {count ?? jobs.length}
       </Button>
       {open && (
         <Modal title="生成任务状态" onClose={() => setOpen(false)}>
@@ -53,7 +64,7 @@ export function ContentQueueStatus({ worldId }: { worldId: string }) {
               )}
             </article>
           ))}
-          {jobs.length > 50 && <p>显示前50项，其余任务仍保存于队列。</p>}
+          {(count ?? 0) > 50 && <p>显示前50项，其余任务仍保存于队列。</p>}
           {error && <Status error>{error}</Status>}
         </Modal>
       )}

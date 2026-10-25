@@ -1,3 +1,5 @@
+import Dexie from 'dexie';
+import { drainAdaptive, contentSnapshot } from './adaptive-queue';
 import { resolveObservation } from '../core/selective-observation';
 import { generateMajor, applyMajor } from './major-events';
 import type { AquariumDB } from '../data/db';
@@ -11,28 +13,33 @@ export async function drainContent(worldId: string, d: AquariumDB = db, provider
   return withWorldLock('content:' + worldId, async () => {
     const task = startWorldTask('content:' + worldId);
     // Acquiring an exclusive browser lock proves no surviving worker owns these claims.
-    if (typeof navigator !== 'undefined' && navigator.locks)
-      await d.contentJobs
-        .where('worldId')
-        .equals(worldId)
-        .and((j) => j.status === 'running')
-        .modify((j) => {
-          j.status = 'pending';
-          j.nextAttemptAt = 0;
-          j.attempts = Math.min(j.attempts, 2);
-        });
+    await d.contentJobs
+      .where('[worldId+status+at]')
+      .between([worldId, 'running', Dexie.minKey], [worldId, 'running', Dexie.maxKey])
+      .modify((j) => {
+        j.status = 'pending';
+        j.nextAttemptAt = 0;
+        j.attempts = Math.min(j.attempts, 2);
+      });
     try {
-      const jobs = await d.contentJobs
-        .where('worldId')
-        .equals(worldId)
-        .and(
-          (j) =>
-            j.status !== 'complete' &&
-            (j.attempts < 3 || j.status === 'running') &&
-            j.nextAttemptAt <= Date.now(),
+      await drainAdaptive(worldId, d, provider, task.signal);
+      const jobs = (
+        await Promise.all(
+          ['pending', 'failed'].map((status) =>
+            d.contentJobs
+              .where('[worldId+status+at]')
+              .between([worldId, status, Dexie.minKey], [worldId, status, Dexie.maxKey])
+              .and((j) => !j.plan && j.attempts < 3 && j.nextAttemptAt <= Date.now())
+              .limit(12)
+              .toArray(),
+          ),
         )
-        .sortBy('at');
+      )
+        .flat()
+        .sort((a, b) => a.at - b.at)
+        .slice(0, 12);
       for (const job of jobs.slice(0, 12)) {
+        job.snapshot = await contentSnapshot(job, d);
         const cp = await d.checkpoints.get(worldId);
         if (!cp || cp.paused || task.signal.aborted || (await d.worlds.get(worldId))?.deletedAt)
           return;

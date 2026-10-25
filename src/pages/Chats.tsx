@@ -1,3 +1,4 @@
+import { activeConversations } from '../core/adaptive-batching';
 import { ConversationAvatar } from '../components/ConversationAvatar';
 import type { Message } from '../core/types';
 import { ensureNotes, saveNote, recordObserved } from '../data/chat';
@@ -82,6 +83,12 @@ export function Chats({
   const readingMessages = holdReading ? messages.filter((m) => heldIds.includes(m.id)) : messages;
   const end = windowEnd ?? readingMessages.length;
   const visible = readingMessages.slice(Math.max(0, end - limit), end);
+  useEffect(() => {
+    if (convo) activeConversations.set(worldId, convo.id);
+    return () => {
+      activeConversations.delete(worldId);
+    };
+  }, [worldId, convo?.id]);
   useEffect(() => {
     if (worldId) void ensureNotes(worldId).catch((e) => setError(String(e)));
   }, [worldId]);

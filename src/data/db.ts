@@ -198,6 +198,11 @@ export class AquariumDB extends Dexie {
       scenes: 'id,worldId,eventId,start,[worldId+start],*participants',
     });
     this.version(12).stores({ expansionJobs: 'id,worldId,status' });
+    this.version(13).stores({
+      taskLogs: 'id,worldId,at,[worldId+task+at]',
+      contentJobs:
+        'id,worldId,status,at,[worldId+status+at],[worldId+kind+status],[worldId+conversation.id+status+at]',
+    });
     this.version(11).stores({
       worlds: 'id,deletedAt',
       characters: 'id,name,entityMode,deletedAt',
@@ -207,6 +212,7 @@ export class AquariumDB extends Dexie {
 }
 export const db = new AquariumDB();
 export const dataTables = (d: AquariumDB) => [
+  d.taskSnapshots,
   d.expansionJobs,
   d.observationConfigs,
   d.observationCoverage,

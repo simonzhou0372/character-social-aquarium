@@ -8,6 +8,7 @@ export type Diagnostic = {
   displayTime?: number;
   speed?: number;
   queueLength?: number;
+  planningBlocked?: boolean;
 };
 const records = new Map<string, Diagnostic>();
 export function diagnostic(worldId: string, patch: Partial<Diagnostic>) {

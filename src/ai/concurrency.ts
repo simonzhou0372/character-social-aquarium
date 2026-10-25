@@ -1,6 +1,7 @@
 import { ProviderError } from './provider';
 let active = 0;
 const queue: {
+  priority: number;
   resolve: () => void;
   reject: (e: Error) => void;
   signal?: AbortSignal;
@@ -21,12 +22,18 @@ function release() {
   }
 }
 /** Unlimited usage still has a fixed concurrency ceiling. No retry loop lives here. */
-export async function withAISlot<T>(fn: () => Promise<T>, signal?: AbortSignal): Promise<T> {
+export async function withAISlot<T>(
+  fn: () => Promise<T>,
+  signal?: AbortSignal,
+  priority = 0,
+): Promise<T> {
   if (signal?.aborted) throw new ProviderError('cancelled', '任务已取消');
   if (active < 2) active++;
-  else
+  else {
+    if (queue.length >= 32) throw new ProviderError('busy', '生成通道繁忙，任务将保留后重试');
     await new Promise<void>((resolve, reject) => {
       const entry = {
+        priority,
         resolve,
         reject,
         signal,
@@ -37,8 +44,10 @@ export async function withAISlot<T>(fn: () => Promise<T>, signal?: AbortSignal):
         },
       };
       queue.push(entry);
+      queue.sort((a, b) => b.priority - a.priority);
       signal?.addEventListener('abort', entry.abort, { once: true });
     });
+  }
   try {
     if (signal?.aborted) throw new ProviderError('cancelled', '任务已取消');
     return await fn();

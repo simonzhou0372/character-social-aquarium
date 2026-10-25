@@ -13,7 +13,7 @@ import {
 } from './focus-types';
 import { z } from 'zod';
 import { WorldDateTimeSchema } from './calendar';
-import { PromptConfigSchema } from '../ai/prompts';
+import { PromptConfigSchema, PromptEntrySchema } from '../ai/prompts';
 const id = z.string().min(1).max(160),
   text = z.string().max(8000),
   time = z.number().finite().nonnegative();
@@ -205,6 +205,18 @@ export const RelationshipSchema = z.object({
 });
 export type Relationship = z.infer<typeof RelationshipSchema>;
 export const ConversationSchema = z.object({
+  plannedHistory: z
+    .array(
+      z.object({
+        id: z.string(),
+        speaker: z.string(),
+        at: z.number(),
+        count: z.number().int().min(0).max(3),
+        eventId: z.string(),
+      }),
+    )
+    .max(36)
+    .optional(),
   avatar: z.string().max(1500000).optional(),
   titleMode: z.enum(['auto', 'custom']).optional(),
   customTitle: text.optional(),
@@ -223,6 +235,7 @@ export const ConversationSchema = z.object({
 });
 export type Conversation = z.infer<typeof ConversationSchema>;
 export const MessageSchema = z.object({
+  planVersion: z.literal(1).optional(),
   backfilled: z.boolean().optional(),
   messageType: z.enum(['text', 'gif']).optional(),
   gifAssetId: id.optional(),
@@ -328,6 +341,7 @@ export const CheckpointSchema = z.object({
 });
 export type Checkpoint = z.infer<typeof CheckpointSchema>;
 export const SettingsSchema = z.object({
+  adaptiveBatching: z.boolean().optional(),
   installedPresets: z.record(z.number().int().positive()).optional(),
   id: z.literal('app'),
   worldId: z.string().max(160),
@@ -437,23 +451,46 @@ export const SceneSchema = z.object({
     .max(32),
 });
 export type InPersonScene = z.infer<typeof SceneSchema>;
-export const ContentJobSchema = z.object({
-  id: z.string().max(512),
-  worldId: z.string(),
-  kind: z.enum(['chat', 'life', 'scene', 'major']),
-  event: EventSchema,
-  conversation: ConversationSchema.optional(),
-  speakerId: z.string().optional(),
-  at: z.number(),
-  state: RuntimeSchema.optional(),
-  snapshot: PromptConfigSchema,
-  recovery: z.boolean(),
-  status: z.enum(['pending', 'running', 'failed', 'complete']),
-  attempts: z.number().int().nonnegative(),
-  nextAttemptAt: z.number(),
-  error: z.string().optional(),
-  controlVersion: z.number().optional(),
-});
+export const ContentJobSchema = z
+  .object({
+    plan: z
+      .object({
+        version: z.literal(1),
+        expectedMessages: z.number().int().min(0).max(3),
+        expectedDialogue: z.number().int().min(0).max(200),
+        expectedPhases: z.number().int().min(0).max(5),
+      })
+      .optional(),
+    snapshotId: z.string().optional(),
+    dependsOn: z.array(z.string()).optional(),
+    createdAt: z.number().optional(),
+    completedAt: z.number().optional(),
+    partial: z.record(z.unknown()).optional(),
+    batchScale: z.number().optional(),
+    errorCode: z.string().optional(),
+
+    id: z.string().max(512),
+    worldId: z.string(),
+    kind: z.enum(['chat', 'life', 'scene', 'major']),
+    event: EventSchema,
+    conversation: ConversationSchema.optional(),
+    speakerId: z.string().optional(),
+    at: z.number(),
+    state: RuntimeSchema.optional(),
+    snapshot: z.union([
+      PromptConfigSchema,
+      PromptConfigSchema.extend({ entries: z.array(PromptEntrySchema).max(0) }),
+    ]),
+    recovery: z.boolean(),
+    status: z.enum(['pending', 'running', 'failed', 'complete']),
+    attempts: z.number().int().nonnegative(),
+    nextAttemptAt: z.number(),
+    error: z.string().optional(),
+    controlVersion: z.number().optional(),
+  })
+  .refine((job) => job.snapshot.entries.length > 0 || !!job.snapshotId, {
+    message: '精简任务快照必须引用已保存的完整提示词',
+  });
 export type ContentJob = z.infer<typeof ContentJobSchema>;
 
 export const ReactionSchema = z.object({
@@ -563,6 +600,7 @@ export const BackupSchema = z.object({
   readStates: z.array(ReadStateSchema).max(1000000).default([]),
   gifAssets: z.array(GifAssetSchema).max(2000).default([]),
   resources: z.array(ResourceBackupSchema).max(2000).default([]),
+  taskSnapshots: z.array(z.object({ id: z.string(), config: PromptConfigSchema })).default([]),
   contentJobs: z.array(ContentJobSchema).max(100000).default([]),
   scenes: z.array(SceneSchema).max(50000).default([]),
   backgroundKnowledge: z.array(BackgroundKnowledgeSchema).max(50000).default([]),
