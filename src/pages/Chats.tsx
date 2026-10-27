@@ -232,8 +232,16 @@ export function Chats({
     const cursor = data?.cursors.find((c) => c.id === `observer:${id}`)?.seq ?? 0;
     return data?.messages.filter((m) => m.conversationId === id && m.seq > cursor).length ?? 0;
   };
+  const roleCharacter = data?.chars.find((c) => c.id === identity);
+  const roleAccent =
+    roleCharacter?.color ??
+    (identity === 'user' ? '#d9ef69' : identity === 'observer' ? '#8ee8d4' : '#d9ef69');
   return (
-    <div className={`chat-layout ${convo ? 'has-chat' : ''}`}>
+    <div
+      className={`chat-layout ${convo ? 'has-chat' : ''}`}
+      data-identity={identity}
+      style={{ '--role-accent': roleAccent } as React.CSSProperties}
+    >
       <aside className="conversation-list">
         <div className="chat-list-title">
           <div>
@@ -433,7 +441,10 @@ export function Chats({
                     <div
                       data-message-id={m.id}
                       data-seq={m.seq}
-                      className={`message ${isUser ? 'self' : ''} ${jumpId === m.id ? 'highlight' : ''}`}
+                      data-unread={m.seq > cursor || undefined}
+                      data-participant={m.senderId}
+                      className={`message ${isUser ? 'self' : ''} ${jumpId === m.id ? 'highlight' : ''} ${m.seq === cursor + 1 ? 'first-unread' : ''}`}
+                      style={{ '--speaker-color': c?.color ?? '#d9ef69' } as React.CSSProperties}
                     >
                       <Avatar
                         character={
@@ -520,8 +531,16 @@ export function Chats({
                 />
               )}
               {busy && (
-                <div className="typing-indicator">
-                  正在等一个回复 <span>···</span>
+                <div className="typing-indicator" aria-live="polite">
+                  <span className="typing-orbit" aria-hidden="true">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                  <span>
+                    <strong>正在等待一个回复</strong>
+                    <small>角色会在合适的时候接话，不会假装已经发送</small>
+                  </span>
                 </div>
               )}
             </div>

@@ -426,9 +426,14 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
 
         let seed = plan.seed;
         const endedConversations: Conversation[] = [];
-        let chosen:
-          | { c: Conversation; speaker: string; at: number; eventId: string; initiating: boolean }
-          | undefined;
+        type SocialChoice = {
+          c: Conversation;
+          speaker: string;
+          at: number;
+          eventId: string;
+          initiating: boolean;
+        };
+        const choices: SocialChoice[] = [];
         const roll = random(seed);
         seed = roll.seed;
         const frequency =
@@ -501,7 +506,10 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                 ) *
                 (last?.mentionCharacterIds?.includes(char.id) ? 1.6 : 1) *
                 (0.3 + r.value) *
-                (c.kind === 'group' ? tuning.groupWeight : tuning.directWeight);
+                (c.kind === 'group'
+                  ? tuning.groupWeight *
+                    (1 + Math.max(0, c.participants.length - 2) * tuning.groupCrowdBonus)
+                  : tuning.directWeight);
               if (weight > tuning.threshold)
                 ranked.push({
                   c,
@@ -521,25 +529,41 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             }
           }
           ranked.sort((a, b) => b.weight - a.weight);
-          const best = ranked[0];
-          if (best) {
+          // High presets can open more than one independent conversation in a
+          // segment. Each extra opening is a separate scheduler roll, so lively
+          // and below keep their original single-opportunity behavior.
+          while (choices.length < tuning.simultaneous) {
+            if (choices.length > 0) {
+              const extra = random(seed);
+              seed = extra.seed;
+              if (extra.value >= tuning.burstChance) break;
+            }
+            const best = ranked.find(
+              (candidate) =>
+                !choices.some(
+                  (pick) => pick.c.id === candidate.c.id || pick.speaker === candidate.speaker,
+                ),
+            );
+            if (!best) break;
             const state = plan.states.find((s) => s.characterId === best.speaker)!;
             const event = plan.events.find((e) => e.id === state.eventId)!;
+            const replyDelay = best.initiating ? 0 : tuning.replyDelayMinutes * 60000;
             const at = Math.min(
               end - 61000,
-              event.start + Math.max(1000, (end - event.start) * 0.6),
+              event.start + Math.max(1000, (end - event.start) * 0.6) + replyDelay,
             );
-            if (at > cp.simTime)
-              chosen = {
-                c: best.c,
-                speaker: best.speaker,
-                at,
-                eventId: state.eventId,
-                initiating: best.initiating,
-              };
+            if (at <= cp.simTime) break;
+            choices.push({
+              c: best.c,
+              speaker: best.speaker,
+              at,
+              eventId: state.eventId,
+              initiating: best.initiating,
+            });
           }
         }
         const queued: ContentJob[] = [];
+        const chatChoices: SocialChoice[] = [];
         if (majorPlan && cp.mode === 'live')
           queued.push({
             id: `major-content:${majorPlan.event.id}`,
@@ -553,9 +577,13 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             attempts: 0,
             nextAttemptAt: 0,
           });
-        const enqueue = (kind: ContentJob['kind'], event: (typeof plan.events)[number]) => {
+        const enqueue = (
+          kind: ContentJob['kind'],
+          event: (typeof plan.events)[number],
+          choice?: SocialChoice,
+        ) => {
           queued.push({
-            id: `${kind}:${event.id}:${chosen?.speaker ?? ''}`,
+            id: `${kind}:${event.id}:${choice?.speaker ?? ''}`,
             worldId,
             kind,
             plan: contentPlan(
@@ -563,19 +591,19 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               seed,
               snapshot,
               event,
-              characters.find((c) => c.id === chosen?.speaker),
+              characters.find((c) => c.id === choice?.speaker),
             ),
             createdAt: Date.now(),
             event,
-            at: kind === 'chat' ? (chosen?.at ?? event.start) : event.start,
+            at: kind === 'chat' ? (choice?.at ?? event.start) : event.start,
             conversation:
-              kind === 'chat' && chosen
-                ? { ...chosen.c, avatar: undefined, plannedHistory: undefined }
+              kind === 'chat' && choice
+                ? { ...choice.c, avatar: undefined, plannedHistory: undefined }
                 : undefined,
-            speakerId: kind === 'chat' ? chosen?.speaker : undefined,
+            speakerId: kind === 'chat' ? choice?.speaker : undefined,
             state:
               kind === 'chat'
-                ? plan.states.find((s) => s.characterId === chosen?.speaker)
+                ? plan.states.find((s) => s.characterId === choice?.speaker)
                 : undefined,
             snapshot,
             recovery,
@@ -594,7 +622,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
           Math.floor(cp.simTime / (6 * HOUR)) !== Math.floor(end / (6 * HOUR)) &&
           (settings.unlimitedUsage ||
             !recovery ||
-            cp.recoveryRequests + (chosen ? 1 : 0) < settings.recoveryBudget)
+            cp.recoveryRequests + choices.length < settings.recoveryBudget)
         ) {
           if (options.deferContent) {
             enqueue('life', plan.events.find(observation.allowsEvent)!);
@@ -624,51 +652,70 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             settings.unlimitedUsage ||
             ((usage?.messages ?? 0) + snapshot.rules.maxMessages <= settings.dailyMessages &&
               (!recovery || cp.recoveryRequests < settings.recoveryBudget)));
-        let generated:
-          | Pick<
-              Awaited<ReturnType<typeof generateDialogue>>,
-              | 'messages'
-              | 'offsets'
-              | 'gifAssetId'
-              | 'replyToMessageId'
-              | 'mentionTargets'
-              | 'reactions'
-            >
-          | undefined;
-        if (canGenerate && chosen && options.deferContent) {
-          enqueue('chat', plan.events.find((e) => e.id === chosen!.eventId)!);
-        } else if (canGenerate && chosen) {
-          provider ??= await liveProvider(d);
-          options.onProgress?.({
-            worldId,
-            offline: recovery,
-            from: cp.recoveryStart ?? cp.simTime,
-            to: target,
-            at: cp.simTime,
-            events: eventCount,
-            messages: messageCount,
-            stage: '正在复原生活与聊天',
-          });
-          if (recovery) {
-            cp = { ...cp, recoveryRequests: cp.recoveryRequests + 1 };
-            await d.checkpoints.update(worldId, { recoveryRequests: cp.recoveryRequests });
-          }
-          generated = await generateDialogue(
-            d,
-            chosen.c,
-            chosen.speaker,
-            chosen.at,
-            snapshot,
-            provider,
-            recovery ? 'recoveryChat' : 'chat',
-            options.signal,
-            {
-              state: plan.states.find((s) => s.characterId === chosen!.speaker),
-              event: plan.events.find((e) => e.id === chosen!.eventId),
-            },
-          );
-        } else if (cp.mode === 'demo' && chosen) {
-          generated = { messages: [demoLines[Math.floor(roll.value * 100) % demoLines.length]] };
+        type Generated = Pick<
+          Awaited<ReturnType<typeof generateDialogue>>,
+          | 'messages'
+          | 'offsets'
+          | 'gifAssetId'
+          | 'replyToMessageId'
+          | 'mentionTargets'
+          | 'reactions'
+        >;
+        const generatedList: { choice: SocialChoice; generated: Generated }[] = [];
+        let generationSkipped = false;
+        for (const choice of choices) {
+          if (canGenerate && options.deferContent) {
+            enqueue('chat', plan.events.find((e) => e.id === choice.eventId)!, choice);
+            chatChoices.push(choice);
+          } else if (canGenerate) {
+            if (
+              recovery &&
+              !settings.unlimitedUsage &&
+              cp.recoveryRequests >= settings.recoveryBudget
+            ) {
+              generationSkipped = true;
+              continue;
+            }
+            provider ??= await liveProvider(d);
+            options.onProgress?.({
+              worldId,
+              offline: recovery,
+              from: cp.recoveryStart ?? cp.simTime,
+              to: target,
+              at: cp.simTime,
+              events: eventCount,
+              messages: messageCount,
+              stage: '正在复原生活与聊天',
+            });
+            if (recovery) {
+              cp = { ...cp, recoveryRequests: cp.recoveryRequests + 1 };
+              await d.checkpoints.update(worldId, { recoveryRequests: cp.recoveryRequests });
+            }
+            const generated = await generateDialogue(
+              d,
+              choice.c,
+              choice.speaker,
+              choice.at,
+              snapshot,
+              provider,
+              recovery ? 'recoveryChat' : 'chat',
+              options.signal,
+              {
+                state: plan.states.find((s) => s.characterId === choice.speaker),
+                event: plan.events.find((e) => e.id === choice.eventId),
+              },
+            );
+            generatedList.push({ choice, generated });
+          } else if (cp.mode === 'demo') {
+            const pick = random(seed);
+            seed = pick.seed;
+            generatedList.push({
+              choice,
+              generated: {
+                messages: [demoLines[Math.floor(pick.value * 100) % demoLines.length]],
+              },
+            });
+          } else generationSkipped = true;
         }
         const scenes: InPersonScene[] = [];
         // Scene sampling and budget are independent of online activity presets.
@@ -795,11 +842,12 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               .anyOf(characters.map((c) => c.id))
               .toArray();
             if (activeNow.some((c) => c.deletedAt || c.entityMode === 'background')) return false;
-            if (
-              chosen?.c.groupId &&
-              (await d.groups.get(chosen.c.groupId))?.entityMode === 'background'
-            )
-              return false;
+            for (const choice of choices)
+              if (
+                choice.c.groupId &&
+                (await d.groups.get(choice.c.groupId))?.entityMode === 'background'
+              )
+                return false;
             for (const c of groupSync) {
               if (c.groupId && (await d.groups.get(c.groupId))?.entityMode === 'background')
                 continue;
@@ -852,12 +900,12 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                   ].slice(-36),
                 });
               }
-              if (job.kind === 'chat' && chosen) {
-                const state = plan.states.find((s) => s.characterId === chosen!.speaker);
-                if (state) {
-                  state.lastAction = chosen.at;
-                  if (chosen.initiating) state.lastTopicAt = chosen.at;
-                }
+            }
+            for (const choice of chatChoices) {
+              const state = plan.states.find((s) => s.characterId === choice.speaker);
+              if (state) {
+                state.lastAction = choice.at;
+                if (choice.initiating) state.lastTopicAt = choice.at;
               }
             }
             if (majorSchedule && !majorPlan) await d.majorSchedules.put(majorSchedule);
@@ -1037,34 +1085,34 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                 }
               }
             }
-            if (chosen && generated) {
-              if (!(await d.conversations.get(chosen.c.id))) await d.conversations.add(chosen.c);
+            for (const { choice, generated } of generatedList) {
+              if (!(await d.conversations.get(choice.c.id))) await d.conversations.add(choice.c);
               const msgs = await persistDialogue(
                 d,
-                chosen.c.id,
-                chosen.speaker,
+                choice.c.id,
+                choice.speaker,
                 generated.messages,
-                chosen.at,
+                choice.at,
                 cp!.mode === 'demo' ? 'demo' : 'ai',
-                `sim:${worldId}:${before.simTime}`,
-                chosen.eventId,
+                `sim:${worldId}:${before.simTime}:${choice.speaker}`,
+                choice.eventId,
                 generated.offsets,
                 generated,
               );
               messageCount += msgs.length;
               if (msgs.length || generated.reactions?.length)
                 await d.taskLogs.put({
-                  id: `social:${worldId}:${before.simTime}`,
+                  id: `social:${worldId}:${before.simTime}:${choice.c.id}:${choice.speaker}`,
                   worldId,
-                  task: chosen.initiating ? 'social-initiation' : 'social-reply',
+                  task: choice.initiating ? 'social-initiation' : 'social-reply',
                   promptVersion: snapshot.version,
                   at: Date.now(),
                   status: 'committed',
                 });
-              const state = plan.states.find((s) => s.characterId === chosen!.speaker)!;
+              const state = plan.states.find((s) => s.characterId === choice.speaker)!;
               if (msgs.length || generated.reactions?.length) {
-                state.lastAction = chosen.at;
-                if (chosen.initiating) state.lastTopicAt = chosen.at;
+                state.lastAction = choice.at;
+                if (choice.initiating) state.lastTopicAt = choice.at;
               }
             }
             await d.states.bulkPut(plan.states);
@@ -1087,7 +1135,8 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             const advancedReal = before.realTime + (end - before.simTime) / effectiveRate;
             cp = {
               ...before,
-              usageLimited: cp!.mode === 'live' && !!chosen && !canGenerate,
+              usageLimited:
+                cp!.mode === 'live' && choices.length > 0 && (generationSkipped || !canGenerate),
               clockAnchor:
                 done && (current.clockAnchor?.realTime ?? 0) <= realTarget
                   ? {

@@ -14,6 +14,8 @@ export const defaultSettings: AppSettings = {
   userBio: '刚搬来海盐市的新朋友',
   onboarded: false,
   theme: 'light',
+  uiMode: 'game',
+  motionLevel: 'standard',
 };
 export function newCharacter(name = '未命名角色'): Character {
   return {

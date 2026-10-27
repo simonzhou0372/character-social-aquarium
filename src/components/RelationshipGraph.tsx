@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { Character, Relationship } from '../core/types';
 import { layoutGraph } from '../core/graph-layout';
 import { Button, Select, Status } from './ui';
+import { useUIPreferences } from './ui-preferences';
 type Camera = { x: number; y: number; zoom: number };
 export function RelationshipGraph({
   characters,
@@ -18,7 +19,11 @@ export function RelationshipGraph({
   onCharacter: (c: Character) => void;
   onRelation: (r: Relationship) => void;
 }) {
+  const { mode: uiMode } = useUIPreferences();
+  const game = uiMode === 'game';
   const [mode, setMode] = useState<'compact' | 'readable'>('readable'),
+    [hovered, setHovered] = useState(''),
+    [selectedNode, setSelectedNode] = useState(''),
     [camera, setCamera] = useState<Camera>({ x: 0, y: 0, zoom: 1 }),
     [size, setSize] = useState({ width: 900, height: 560 }),
     [notice, setNotice] = useState(''),
@@ -35,6 +40,15 @@ export function RelationshipGraph({
       [characters, relations, mode, groups],
     );
   const positions = new Map(layout.nodes.map((n) => [n.id, n]));
+  const activeFocus = focus || selectedNode || hovered;
+  const relationColor = (label: string) => {
+    const palette = game
+      ? ['#77e0c6', '#d9f36a', '#ff8b65', '#93a6ff', '#e4b9ff', '#ffd36b']
+      : ['#7e9470', '#7e9470', '#7e9470', '#7e9470', '#7e9470', '#7e9470'];
+    let hash = 0;
+    for (const ch of label) hash += ch.charCodeAt(0);
+    return palette[hash % palette.length];
+  };
   const fit = () =>
     setCamera({
       x:
@@ -86,7 +100,7 @@ export function RelationshipGraph({
       const copy = svg.current.cloneNode(true) as SVGSVGElement;
       copy.setAttribute(
         'style',
-        `width:${layout.width}px;height:${layout.height}px;background:#fbfcf5`,
+        `width:${layout.width}px;height:${layout.height}px;background:${game ? '#111820' : '#fbfcf5'}`,
       );
       copy.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
       copy.setAttribute('viewBox', `0 0 ${layout.width} ${layout.height}`);
@@ -119,7 +133,7 @@ export function RelationshipGraph({
         canvas.height = Math.max(1, Math.ceil(layout.height * scale));
         const ctx = canvas.getContext('2d');
         if (!ctx) throw new Error('浏览器不支持图片导出');
-        ctx.fillStyle = '#fbfcf5';
+        ctx.fillStyle = game ? '#111820' : '#fbfcf5';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
         file = await new Promise<Blob>((resolve, reject) =>
@@ -175,11 +189,33 @@ export function RelationshipGraph({
       <p className="muted">
         拖动平移，滚轮或双指缩放。节点与姓名按实际占位留距；适应全图后可放大阅读，孤立角色也保留。分组为展示用途，不改变人物关系。点击人物或连线查看详情。
       </p>
+      {game && (
+        <div className="graph-legend" aria-hidden="true">
+          <span>
+            <i className="legend-line solid" />
+            亲近 / 信任
+          </span>
+          <span>
+            <i className="legend-line dashed" />
+            亲属关系
+          </span>
+          <span>
+            <i className="legend-line conflict" />
+            竞争 / 冲突
+          </span>
+          <span>悬停聚焦 · 点击查看档案</span>
+        </div>
+      )}
       <div ref={viewport} className="graph-viewport">
         <svg
           ref={svg}
           viewBox={`0 0 ${size.width} ${size.height}`}
-          style={{ width: '100%', height: 560, touchAction: 'none', background: '#fbfcf5' }}
+          style={{
+            width: '100%',
+            height: 560,
+            touchAction: 'none',
+            background: game ? '#111820' : '#fbfcf5',
+          }}
           role="img"
           aria-label="有向人物关系图"
           onPointerDown={(e) => {
@@ -232,6 +268,7 @@ export function RelationshipGraph({
               const n = pressed.current?.getAttribute('data-node'),
                 r = pressed.current?.getAttribute('data-edge');
               if (n) {
+                setSelectedNode((current) => (current === n ? '' : n));
                 const c = characters.find((c) => c.id === n);
                 if (c) onCharacter(c);
               }
@@ -257,15 +294,21 @@ export function RelationshipGraph({
               markerHeight="6"
               orient="auto"
             >
-              <path d="M0 0L10 5L0 10" fill="#758767" />
+              <path d="M0 0L10 5L0 10" fill={game ? '#84a9c4' : '#758767'} />
             </marker>
           </defs>
           <g
             data-camera="true"
             transform={`translate(${camera.x} ${camera.y}) scale(${camera.zoom})`}
-            fontFamily="sans-serif"
+            fontFamily={game ? 'inherit' : 'sans-serif'}
           >
-            <rect x="0" y="0" width={layout.width} height={layout.height} fill="#fbfcf5" />
+            <rect
+              x="0"
+              y="0"
+              width={layout.width}
+              height={layout.height}
+              fill={game ? '#111820' : '#fbfcf5'}
+            />
             {layout.groups.map((g, i) => (
               <g key={i}>
                 <rect
@@ -273,11 +316,18 @@ export function RelationshipGraph({
                   y={g.y}
                   width={g.width}
                   height={g.height}
-                  rx="14"
-                  fill="#edf1e5"
-                  stroke="#bdc9b2"
+                  rx={game ? 4 : 14}
+                  fill={game ? '#19232d' : '#edf1e5'}
+                  stroke={game ? '#334553' : '#bdc9b2'}
                 />
-                <text x={g.x + 14} y={g.y + 26} fontSize="14" fill="#526640">
+                <text
+                  x={g.x + 14}
+                  y={g.y + 26}
+                  fontSize="14"
+                  fill={game ? '#9fb3c2' : '#526640'}
+                  fontWeight={game ? 700 : undefined}
+                  letterSpacing={game ? '1.5' : undefined}
+                >
                   {g.name}
                 </text>
               </g>
@@ -313,6 +363,13 @@ export function RelationshipGraph({
               const from = boundary(ax, ay, mx, my, a.width, a.height);
               const to = boundary(bx, by, mx, my, b.width, b.height);
               const path = `M${from.x} ${from.y}Q${mx} ${my} ${to.x} ${to.y}`;
+              const connected = !activeFocus || r.from === activeFocus || r.to === activeFocus;
+              const color = relationColor(r.label);
+              const dashed = /家人|亲属|血缘/.test(r.label)
+                ? '7 5'
+                : /竞争|敌对|冲突|对手/.test(r.label)
+                  ? '2 5'
+                  : undefined;
               return (
                 <g
                   data-edge={r.id}
@@ -320,7 +377,8 @@ export function RelationshipGraph({
                   role="button"
                   tabIndex={0}
                   aria-label={`${characters.find((c) => c.id === r.from)?.name} → ${characters.find((c) => c.id === r.to)?.name}：${r.label}`}
-                  opacity={focus && r.from !== focus && r.to !== focus ? 0.15 : 0.7}
+                  opacity={connected ? (activeFocus ? 1 : 0.76) : 0.08}
+                  className={`graph-edge ${connected ? 'connected' : 'dimmed'} ${dashed ? 'edge-dashed' : ''}`}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
@@ -334,9 +392,12 @@ export function RelationshipGraph({
                   </title>
                   <path d={path} stroke="transparent" strokeWidth="14" fill="none" />
                   <path
+                    className="graph-edge-line"
                     d={path}
-                    stroke="#7e9470"
-                    strokeWidth="1.5"
+                    stroke={color}
+                    strokeWidth={game ? 1.1 + r.closeness / 55 : 1.5}
+                    strokeDasharray={dashed}
+                    strokeLinecap="round"
                     fill="none"
                     markerEnd={`url(#${marker})`}
                   />
@@ -360,21 +421,53 @@ export function RelationshipGraph({
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
                       e.stopPropagation();
+                      setSelectedNode((current) => (current === n.id ? '' : n.id));
                       onCharacter(c);
                     }
                   }}
                   style={{ cursor: 'pointer' }}
+                  onPointerEnter={() => setHovered(n.id)}
+                  onPointerLeave={() => setHovered('')}
+                  onFocus={() => setHovered(n.id)}
+                  onBlur={() => setHovered('')}
+                  opacity={
+                    !activeFocus ||
+                    activeFocus === n.id ||
+                    relations.some(
+                      (r) =>
+                        (r.from === activeFocus && r.to === n.id) ||
+                        (r.to === activeFocus && r.from === n.id),
+                    )
+                      ? 1
+                      : 0.24
+                  }
+                  className={`graph-node ${activeFocus === n.id ? 'is-focused' : ''}`}
                 >
                   <rect
                     x={n.x}
                     y={n.y}
                     width={n.width}
                     height={n.height}
-                    rx="12"
-                    fill="#fffef8"
-                    stroke={focus === n.id ? '#506c2f' : '#b4c3a4'}
-                    strokeWidth={focus === n.id ? 3 : 1}
+                    rx={game ? 4 : 12}
+                    fill={game ? (activeFocus === n.id ? '#243543' : '#1a2530') : '#fffef8'}
+                    stroke={
+                      activeFocus === n.id
+                        ? game
+                          ? '#d9f36a'
+                          : '#506c2f'
+                        : game
+                          ? '#385063'
+                          : '#b4c3a4'
+                    }
+                    strokeWidth={activeFocus === n.id ? 2.5 : 1}
                   />
+                  {game && (
+                    <path
+                      d={`M${n.x} ${n.y}h${Math.min(44, n.width / 3)}v3H${n.x}z`}
+                      fill={c.color}
+                      opacity=".9"
+                    />
+                  )}
                   <circle cx={n.x + n.width / 2} cy={n.y + 30} r="22" fill={c.color} />
                   {c.avatar.startsWith('data:image/') ? (
                     <image
@@ -391,7 +484,7 @@ export function RelationshipGraph({
                       y={n.y + 37}
                       textAnchor="middle"
                       fontSize="18"
-                      fill="#263423"
+                      fill={game ? '#101820' : '#263423'}
                     >
                       {Array.from(c.name.replaceAll(' ', '')).slice(-2).join('')}
                     </text>
@@ -403,7 +496,8 @@ export function RelationshipGraph({
                       y={n.y + 72 + i * 20}
                       textAnchor="middle"
                       fontSize="14"
-                      fill="#263423"
+                      fill={game ? '#eef3ea' : '#263423'}
+                      fontWeight={game ? 600 : undefined}
                     >
                       {line}
                     </text>

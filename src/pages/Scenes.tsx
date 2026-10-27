@@ -4,7 +4,7 @@ import { Input } from '../components/ui';
 import { getPrompts } from '../ai/prompts';
 import { generateScene } from '../ai/scenes';
 import { liveProvider } from '../ai/orchestrator';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, withWorldLock } from '../data/db';
 import { startWorldTask } from '../core/tasks';
@@ -18,6 +18,7 @@ import {
   WorldDateTimeSchema,
 } from '../core/calendar';
 import { Avatar, Button, Field, Select, Modal, Empty, Status } from '../components/ui';
+import { BookOpen, ChevronLeft, ChevronRight, Clapperboard, Pause, Play } from 'lucide-react';
 import { WorldDateEditor } from '../components/WorldDateEditor';
 import type { InPersonScene } from '../core/types';
 export function SceneDetail({ scene, onClose }: { scene: InPersonScene; onClose: () => void }) {
@@ -37,9 +38,39 @@ export function SceneDetail({ scene, onClose }: { scene: InPersonScene; onClose:
   );
   scene = data?.stored ?? scene;
   const [busy, setBusy] = useState(false),
-    [error, setError] = useState('');
+    [error, setError] = useState(''),
+    [readingMode, setReadingMode] = useState<'archive' | 'stage'>('archive'),
+    [stageIndex, setStageIndex] = useState(0),
+    [playing, setPlaying] = useState(false),
+    [playSpeed, setPlaySpeed] = useState(1800);
   const fmt = (at: number) => (data?.world ? formatWorldTime(data.world, at) : '');
   const clock = (at: number) => (data?.world ? formatWorldClock(data.world, at) : '');
+  const stageLines = scene.phases.flatMap((phase) =>
+    phase.entries.map((entry) => ({
+      ...entry,
+      phaseId: phase.id,
+      phaseTitle: phase.title,
+      phaseParticipants: phase.participants,
+    })),
+  );
+  const stageLine = stageLines[Math.min(stageIndex, Math.max(0, stageLines.length - 1))];
+  const stagePhaseIndex = scene.phases.findIndex((p) => p.id === stageLine?.phaseId);
+  useEffect(() => {
+    setStageIndex(0);
+    setPlaying(false);
+  }, [scene.id]);
+  useEffect(() => {
+    if (readingMode !== 'stage' || !playing || !stageLines.length) return;
+    if (stageIndex >= stageLines.length - 1) {
+      setPlaying(false);
+      return;
+    }
+    const timer = window.setTimeout(
+      () => setStageIndex((index) => Math.min(stageLines.length - 1, index + 1)),
+      playSpeed,
+    );
+    return () => window.clearTimeout(timer);
+  }, [readingMode, playing, stageIndex, playSpeed, stageLines.length]);
   return (
     <Modal title={scene.title} onClose={onClose} wide>
       <details>
@@ -58,6 +89,30 @@ export function SceneDetail({ scene, onClose }: { scene: InPersonScene; onClose:
       <p>
         {scene.location} · {fmt(scene.start)} — {fmt(scene.end)}
       </p>
+      <div className="scene-reading-switch" role="tablist" aria-label="场景阅读模式">
+        <button
+          role="tab"
+          aria-selected={readingMode === 'archive'}
+          className={readingMode === 'archive' ? 'active' : ''}
+          onClick={() => {
+            setReadingMode('archive');
+            setPlaying(false);
+          }}
+        >
+          <BookOpen size={15} />
+          档案阅读
+        </button>
+        <button
+          role="tab"
+          aria-selected={readingMode === 'stage'}
+          className={readingMode === 'stage' ? 'active' : ''}
+          onClick={() => setReadingMode('stage')}
+        >
+          <Clapperboard size={15} />
+          演出阅读
+          <span>可选</span>
+        </button>
+      </div>
       <div className="toolbar">
         {data?.chars.map((c) => (
           <span key={c.id}>
@@ -104,50 +159,196 @@ export function SceneDetail({ scene, onClose }: { scene: InPersonScene; onClose:
         </Status>
       )}
       {error && <Status error>{error}</Status>}
-      <nav className="toolbar">
-        {scene.phases.map((p, i) => (
-          <Button
-            key={p.id}
-            onClick={() =>
-              document.getElementById(p.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }
-          >
-            {i + 1}. {p.title}
-          </Button>
-        ))}
-      </nav>
-      <div className="scene-record">
-        {scene.phases.map((p) => (
-          <section key={p.id} id={p.id}>
-            <h3>
-              {p.title}
-              <small>{fmt(p.start)}</small>
-            </h3>
-            <p className="muted">
-              在场：
-              {p.participants.map((id) => data?.chars.find((c) => c.id === id)?.name).join('、')}
-            </p>
-            {p.entries.map((e, i) => {
-              const c = data?.chars.find((c) => c.id === e.speakerId);
-              return e.kind === 'activity' ? (
-                <aside className="scene-action" key={i}>
-                  <time>{clock(e.at)}</time>
-                  <p>{e.text}</p>
-                </aside>
-              ) : (
-                <div className="scene-dialogue" key={i} style={{ borderColor: c?.color }}>
-                  <Avatar character={c} size={32} />
+      {readingMode === 'archive' ? (
+        <>
+          <nav className="toolbar scene-phase-nav">
+            {scene.phases.map((p, i) => (
+              <Button
+                key={p.id}
+                onClick={() =>
+                  document
+                    .getElementById(p.id)
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+              >
+                {i + 1}. {p.title}
+              </Button>
+            ))}
+          </nav>
+          <div className="scene-record">
+            {scene.phases.map((p) => (
+              <section key={p.id} id={p.id}>
+                <h3>
+                  {p.title}
+                  <small>{fmt(p.start)}</small>
+                </h3>
+                <p className="muted">
+                  在场：
+                  {p.participants
+                    .map((id) => data?.chars.find((c) => c.id === id)?.name)
+                    .join('、')}
+                </p>
+                {p.entries.map((e, i) => {
+                  const c = data?.chars.find((c) => c.id === e.speakerId);
+                  return e.kind === 'activity' ? (
+                    <aside className="scene-action" key={i}>
+                      <time>{clock(e.at)}</time>
+                      <p>{e.text}</p>
+                    </aside>
+                  ) : (
+                    <div
+                      className="scene-dialogue"
+                      key={i}
+                      style={
+                        {
+                          borderColor: c?.color,
+                          '--speaker-color': c?.color,
+                        } as React.CSSProperties
+                      }
+                    >
+                      <Avatar character={c} size={32} />
+                      <div>
+                        <strong>{c?.name}</strong>
+                        <time>{clock(e.at)}</time>
+                        <p>{e.text}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </section>
+            ))}
+          </div>
+        </>
+      ) : stageLine ? (
+        <section
+          className="scene-stage"
+          style={
+            {
+              '--scene-tone':
+                data?.chars.find((c) => c.id === stageLine.speakerId)?.color ?? '#8ee8d4',
+              '--phase-index': stagePhaseIndex,
+            } as React.CSSProperties
+          }
+          aria-label="场景演出阅读"
+        >
+          <header className="scene-stage-head">
+            <div>
+              <span className="eyebrow">SCENE IN PROGRESS</span>
+              <h3>{scene.title}</h3>
+              <p>
+                {scene.location} · {clock(stageLine.at)} · 第 {stagePhaseIndex + 1} 幕 /{' '}
+                {scene.phases.length}
+              </p>
+            </div>
+            <div className="scene-stage-cast">
+              {scene.participants.slice(0, 6).map((id) => {
+                const c = data?.chars.find((c) => c.id === id);
+                return (
+                  <span
+                    key={id}
+                    className={`stage-cast-avatar ${id === stageLine.speakerId ? 'speaking' : 'listening'}`}
+                    title={c?.name}
+                  >
+                    <Avatar character={c} size={40} />
+                  </span>
+                );
+              })}
+            </div>
+          </header>
+          <div className="scene-stage-progress">
+            {scene.phases.map((p, i) => (
+              <span
+                key={p.id}
+                className={i < stagePhaseIndex ? 'done' : i === stagePhaseIndex ? 'current' : ''}
+              >
+                <i />
+                {p.title}
+              </span>
+            ))}
+          </div>
+          <div className={`stage-line ${stageLine.kind === 'activity' ? 'is-action' : ''}`}>
+            {stageLine.kind === 'dialogue' ? (
+              <>
+                <div className="stage-speaker">
+                  <Avatar
+                    character={data?.chars.find((c) => c.id === stageLine.speakerId)}
+                    size={68}
+                  />
                   <div>
-                    <strong>{c?.name}</strong>
-                    <time>{clock(e.at)}</time>
-                    <p>{e.text}</p>
+                    <small>SPEAKING / {clock(stageLine.at)}</small>
+                    <strong>
+                      {data?.chars.find((c) => c.id === stageLine.speakerId)?.name ?? '未知角色'}
+                    </strong>
+                    <span>{stageLine.phaseTitle}</span>
                   </div>
                 </div>
-              );
-            })}
-          </section>
-        ))}
-      </div>
+                <blockquote>{stageLine.text}</blockquote>
+              </>
+            ) : (
+              <>
+                <span className="stage-action-mark">ACTION</span>
+                <p>{stageLine.text}</p>
+                <small>
+                  {stageLine.phaseTitle} · {clock(stageLine.at)}
+                </small>
+              </>
+            )}
+          </div>
+          <div className="scene-stage-controls">
+            <Button
+              aria-label="上一句"
+              disabled={stageIndex === 0}
+              onClick={() => setStageIndex((index) => Math.max(0, index - 1))}
+            >
+              <ChevronLeft size={17} />
+            </Button>
+            <Button
+              aria-label={playing ? '暂停演出' : '自动播放'}
+              variant={playing ? 'primary' : 'default'}
+              onClick={() => setPlaying((value) => !value)}
+            >
+              {playing ? <Pause size={16} /> : <Play size={16} />}
+              {playing ? '暂停' : '自动播放'}
+            </Button>
+            <Button
+              aria-label="下一句"
+              disabled={stageIndex >= stageLines.length - 1}
+              onClick={() => setStageIndex((index) => Math.min(stageLines.length - 1, index + 1))}
+            >
+              <ChevronRight size={17} />
+            </Button>
+            <span className="stage-counter">
+              {String(stageIndex + 1).padStart(2, '0')} /{' '}
+              {String(stageLines.length).padStart(2, '0')}
+            </span>
+            <label>
+              节奏
+              <Select
+                aria-label="演出播放速度"
+                value={playSpeed}
+                onChange={(e) => setPlaySpeed(Number(e.target.value))}
+              >
+                <option value={2800}>慢</option>
+                <option value={1800}>标准</option>
+                <option value={1100}>快</option>
+              </Select>
+            </label>
+            <button
+              className="stage-skip"
+              onClick={() => {
+                setReadingMode('archive');
+                setPlaying(false);
+              }}
+            >
+              查看全部文本 <ChevronRight size={14} />
+            </button>
+          </div>
+        </section>
+      ) : (
+        <Empty title="场景尚未有对白" description="阶段生成完成后，这里会按顺序播放。">
+          <Button onClick={() => setReadingMode('archive')}>返回档案</Button>
+        </Empty>
+      )}
       <details>
         <summary>关联事件与生成信息</summary>
         <p>{data?.event?.description}</p>

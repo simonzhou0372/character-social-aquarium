@@ -208,6 +208,16 @@ export class AquariumDB extends Dexie {
       characters: 'id,name,entityMode,deletedAt',
       groups: 'id,*worldIds,deletedAt',
     });
+    this.version(14).upgrade((tx) =>
+      tx
+        .table('settings')
+        .toCollection()
+        .modify((s) => {
+          // Existing activity values are intentionally untouched. New presets are opt-in.
+          s.uiMode ??= 'game';
+          s.motionLevel ??= 'standard';
+        }),
+    );
   }
 }
 export const db = new AquariumDB();

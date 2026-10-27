@@ -1,0 +1,69 @@
+{
+  "date": "2026-10-27",
+  "method": "Same runWorld scheduler and persistence path as production, local structured provider, three fixed seeds, identical characters/relationships/schedules, scenes disabled.",
+  "simulatedHours": 24,
+  "characters": 5,
+  "seeds": [42, 2026, 8901],
+  "conditions": "unlimitedUsage=true, sceneDailyBudget=0, all characters awake 00-23, initiative=.9, replyChance=.95, phoneHabit=1, topicIntervalMinutes=30, closeness=90, trust=90",
+  "samples": [
+    {
+      "activity": "quiet",
+      "messages": [42, 30, 32],
+      "initiations": [21, 15, 16],
+      "replies": [0, 0, 0],
+      "mean": 34.666666666666664,
+      "apiRequests": [25, 19, 20]
+    },
+    {
+      "activity": "standard",
+      "messages": [106, 104, 110],
+      "initiations": [52, 47, 55],
+      "replies": [1, 5, 0],
+      "mean": 106.66666666666667,
+      "apiRequests": [57, 56, 59]
+    },
+    {
+      "activity": "lively",
+      "messages": [218, 228, 206],
+      "initiations": [84, 90, 81],
+      "replies": [25, 24, 22],
+      "mean": 217.33333333333334,
+      "apiRequests": [113, 118, 107]
+    },
+    {
+      "activity": "boiling",
+      "messages": [430, 410, 426],
+      "initiations": [112, 118, 114],
+      "replies": [103, 87, 99],
+      "mean": 422,
+      "apiRequests": [219, 209, 217]
+    },
+    {
+      "activity": "carnival",
+      "messages": [632, 660, 642],
+      "initiations": [111, 112, 113],
+      "replies": [205, 218, 208],
+      "mean": 644.6666666666666,
+      "apiRequests": [320, 334, 325]
+    }
+  ],
+  "ratios": {
+    "standardToQuiet": 3.0769,
+    "livelyToStandard": 2.0375,
+    "boilingToLively": 1.9417,
+    "carnivalToLively": 2.9662,
+    "carnivalToBoiling": 1.5276
+  },
+  "legacyCompatibility": {
+    "baselineCommit": "08cb39e",
+    "baselineTest": "tests/activity-calibration.test.ts at HEAD before this round",
+    "baselineLivelySamples": [218, 228, 206],
+    "currentLivelySamples": [218, 228, 206],
+    "result": "quiet/standard/lively are byte-for-byte compatible at the scheduler level; extended presets are opt-in."
+  },
+  "safety": {
+    "sleepingCharacterMessages": 0,
+    "sleepingTest": "c-nagi asleep 08:00-12:00 local, carnival, four simulated hours; no message from the sleeping character before wake time.",
+    "speedIndependence": "Carnival 6h planning at 1x and 300x produced identical ordered content-job signatures. The existing 256-job backpressure cap remains authoritative."
+  }
+}

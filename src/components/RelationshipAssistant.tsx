@@ -62,8 +62,14 @@ export function RelationshipAssistant({
     }
   }
   return (
-    <section className="panel">
-      <Button onClick={() => setOpen(!open)}>AI 生成关系</Button>
+    <section className={`panel relationship-assistant-panel ${open ? 'is-open' : ''}`}>
+      <div className="relationship-assistant-head">
+        <div>
+          <span className="eyebrow">RELATION ASSIST / 关系草稿</span>
+          <strong>让人与人之间的线，有据可循。</strong>
+        </div>
+        <Button onClick={() => setOpen(!open)}>{open ? '收起生成器' : 'AI 生成关系'}</Button>
+      </div>
       {open && (
         <>
           <Field label="关系生成范围">

@@ -15,6 +15,10 @@ import {
   Upload,
   KeyRound,
   EyeOff,
+  Sparkles,
+  Gamepad2,
+  Monitor,
+  Palette,
 } from 'lucide-react';
 import { db } from '../data/db';
 import { CompatibleProvider, setSessionKey, validateEndpoint, getKey } from '../ai/provider';
@@ -23,6 +27,7 @@ import { exportBackup, importBackup, validateBackup, downloadJson } from '../dat
 import { Button, Input, Select, Field, Toggle, Status, Confirm, Textarea } from '../components/ui';
 import { PromptManager } from './PromptManager';
 import { TimeControls } from '../components/TimeControls';
+import { activityModes } from '../core/activity';
 const baseProfile: ApiProfile = {
   id: 'api',
   provider: '自定义兼容接口',
@@ -244,19 +249,34 @@ function SimulationSettings() {
     <section className="panel">
       <h2>让日常按自己的节奏发生。</h2>
       <p className="muted">活跃度影响社交机会；角色的忙碌、睡眠与手机习惯仍然独立生效。</p>
-      <div className="activity-presets">
-        {(['quiet', 'standard', 'lively'] as const).map((v, i) => (
+      <div className="activity-presets game-activity-presets">
+        {activityModes.map((item) => (
           <button
-            key={v}
-            className={s.activity === v ? 'selected' : ''}
-            onClick={() => db.settings.update('app', { activity: v })}
+            key={item.mode}
+            data-activity={item.mode}
+            aria-pressed={s.activity === item.mode}
+            className={`${s.activity === item.mode ? 'selected' : ''} activity-level-${item.level}`}
+            onClick={() => {
+              setNotice(`已切换到「${item.label}」，后续模拟机会立即采用，不会改写已有记录。`);
+              void db.settings.update('app', { activity: item.mode });
+            }}
           >
-            <b>{['☾', '◒', '☀'][i]}</b>
-            <strong>{['安静', '标准', '热闹'][i]}</strong>
-            <span>{['让沉默也有位置', '刚刚好的日常', '多一些相遇'][i]}</span>
+            <span className="activity-gauge" aria-hidden="true">
+              {Array.from({ length: 5 }, (_, i) => (
+                <i key={i} className={i < item.level ? 'on' : ''} />
+              ))}
+            </span>
+            <b>{item.glyph}</b>
+            <strong>{item.label}</strong>
+            <span>{item.short}</span>
+            <small>{item.description}</small>
+            {s.activity === item.mode && <em>ACTIVE</em>}
           </button>
         ))}
       </div>
+      <p className="activity-selected-note">
+        {activityModes.find((x) => x.mode === s.activity)?.description}
+      </p>
       <p className="muted">
         用户昵称、头像与身份已统一收纳到「用户资料」。世界内的速度与时间也可从顶部控制。
       </p>
@@ -445,6 +465,98 @@ function DataSettings() {
     </section>
   );
 }
+function AppearanceSettings() {
+  const s = useLiveQuery(() => db.settings.get('app'), []);
+  if (!s) return null;
+  const levels = [
+    ['off', '关闭', '只保留瞬时状态变化，不播放装饰动效。'],
+    ['low', '低', '减少背景运动、视差与粒子，保留必要反馈。'],
+    ['standard', '标准', '推荐等级，兼顾氛围、帧率与阅读体验。'],
+    ['high', '高', '完整转场、背景层次与事件演出，适合性能充足的设备。'],
+  ] as const;
+  return (
+    <div className="appearance-settings">
+      <section className="panel appearance-panel">
+        <div className="section-title">
+          <div>
+            <span className="eyebrow">INTERFACE ARCHIVE / 界面版本</span>
+            <h2>选择进入世界的方式。</h2>
+            <p>随时可以切回经典界面；世界、聊天与模拟数据不会被转换或重写。</p>
+          </div>
+          <Palette size={30} />
+        </div>
+        <div className="ui-mode-picker">
+          <button
+            className={s.uiMode !== 'classic' ? 'selected' : ''}
+            aria-pressed={s.uiMode !== 'classic'}
+            onClick={() => void db.settings.update('app', { uiMode: 'game' })}
+          >
+            <span className="ui-mode-preview preview-game" aria-hidden="true">
+              <i />
+              <i />
+              <b>HUD</b>
+            </span>
+            <strong>
+              <Gamepad2 size={16} /> 游戏界面
+            </strong>
+            <span>沉浸式世界 HUD、角色舞台、转场与事件演出。</span>
+            {s.uiMode !== 'classic' && <em>当前使用</em>}
+          </button>
+          <button
+            className={s.uiMode === 'classic' ? 'selected' : ''}
+            aria-pressed={s.uiMode === 'classic'}
+            onClick={() => void db.settings.update('app', { uiMode: 'classic' })}
+          >
+            <span className="ui-mode-preview preview-classic" aria-hidden="true">
+              <i />
+              <i />
+              <b>WEB</b>
+            </span>
+            <strong>
+              <Monitor size={16} /> 经典界面
+            </strong>
+            <span>保留重构前的观察池排版与数据管理节奏。</span>
+            {s.uiMode === 'classic' && <em>当前使用</em>}
+          </button>
+        </div>
+      </section>
+      <section className="panel appearance-panel">
+        <div className="section-title">
+          <div>
+            <h2>视觉效果等级</h2>
+            <p>动效不会阻塞世界模拟。低性能设备和减少动态偏好会自动降低装饰强度。</p>
+          </div>
+          <Sparkles size={26} />
+        </div>
+        <div className="motion-levels" role="radiogroup" aria-label="视觉效果等级">
+          {levels.map(([value, label, desc], i) => (
+            <button
+              key={value}
+              role="radio"
+              aria-checked={(s.motionLevel ?? 'standard') === value}
+              className={(s.motionLevel ?? 'standard') === value ? 'selected' : ''}
+              onClick={() => void db.settings.update('app', { motionLevel: value })}
+            >
+              <span className="motion-bars" aria-hidden="true">
+                {[0, 1, 2, 3].map((n) => (
+                  <i key={n} className={n <= i ? 'on' : ''} />
+                ))}
+              </span>
+              <strong>{label}</strong>
+              <small>{desc}</small>
+            </button>
+          ))}
+        </div>
+        <div className="motion-note">
+          <span>PREFERS-REDUCED-MOTION</span>
+          <p>
+            系统开启“减少动态效果”时，背景漂移、粒子与大幅转场会自动降级；暂停、未读和重大事件仍有明确的静态提示。
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+}
 function UserSettings() {
   const s = useLiveQuery(() => db.settings.get('app'), []);
   if (!s) return null;
@@ -512,6 +624,7 @@ export function Settings({ initialTab = 'api' }: { initialTab?: string }) {
           ['api', 'AI 设置', Plug],
           ['prompts', '提示词管理', BookOpen],
           ['simulation', '模拟器', Sliders],
+          ['appearance', '外观与动效', Sparkles],
           ['observation', '观察管理', EyeOff],
           ['profile', '用户资料', Sliders],
           ['data', '本地数据', Database],
@@ -570,6 +683,7 @@ export function Settings({ initialTab = 'api' }: { initialTab?: string }) {
       )}
       {tab === 'prompts' && <PromptManager />}
       {tab === 'simulation' && <SimulationSettings />}
+      {tab === 'appearance' && <AppearanceSettings />}
       {tab === 'profile' && <UserSettings />}
       {tab === 'data' && <DataSettings />}
       {tab === 'observation' && activeWorld && (

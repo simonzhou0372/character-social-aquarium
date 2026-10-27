@@ -29,7 +29,7 @@ export function ContentQueueStatus({ worldId }: { worldId: string }) {
   if (!jobs?.length) return null;
   return (
     <>
-      <Button onClick={() => setOpen(true)}>
+      <Button className="queue-status-button" onClick={() => setOpen(true)}>
         {jobs.some((j) => j.status === 'running')
           ? 'AI 等待'
           : jobs.some((j) => j.status === 'failed')

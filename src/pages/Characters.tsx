@@ -13,6 +13,7 @@ import { CharacterSchema, type Character } from '../core/types';
 import { topicPolicy } from '../core/simulation';
 import { generateProfile } from '../ai/orchestrator';
 import { Avatar, Button, Field, Input, Textarea, Select, Modal, Status } from '../components/ui';
+import { useUIPreferences } from '../components/ui-preferences';
 export function CharacterEditor({
   character,
   worldId,
@@ -22,6 +23,7 @@ export function CharacterEditor({
   worldId: string;
   onClose: () => void;
 }) {
+  const { mode: uiMode } = useUIPreferences();
   const [c, setC] = useState<Character>(character ?? newCharacter()),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
@@ -73,6 +75,44 @@ export function CharacterEditor({
   }
   return (
     <Modal title={character ? '编辑角色资料' : '认识一位新角色'} onClose={onClose} wide>
+      {uiMode === 'game' && (
+        <div
+          className="character-sheet-hero"
+          style={{ '--char-color': c.color } as React.CSSProperties}
+        >
+          <div className="sheet-avatar">
+            <Avatar character={c} size={118} />
+            <span>FILE // {(c.id.slice(-4) || '0000').toUpperCase()}</span>
+          </div>
+          <div className="sheet-name">
+            <span className="eyebrow">CHARACTER DOSSIER / 角色档案</span>
+            <h2>{c.name || '未命名角色'}</h2>
+            <p>
+              {c.source || '原创'} · {c.gender || '性别未设定'} ·{' '}
+              {c.entityMode === 'background' ? '背景人物' : '可互动角色'}
+            </p>
+            <div className="tags">
+              {(c.tags.length ? c.tags : ['等待写入故事']).slice(0, 5).map((t) => (
+                <span key={t}>{t}</span>
+              ))}
+            </div>
+          </div>
+          <div className="sheet-facts">
+            <span>
+              <small>当前世界身份</small>
+              <strong>{identity || '尚未设定'}</strong>
+            </span>
+            <span>
+              <small>加入世界</small>
+              <strong>{activeWorlds.length}</strong>
+            </span>
+            <span>
+              <small>主动强度</small>
+              <strong>{Math.round(c.initiative * 100)}%</strong>
+            </span>
+          </div>
+        </div>
+      )}
       <div className="character-editor">
         <div className="editor-avatar">
           <AvatarUpload

@@ -13,6 +13,7 @@ import {
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Check, AlertCircle } from 'lucide-react';
 import type { Character } from '../core/types';
 export function Button({
@@ -166,7 +167,7 @@ export function Modal({
       previous?.focus();
     };
   }, []);
-  return (
+  return createPortal(
     <div
       className={`modal-backdrop ${side ? 'drawer-backdrop' : ''}`}
       onMouseDown={(e) => {
@@ -189,7 +190,8 @@ export function Modal({
         </header>
         {children}
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }
 export function Confirm({

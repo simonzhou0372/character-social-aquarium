@@ -345,7 +345,7 @@ export const SettingsSchema = z.object({
   installedPresets: z.record(z.number().int().positive()).optional(),
   id: z.literal('app'),
   worldId: z.string().max(160),
-  activity: z.enum(['quiet', 'standard', 'lively']),
+  activity: z.enum(['quiet', 'standard', 'lively', 'boiling', 'carnival']),
   dailyRequests: z.number().int().min(1).max(5000),
   dailyTokens: z.number().int().min(1000).max(10000000),
   dailyMessages: z.number().int().min(1).max(10000),
@@ -359,6 +359,8 @@ export const SettingsSchema = z.object({
   onboarded: z.boolean(),
   gifAutoplay: z.boolean().optional(),
   theme: z.enum(['light', 'dark']),
+  uiMode: z.enum(['game', 'classic']).optional(),
+  motionLevel: z.enum(['off', 'low', 'standard', 'high']).optional(),
 });
 export type AppSettings = z.infer<typeof SettingsSchema>;
 export const ProfileSchema = z.object({

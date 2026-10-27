@@ -5,6 +5,7 @@ import type { MajorEvent } from '../core/types';
 import { formatWorldTime } from '../core/calendar';
 import { Button, Modal, Select, Status, Avatar, Empty } from '../components/ui';
 import { SceneDetail } from './Scenes';
+import { useUIPreferences } from '../components/ui-preferences';
 export function MajorEventDetail({
   eventId,
   onClose,
@@ -34,26 +35,60 @@ export function MajorEventDetail({
     };
   }, [eventId]);
   const [scene, setScene] = useState('');
+  const { mode: uiMode } = useUIPreferences();
   if (!data?.event) return null;
   const e = data.event;
   return (
-    <Modal title={e.title} onClose={onClose} wide>
-      <p>
-        {data.world && formatWorldTime(data.world, e.timestamp)} ·{' '}
-        {e.status === 'contentPending' ? '事件已发生，细节生成中' : '已记录'}
-      </p>
-      <div className="toolbar">
-        {e.participantIds.map((id) => (
-          <span key={id}>
-            <Avatar character={data.chars.find((c) => c.id === id)} size={30} />
-            {data.chars.find((c) => c.id === id)?.name}
-          </span>
-        ))}
-      </div>
-      <p>
-        {data.activity?.location}
-        {data.groups.length ? ` · ${data.groups.map((g) => g.name).join('、')}` : ''}
-      </p>
+    <Modal title={uiMode === 'game' ? '重大事件记录' : e.title} onClose={onClose} wide>
+      {uiMode === 'game' && (
+        <section className={`major-event-hero type-${e.type.replace(/[^a-z0-9-]/gi, '-')}`}>
+          <div className="major-event-hero-top">
+            <span>MAJOR EVENT RECORD / 重大事件</span>
+            <span className="major-event-importance">
+              IMPORTANCE {Math.round(e.importance * 100)}
+            </span>
+          </div>
+          <h2>{e.title}</h2>
+          <p>
+            {data.world && formatWorldTime(data.world, e.timestamp)} ·{' '}
+            {data.activity?.location ?? '未知地点'}
+            {data.groups.length ? ` · ${data.groups.map((g) => g.name).join('、')}` : ''} ·{' '}
+            {e.status === 'contentPending' ? '细节生成中' : '已归档'}
+          </p>
+          <div className="major-event-hero-cast">
+            {e.participantIds.slice(0, 8).map((id) => (
+              <span key={id} title={data.chars.find((c) => c.id === id)?.name}>
+                <Avatar character={data.chars.find((c) => c.id === id)} size={46} />
+                <small>{data.chars.find((c) => c.id === id)?.name}</small>
+              </span>
+            ))}
+            <span className="major-event-sigil" aria-hidden="true">
+              ✦
+            </span>
+          </div>
+          <span className="major-event-hero-line" aria-hidden="true" />
+        </section>
+      )}
+      {uiMode === 'classic' && (
+        <>
+          <p>
+            {data.world && formatWorldTime(data.world, e.timestamp)} ·{' '}
+            {e.status === 'contentPending' ? '事件已发生，细节生成中' : '已记录'}
+          </p>
+          <div className="toolbar">
+            {e.participantIds.map((id) => (
+              <span key={id}>
+                <Avatar character={data.chars.find((c) => c.id === id)} size={30} />
+                {data.chars.find((c) => c.id === id)?.name}
+              </span>
+            ))}
+          </div>
+          <p>
+            {data.activity?.location}
+            {data.groups.length ? ` · ${data.groups.map((g) => g.name).join('、')}` : ''}
+          </p>
+        </>
+      )}
       <p>{e.description}</p>
       <h3>已确认的后续影响</h3>
       {e.consequences.map((c, i) => (
@@ -120,7 +155,8 @@ export function MajorBanner({
     event = rows?.events.find((e) => e.id === notice?.eventId);
   if (!event || !notice) return null;
   return (
-    <aside className="major-banner">
+    <aside className="major-banner" data-type={event.type} role="status">
+      <span className="major-banner-kicker">MAJOR EVENT / {event.type || 'WORLD'}</span>
       <strong>
         ✦ {rows!.notices.length > 1 ? `${rows!.notices.length} 件重大事件` : event.title}
       </strong>
