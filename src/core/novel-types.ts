@@ -1,3 +1,4 @@
+import { LifeRulesSchema } from './narrative-types';
 import { z } from 'zod';
 const major = z.object({
   enabled: z.boolean(),
@@ -17,6 +18,8 @@ export const StoryConditionSchema = z.object({
 });
 export const NovelSchema = z
   .object({
+    lifeRules: LifeRulesSchema.optional(),
+    allowGroupChanges: z.boolean().optional(),
     enabled: z.boolean(),
     goal: z.string().max(4000),
     startedAt: z.number().optional(),

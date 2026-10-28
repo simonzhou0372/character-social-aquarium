@@ -1,3 +1,4 @@
+import { ordinaryLife, ordinaryGroup } from './narrative';
 import { getPrompts } from '../ai/prompts';
 import { db, withWorldLock, type AquariumDB } from '../data/db';
 import { ObservationConfigSchema, type ObservationConfig, type BackfillJob } from './focus-types';
@@ -29,6 +30,7 @@ export function observationKeys(c: ObservationConfig) {
       ];
 }
 export async function resolveObservation(worldId: string, d: AquariumDB = db) {
+  const narrativeVersion = (await d.worlds.get(worldId))?.narrativeVersion ?? 0;
   const config = (await d.observationConfigs.get(worldId)) ?? fullObservation(worldId);
   const deleted = new Set(
     (await d.characters.where('deletedAt').above(0).primaryKeys()).map(String),
@@ -42,11 +44,21 @@ export async function resolveObservation(worldId: string, d: AquariumDB = db) {
     .and((m) => !m.inactive && !deleted.has(m.characterId))
     .toArray();
   const memberIds = new Set(members.map((m) => m.characterId));
+  const lifeBlocked = new Set(
+    members.filter((m) => !ordinaryLife(m.life?.status)).map((m) => m.characterId),
+  );
+  const organizations = await d.organizationStates.where('worldId').equals(worldId).toArray();
+  const inactiveGroups = new Set(
+    organizations.filter((s) => !ordinaryGroup(s.status)).map((s) => s.groupId),
+  );
   const gm = await d.groupMembers
     .where('worldId')
     .equals(worldId)
     .and(
       (m) =>
+        !m.departedAt &&
+        !lifeBlocked.has(m.characterId) &&
+        !inactiveGroups.has(m.groupId) &&
         memberIds.has(m.characterId) &&
         !deleted.has(m.characterId) &&
         !deletedGroups.has(m.groupId),
@@ -67,7 +79,10 @@ export async function resolveObservation(worldId: string, d: AquariumDB = db) {
   );
   const interactiveCount = members.filter((m) => !backgroundIds.has(m.characterId)).length;
   const activeIds = new Set(
-    ids.filter((id) => memberIds.has(id) && !backgroundIds.has(id) && !deleted.has(id)),
+    ids.filter(
+      (id) =>
+        !lifeBlocked.has(id) && memberIds.has(id) && !backgroundIds.has(id) && !deleted.has(id),
+    ),
   );
   const allowsConversation = (c: Conversation) =>
     c.kind !== 'notes' &&
@@ -85,6 +100,7 @@ export async function resolveObservation(worldId: string, d: AquariumDB = db) {
     groupSets.some((group) => e.participants.filter((id) => group.has(id)).length >= 2);
   return {
     config,
+    narrativeVersion,
     members,
     gm,
     fullIds,
@@ -92,6 +108,15 @@ export async function resolveObservation(worldId: string, d: AquariumDB = db) {
     interactiveCount,
     groupSets,
     allowsConversation,
+    canScheduleConversation: (c: Conversation) =>
+      allowsConversation(c) &&
+      (c.groupId
+        ? !inactiveGroups.has(c.groupId) &&
+          gm.filter((m) => m.groupId === c.groupId && c.participants.includes(m.characterId))
+            .length >= 2
+        : c.participants.every((id) => !lifeBlocked.has(id))),
+    lifeBlocked,
+    hasNarrativeChanges: members.some((m) => !!m.life) || organizations.length > 0,
     allowsEvent,
   };
 }

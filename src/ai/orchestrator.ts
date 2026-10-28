@@ -1,3 +1,15 @@
+import { dayOrdinal, worldTime } from '../core/calendar';
+import { assertConversationLife, canLiveAt, actorAvailable } from '../core/narrative';
+import {
+  requestCost,
+  reserveCost,
+  requestEntities,
+  requestVirtualAt,
+  budgetWorldDay,
+  recordOutcome,
+  recordValidation,
+} from './usage-ledger';
+import type { UsageLedger } from '../core/usage-types';
 import { isSupportedReaction, reactionEmojiGroups } from '../core/reaction-emojis';
 import { DEFAULT_CONTEXT_BUDGET_TOKENS } from '../core/ai-limits';
 import { conversationAvailable } from '../data/chat';
@@ -145,7 +157,15 @@ export async function budgetedCompletion(
   task: TaskKind,
   snapshot: PromptConfig,
   signal?: AbortSignal,
-  options?: { outputBudget?: number; tightContext?: boolean; priority?: number },
+  options?: {
+    outputBudget?: number;
+    tightContext?: boolean;
+    priority?: number;
+    virtualAt?: number;
+    capabilityFallback?: boolean;
+    retryOf?: string;
+    attempt?: number;
+  },
 ): Promise<Completion> {
   if (signal?.aborted) throw new ProviderError('cancelled', '任务已取消');
   const usageId = dayKey(Date.now());
@@ -164,7 +184,48 @@ export async function budgetedCompletion(
       : task === 'groupDraft'
         ? 3500
         : (profile?.outputBudgetTokens ?? 2048));
-  await d.transaction('rw', d.usage, d.settings, async () => {
+  const logId = uid('request'),
+    policy = provider.describe?.(task),
+    now = Date.now();
+  const row: UsageLedger = {
+    id: logId,
+    worldId,
+    task,
+    model: policy?.model ?? profile?.model ?? 'unknown',
+    ...requestEntities(messages),
+    virtualAt:
+      options?.virtualAt ??
+      requestVirtualAt(messages) ??
+      (await d.checkpoints.get(worldId))?.simTime,
+    startedAt: now,
+    status: 'running',
+    thinking: policy?.thinking ?? 'unknown',
+    effort: policy?.effort,
+    estimated: false,
+    retryOf: options?.retryOf,
+    attempt: options?.attempt ?? 0,
+    costQuality: 'unknown',
+    completedTaskIds: [],
+    events: 0,
+    messages: 0,
+    dialogue: 0,
+  };
+  const clockWorld = await d.worlds.get(worldId);
+  if (clockWorld && row.virtualAt !== undefined)
+    row.virtualDay = dayOrdinal(worldTime(clockWorld, row.virtualAt));
+  row.budgetVirtualDay = await budgetWorldDay(d, worldId, now);
+  row.pricing = (await d.settings.get('app'))?.costControls?.prices.find(
+    (p) => p.model === row.model,
+  );
+  await d.transaction('rw', d.usage, d.settings, d.usageLedger, async () => {
+    try {
+      await reserveCost(d, row, estimatedInput, reservedOutput);
+    } catch (e) {
+      const error = new ProviderError('budget', e instanceof Error ? e.message : String(e));
+      error.budgetDay = row.budgetVirtualDay;
+      throw error;
+    }
+
     const s = await d.settings.get('app');
     const u = (await d.usage.get(usageId)) ?? {
       id: usageId,
@@ -182,6 +243,7 @@ export async function budgetedCompletion(
         u.inputTokens + u.outputTokens + estimatedInput + reservedOutput > s.dailyTokens)
     )
       throw new ProviderError('budget', '今日 AI 预算已用完，可以在模拟设置中调整。');
+    await d.usageLedger.add(row);
     await d.usage.put({
       ...u,
       requests: u.requests + 1,
@@ -190,7 +252,6 @@ export async function budgetedCompletion(
       estimated: true,
     });
   });
-  const logId = uid('task');
   await d.taskLogs.add({
     id: logId,
     worldId,
@@ -200,15 +261,37 @@ export async function budgetedCompletion(
     status: 'running',
     context: packed.report,
   });
+  let sent = false;
   try {
     const result = await withAISlot(
-      () =>
-        provider.complete(packed.messages, signal, {
+      async () => {
+        await d.usageLedger.update(logId, { sentAt: Date.now() });
+        sent = true;
+        return provider.complete(packed.messages, signal, {
           maxOutputTokens: reservedOutput,
-        }),
+          task,
+        });
+      },
       signal,
       options?.priority ?? 0,
     );
+    const accounting =
+      result.accounting ??
+      (result.estimated
+        ? {}
+        : { inputTokens: result.inputTokens, outputTokens: result.outputTokens });
+    const priced = requestCost(accounting, row.pricing);
+    await d.usageLedger.update(logId, {
+      ...accounting,
+      ...priced,
+      estimated: result.estimated,
+      endedAt: Date.now(),
+      status: result.finishReason === 'length' ? 'truncated' : 'success',
+      reservedCny: priced.costCny === undefined ? row.reservedCny : undefined,
+      thinking: result.policy?.thinking ?? row.thinking,
+      effort: result.policy?.effort ?? row.effort,
+    });
+    result.requestId = logId;
     await d.transaction('rw', d.usage, d.taskLogs, async () => {
       const u = (await d.usage.get(usageId))!;
       await d.usage.put({
@@ -227,7 +310,54 @@ export async function budgetedCompletion(
     if (signal?.aborted) throw new ProviderError('cancelled', '任务已取消');
     return result;
   } catch (e) {
+    if (e instanceof ProviderError) e.requestId = logId;
+    const reported = e instanceof ProviderError ? e.accounting : undefined;
+    const failedAccounting = !sent ? { inputTokens: 0, outputTokens: 0 } : (reported ?? {});
+    const failedPrice = requestCost(failedAccounting, row.pricing);
+    if (reported || !sent)
+      await d.transaction('rw', d.usage, async () => {
+        const u = await d.usage.get(usageId);
+        if (u)
+          await d.usage.update(usageId, {
+            inputTokens: Math.max(
+              0,
+              u.inputTokens - estimatedInput + (failedAccounting.inputTokens ?? estimatedInput),
+            ),
+            outputTokens: Math.max(
+              0,
+              u.outputTokens - reservedOutput + (failedAccounting.outputTokens ?? reservedOutput),
+            ),
+          });
+      });
+    await d.usageLedger.update(logId, {
+      ...failedAccounting,
+      ...failedPrice,
+      reservedCny: !sent || failedPrice.costCny !== undefined ? undefined : row.reservedCny,
+      status: 'failed',
+      endedAt: Date.now(),
+      errorCode: e instanceof ProviderError ? e.code : 'unknown',
+    });
     await d.taskLogs.update(logId, { status: 'failed' });
+    if (
+      e instanceof ProviderError &&
+      e.code === 'unsupported-thinking' &&
+      provider.disableReasoning &&
+      !options?.capabilityFallback
+    ) {
+      provider.disableReasoning(row.model);
+      if (profile)
+        await d.profiles.update('api', {
+          unsupportedThinkingModels: [
+            ...new Set([...(profile.unsupportedThinkingModels ?? []), row.model]),
+          ].slice(-64),
+        });
+      return budgetedCompletion(d, provider, messages, worldId, task, snapshot, signal, {
+        ...options,
+        retryOf: logId,
+        attempt: (options?.attempt ?? 0) + 1,
+        capabilityFallback: true,
+      });
+    }
     if (e instanceof ProviderError && e.code === 'invalid')
       await d.profiles.update('api', { status: 'invalid' });
     throw e;
@@ -244,6 +374,13 @@ export async function dialogueContext(
   speakerId: string,
   at: number,
 ) {
+  await assertConversationLife(c, at, d);
+  const original = c;
+  const eligible = await Promise.all(
+    c.participants.map(async (id) => ((await actorAvailable(c, id, at, d)) ? id : undefined)),
+  );
+  c = { ...c, participants: eligible.filter((id): id is string => !!id) };
+  if (!c.participants.includes(speakerId)) throw new Error('该人物当前不能参与普通交流');
   const [character, world, membership, relationships, memories, history, state, settings] =
     await Promise.all([
       d.characters.get(speakerId),
@@ -259,7 +396,14 @@ export async function dialogueContext(
       d.states.get(`${c.worldId}:${speakerId}`),
       d.settings.get('app'),
     ]);
-  const recent = history
+  const narrativeHistory =
+    !!membership?.life ||
+    !!(c.groupId && (await d.organizationStates.get(`${c.worldId}:${c.groupId}`)));
+  const permittedHistory = narrativeHistory ? [] : history;
+  if (narrativeHistory)
+    for (const m of history.slice(-48))
+      if (await actorAvailable(original, speakerId, m.simAt, d)) permittedHistory.push(m);
+  const recent = permittedHistory
     .filter((m) => m.simAt <= at && m.simAt >= (c.participantJoinedAt?.[speakerId] ?? 0))
     .sort((a, b) => a.simAt - b.simAt || a.seq - b.seq)
     .slice(-18);
@@ -302,6 +446,8 @@ export async function dialogueContext(
     state,
     input: {
       conversationKind: c.kind,
+      conversationId: c.id,
+      groupId: c.groupId,
       availableReactionEmojis: reactionEmojiGroups[0].emojis,
       participants: aliases.map((x) => ({ id: x.id, name: x.name })),
       user: { id: 'user', name: settings?.nickname, bio: settings?.userBio },
@@ -331,7 +477,9 @@ export async function generateDialogue(
   signal?: AbortSignal,
   current?: { state: unknown; event: unknown },
 ) {
-  if (!(await conversationAvailable(c, d)))
+  if (c.kind === 'notes') throw new ProviderError('identity', '备忘会话不可用作 AI 对话');
+  await assertConversationLife(c, at, d);
+  if (!(await conversationAvailable(c, d, at)))
     throw new ProviderError('identity', '会话对象不可用或已移入回收站');
   if (c.groupId && (await d.groups.get(c.groupId))?.entityMode === 'background')
     throw new ProviderError('identity', '背景团体不参与聊天');
@@ -373,10 +521,35 @@ export async function generateDialogue(
     snapshot,
     signal,
   );
+  const accept = async (answer: Completion, retried = false) => {
+    try {
+      if (answer.finishReason === 'length')
+        throw new ProviderError(
+          'truncated',
+          retried
+            ? '已压缩上下文并重试一次，模型仍超出输出预算。你的消息已保留，可在 AI 高级设置调整输出预算后重试。'
+            : '模型输出额度不足，正在压缩后重试。',
+        );
+      const value = await validateGenerated(
+        d,
+        c,
+        at,
+        parseDialogue(answer.content, speakerId, snapshot),
+      );
+      await recordValidation(d, answer.requestId, 'accepted');
+      return { ...value, usageRequestId: answer.requestId };
+    } catch (e) {
+      await recordValidation(
+        d,
+        answer.requestId,
+        'rejected',
+        e instanceof ProviderError ? e.code : 'validation',
+      );
+      throw e;
+    }
+  };
   try {
-    if (response.finishReason === 'length')
-      throw new ProviderError('truncated', '模型输出额度不足，正在压缩后重试。');
-    return await validateGenerated(d, c, at, parseDialogue(response.content, speakerId, snapshot));
+    return await accept(response);
   } catch (error) {
     if (!(error instanceof ProviderError) || !['json', 'schema', 'truncated'].includes(error.code))
       throw error;
@@ -397,6 +570,8 @@ export async function generateDialogue(
       snapshot,
       signal,
       {
+        retryOf: response.requestId,
+        attempt: 1,
         tightContext: true,
         outputBudget: Math.min(
           16000,
@@ -404,12 +579,7 @@ export async function generateDialogue(
         ),
       },
     );
-    if (repaired.finishReason === 'length')
-      throw new ProviderError(
-        'truncated',
-        '已压缩上下文并重试一次，模型仍超出输出预算。你的消息已保留，可在 AI 高级设置调整输出预算后重试。',
-      );
-    return await validateGenerated(d, c, at, parseDialogue(repaired.content, speakerId, snapshot));
+    return await accept(repaired, true);
   }
 }
 export async function persistDialogue(
@@ -423,6 +593,7 @@ export async function persistDialogue(
   eventId?: string,
   offsets?: number[],
   extras: Partial<Message> & {
+    usageRequestId?: string;
     gifMessageIndex?: number;
     mentionTargets?: { messageIndex: number; characterId: string }[];
     reactions?: { messageId: string; emoji: string }[];
@@ -435,11 +606,17 @@ export async function persistDialogue(
     candidate.controlledId === speakerId
   )
     return [];
+  if (source !== 'user') {
+    await assertConversationLife(candidate, at, d);
+    if (!(await actorAvailable(candidate, speakerId, at, d)))
+      throw new Error('该人物不能参与当前互动');
+  }
   return d.transaction(
     'rw',
     [
       d.messages,
       d.conversations,
+      d.usageLedger,
       d.usage,
       d.settings,
       ...(extras.mentionTargets?.length ? [d.characters] : []),
@@ -524,6 +701,7 @@ export async function persistDialogue(
           });
       }
       if (!messages.length) return [];
+      await recordOutcome(d, extras.usageRequestId, prefix, { messages: messages.length });
       const day = dayKey(Date.now()),
         usage = (await d.usage.get(day)) ?? {
           id: day,
@@ -587,6 +765,16 @@ export async function sendUserMessage(
           if (!c) throw new Error('会话不存在');
           if (identity !== 'user' && c.controlledId !== identity)
             throw new Error('请先切换角色身份');
+          if (
+            identity !== 'user' &&
+            !(await canLiveAt(
+              c.worldId,
+              identity,
+              (await d.checkpoints.get(c.worldId))?.simTime ?? Date.now(),
+              d,
+            ))
+          )
+            throw new Error('该人物当前不能以存活身份发送消息');
           const metadata = await validateMessageExtras(d, conversationId, text, extras);
           if (
             extras.gifAssetId &&
@@ -665,6 +853,9 @@ export async function replyToUser(conversationId: string, d: AquariumDB = db) {
       d.worlds,
       d.memberships,
       d.checkpoints,
+      d.organizationStates,
+      d.narrativeChanges,
+      d.usageLedger,
     ],
     async () => {
       if (!(await conversationAvailable(c.id, d))) return;
@@ -738,6 +929,7 @@ export async function describeEvent(
   recovery: boolean,
   signal?: AbortSignal,
 ) {
+  if ((await d.settings.get('app'))?.costControls?.localDescriptions) return event;
   const world = await d.worlds.get(event.worldId);
   const input = composePrompt(
     recovery ? 'recovery' : 'life',
@@ -793,7 +985,7 @@ export async function consolidateMemory(
       },
       '只返回 JSON {"content":"事实摘要"}，不增加输入记录之外的事实。',
     ),
-    'global',
+    c.worldId,
     'memory',
     snapshot,
   );
@@ -852,16 +1044,27 @@ export async function validateGenerated(
   at: number,
   r: ReturnType<typeof parseDialogue>,
 ) {
-  const visible = (await d.messages.where('conversationId').equals(c.id).toArray())
+  let visible = (await d.messages.where('conversationId').equals(c.id).toArray())
     .filter((m) => m.simAt <= at && m.simAt >= (c.participantJoinedAt?.[r.speakerId] ?? 0))
     .sort((a, b) => a.simAt - b.simAt || a.seq - b.seq)
     .slice(-18);
+  const m = await d.memberships
+    .where('[worldId+characterId]')
+    .equals([c.worldId, r.speakerId])
+    .first();
+  if (m?.life || (c.groupId && (await d.organizationStates.get(`${c.worldId}:${c.groupId}`)))) {
+    const accessible = [];
+    for (const item of visible)
+      if (await actorAvailable(c, r.speakerId, item.simAt, d)) accessible.push(item);
+    visible = accessible;
+  }
   for (const target of r.mentionTargets ?? []) {
     const char = await d.characters.get(target.characterId);
     if (
       c.kind !== 'group' ||
       target.characterId === r.speakerId ||
       !c.participants.includes(target.characterId) ||
+      !(await actorAvailable(c, target.characterId, at, d)) ||
       !char ||
       char.deletedAt ||
       !r.messages[target.messageIndex]?.includes('@' + char.name)
@@ -874,7 +1077,13 @@ export async function validateGenerated(
   }
   if (r.replyToMessageId) {
     const m = await d.messages.get(r.replyToMessageId);
-    if (!m || m.conversationId !== c.id || m.simAt > at)
+    if (
+      !m ||
+      m.conversationId !== c.id ||
+      m.simAt > at ||
+      (!(await actorAvailable(c, r.speakerId, m.simAt, d)) &&
+        !visible.some((v) => v.replyToMessageId === m.id))
+    )
       throw new ProviderError('schema', '引用对象不存在或不在当前会话');
   }
   if (r.gifAssetId && !(await availableGifs(c, r.speakerId, d)).some((a) => a.id === r.gifAssetId))

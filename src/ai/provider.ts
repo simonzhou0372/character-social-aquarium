@@ -1,3 +1,5 @@
+import { compactChatRequest, expandCompactChat } from './compact-protocol';
+import { modelPolicy, cachedMessages, type RequestPolicy } from './model-policy';
 import type { ApiProfile } from '../core/types';
 import type { PromptConfig } from './prompts';
 export type ChatInput = { role: 'system' | 'user' | 'assistant'; content: string }[];
@@ -7,15 +9,41 @@ export interface Completion {
   outputTokens: number;
   estimated: boolean;
   finishReason?: string;
+  requestId?: string;
+  accounting?: {
+    inputTokens?: number;
+    outputTokens?: number;
+    reasoningTokens?: number;
+    cacheHitTokens?: number;
+    cacheMissTokens?: number;
+  };
+  policy?: RequestPolicy;
 }
+export function reportedUsage(usage: any): NonNullable<Completion['accounting']> {
+  return Object.fromEntries(
+    Object.entries({
+      inputTokens: usage?.prompt_tokens,
+      outputTokens: usage?.completion_tokens,
+      reasoningTokens: usage?.completion_tokens_details?.reasoning_tokens,
+      cacheHitTokens: usage?.prompt_cache_hit_tokens ?? usage?.prompt_tokens_details?.cached_tokens,
+      cacheMissTokens: usage?.prompt_cache_miss_tokens,
+    }).filter(([, n]) => typeof n === 'number' && Number.isFinite(n) && n >= 0),
+  );
+}
+const unsupportedThinking = new Set<string>();
 export interface Provider {
+  disableReasoning?(model?: string): void;
+  describe?(task?: string): RequestPolicy;
   complete(
     messages: ChatInput,
     signal?: AbortSignal,
-    options?: { maxOutputTokens?: number },
+    options?: { maxOutputTokens?: number; task?: string },
   ): Promise<Completion>;
 }
 export class ProviderError extends Error {
+  requestId?: string;
+  budgetDay?: number;
+  accounting?: Completion['accounting'];
   constructor(
     public code: string,
     message: string,
@@ -52,6 +80,15 @@ export function apiError(status: number, body = ''): ProviderError {
       'unsupported-format',
       '当前模型不支持所选结构化模式，请在AI高级设置改为兼容JSON文本模式。',
     );
+  if (
+    status === 400 &&
+    /thinking|reasoning_effort/i.test(body) &&
+    /unsupported|not.support|invalid|not.available/i.test(body)
+  )
+    return new ProviderError(
+      'unsupported-thinking',
+      '服务商不支持当前思考参数，将安全回退到原生模式。',
+    );
   if (status === 401) return new ProviderError('invalid', '密钥无效或已失效，请检查 API 设置。');
   if (status === 403) return new ProviderError('permission', '当前密钥没有访问该模型的权限。');
   if (status === 429)
@@ -66,13 +103,19 @@ export class CompatibleProvider implements Provider {
     private profile: ApiProfile,
     private key = getKey(profile),
   ) {}
-  async request(path: string, method: string, payload?: unknown, signal?: AbortSignal) {
+  async request(
+    path: string,
+    method: string,
+    payload?: unknown,
+    signal?: AbortSignal,
+    timeoutMs = 35000,
+  ) {
     if (!this.key) throw new ProviderError('missing', '请先填写 API Key。');
     const controller = new AbortController();
     const abort = () => controller.abort();
     signal?.addEventListener('abort', abort, { once: true });
     if (signal?.aborted) controller.abort();
-    const timeout = setTimeout(abort, 35000);
+    const timeout = setTimeout(abort, timeoutMs);
     try {
       const r = await fetch(`${validateEndpoint(this.profile.baseUrl)}/${path}`, {
         method,
@@ -105,19 +148,27 @@ export class CompatibleProvider implements Provider {
   async complete(
     messages: ChatInput,
     signal?: AbortSignal,
-    options?: { maxOutputTokens?: number },
+    options?: { maxOutputTokens?: number; task?: string },
   ): Promise<Completion> {
-    const routineDeepSeek =
-      this.profile.thinkingMode === 'off' ||
-      (this.profile.thinkingMode !== 'on' &&
-        new URL(this.profile.baseUrl).hostname === 'api.deepseek.com' &&
-        /^deepseek-(flash|v4)/.test(this.profile.model));
+    const policy = this.describe(options?.task);
+    const compact =
+      this.profile.compactProtocol !== false &&
+      (this.profile.compactProtocol === true || policy.deepSeek)
+        ? compactChatRequest(messages, options?.task)
+        : undefined;
+    if (compact) messages = compact.messages;
+    if (policy.deepSeek && this.profile.stablePrefix !== false) messages = cachedMessages(messages);
     const data = await this.request(
       'chat/completions',
       'POST',
       {
-        model: this.profile.model,
-        ...(routineDeepSeek ? { thinking: { type: 'disabled' } } : {}),
+        model: policy.model,
+        ...(policy.deepSeek && policy.thinking !== 'unknown'
+          ? {
+              thinking: { type: policy.thinking === 'on' ? 'enabled' : 'disabled' },
+              ...(policy.thinking === 'on' ? { reasoning_effort: policy.effort } : {}),
+            }
+          : {}),
         messages,
         temperature: 0.65,
         max_tokens: options?.maxOutputTokens ?? 1400,
@@ -131,19 +182,45 @@ export class CompatibleProvider implements Provider {
           : {}),
       },
       signal,
+      policy.thinking !== 'off' && ['novel', 'major', 'evolution'].includes(options?.task ?? '')
+        ? 120000
+        : 35000,
     );
     const content =
       data?.choices?.[0]?.message?.content ??
       (data?.choices?.[0]?.finish_reason === 'length' ? '' : undefined);
-    if (typeof content !== 'string') throw new ProviderError('json', '模型未返回文本消息。');
+    if (typeof content !== 'string') {
+      const error = new ProviderError('json', '模型未返回文本消息。');
+      error.accounting = reportedUsage(data.usage);
+      throw error;
+    }
     return {
       finishReason: data?.choices?.[0]?.finish_reason,
-      content,
-      inputTokens:
-        Number(data.usage?.prompt_tokens) || Math.ceil(JSON.stringify(messages).length / 2),
-      outputTokens: Number(data.usage?.completion_tokens) || Math.ceil(content.length / 2),
-      estimated: !data.usage,
+      content: compact ? expandCompactChat(content, compact.speaker) : content,
+      inputTokens: Number.isFinite(data.usage?.prompt_tokens)
+        ? data.usage.prompt_tokens
+        : Math.ceil(JSON.stringify(messages).length / 2),
+      outputTokens: Number.isFinite(data.usage?.completion_tokens)
+        ? data.usage.completion_tokens
+        : Math.ceil(content.length / 2),
+      estimated:
+        !Number.isFinite(data.usage?.prompt_tokens) ||
+        !Number.isFinite(data.usage?.completion_tokens),
+      accounting: reportedUsage(data.usage),
+      policy,
     };
+  }
+  describe(task?: string) {
+    const p = modelPolicy(this.profile, task);
+    return unsupportedThinking.has(this.profile.baseUrl + '|' + p.model) ||
+      this.profile.unsupportedThinkingModels?.includes(p.model)
+      ? { ...p, thinking: 'unknown' as const, effort: undefined, deepSeek: false }
+      : p;
+  }
+  disableReasoning(model?: string) {
+    if (unsupportedThinking.size >= 64)
+      unsupportedThinking.delete(unsupportedThinking.values().next().value!);
+    unsupportedThinking.add(this.profile.baseUrl + '|' + (model ?? this.describe().model));
   }
   async models() {
     const data = await this.request('models', 'GET');

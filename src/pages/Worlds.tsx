@@ -1,3 +1,4 @@
+import { NarrativePanel } from '../components/NarrativePanel';
 import { TouhouUpgrade } from '../components/TouhouUpgrade';
 import { WorldContentPanel } from '../components/WorldContentPanel';
 import { NovelSettings, StoryProgress } from '../components/NovelSettings';
@@ -287,6 +288,7 @@ export function Worlds({
             ))}
           </div>
           <StoryProgress worldId={worldId} />
+          <NarrativePanel worldId={worldId} />
         </>
       )}
       {tab === 'settings' && <TimeControls worldId={worldId} compact />}

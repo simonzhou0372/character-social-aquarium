@@ -1,3 +1,4 @@
+import { recordValidation } from './usage-ledger';
 import Dexie from 'dexie';
 import type { AquariumDB } from '../data/db';
 import { budgetedCompletion } from './orchestrator';
@@ -14,6 +15,8 @@ export type BatchUnit = {
   at: number;
   createdAt: number;
   scale?: number;
+  attempt?: number;
+  retryOf?: string;
 };
 export async function requestUnits(
   d: AquariumDB,
@@ -118,14 +121,19 @@ export async function requestUnits(
   ).reduce((a, b) => a + b, 0);
   const started = Date.now();
   let values = new Map<string, unknown>(),
-    error: unknown;
+    error: unknown,
+    requestId: string | undefined;
   try {
     const r = await budgetedCompletion(d, provider, request, worldId, kind, snapshot, signal, {
       outputBudget: batched
         ? Math.min(profile?.outputBudgetTokens ?? 2048, Math.max(256, output))
         : (profile?.outputBudgetTokens ?? 2048),
       priority: -1,
+      attempt: Math.max(...selected.map((u) => u.attempt ?? 0)),
+      retryOf: first.retryOf,
+      virtualAt: Math.min(...selected.map((u) => u.at)),
     });
+    requestId = r.requestId;
     if (batched) {
       let parsed: any;
       try {
@@ -151,10 +159,18 @@ export async function requestUnits(
       values.set(first.id, parseStructuredJSON(r.content));
     }
   } catch (e) {
+    requestId = (e as ProviderError).requestId ?? requestId;
     error = e;
   }
   const good = values.size,
     success = good === selected.length && !error;
+  if (error || good < selected.length)
+    await recordValidation(
+      d,
+      requestId,
+      good ? 'partial' : 'rejected',
+      error ? 'batch-schema' : 'missing-children',
+    );
   health = {
     scale: success ? Math.min(1, health.scale + 0.1) : Math.max(0.25, health.scale / 2),
     latencyMs: health.latencyMs
@@ -181,5 +197,5 @@ export async function requestUnits(
       batched,
     }),
   });
-  return { selected, values, error, scale: health.scale };
+  return { selected, values, error, scale: health.scale, requestId };
 }

@@ -45,7 +45,13 @@ export async function saveManagedWorld(input: World, d: AquariumDB = db) {
       input = {
         ...input,
         novelHistory: old.novelHistory,
-        novel: { ...old.novel, enabled: input.novel.enabled, goal: input.novel.goal },
+        novel: {
+          ...old.novel,
+          enabled: input.novel.enabled,
+          goal: input.novel.goal,
+          lifeRules: input.novel.lifeRules,
+          allowGroupChanges: input.novel.allowGroupChanges,
+        },
       };
     }
     let normalized = normalizeNovel(input, old, cp?.simTime);
@@ -143,6 +149,29 @@ export async function applyStory(
     events.length >= 3 &&
     current.timestamp - (n.startedAt ?? current.timestamp) >= 2 * DAY &&
     conditions.every((c) => new Set(c.evidence.map((e) => e.eventId)).size >= 2);
+  const members = await d.memberships.where('worldId').equals(worldId).toArray();
+  const chars = await d.characters.bulkGet(members.map((m) => m.characterId));
+  const organizations = await d.organizationStates.where('worldId').equals(worldId).toArray();
+  const groups = await d.groups.filter((g) => g.worldIds.includes(worldId)).toArray();
+  const allMustDie = /(所有人|全部人|全员|所有角色|全部角色).{0,16}(死亡|灭绝|死去)/.test(n.goal);
+  const statusMatchesGoal =
+    (!allMustDie || members.every((m) => m.life?.status === 'dead')) &&
+    !(
+      /(所有人|全部人|全员).{0,12}(活着|存活|生还)/.test(n.goal) &&
+      members.some((m) => m.life?.status === 'dead')
+    ) &&
+    !members.some((m) => {
+      const name = chars.find((c) => c?.id === m.characterId)?.name;
+      if (!name || !n.goal.includes(name)) return false;
+      return /(复活|重生)/.test(n.goal) && m.life?.status !== 'resurrected';
+    }) &&
+    !groups.some(
+      (g) =>
+        n.goal.includes(g.name) &&
+        /(重圆|重聚|重新团聚)/.test(n.goal) &&
+        organizations.find((s) => s.groupId === g.id)?.status !== 'reunited',
+    );
+  if (stage === 'completed' && !statusMatchesGoal) stage = 'finale';
   if (stage === 'completed' && (!enough || n.stage !== 'finale' || !proposal.ending?.trim()))
     stage = 'finale';
   const next: NovelConfig = {

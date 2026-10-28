@@ -1,3 +1,5 @@
+import { recordOutcome, recordValidation, budgetWorldDay } from './usage-ledger';
+import { canLiveAt, canGroupAt, canParticipate, actorAvailable } from '../core/narrative';
 import Dexie from 'dexie';
 import { z } from 'zod';
 import type { AquariumDB } from '../data/db';
@@ -25,13 +27,23 @@ export async function contentSnapshot(job: ContentJob, d: AquariumDB) {
 async function candidates(worldId: string, d: AquariumDB) {
   const out: ContentJob[] = [];
   const settings = await d.settings.get('app');
-  if (settings?.unlimitedUsage)
-    await d.contentJobs
-      .where('[worldId+status+at]')
-      .between([worldId, 'failed', Dexie.minKey], [worldId, 'failed', Dexie.maxKey])
-      .filter((j) => j.errorCode === 'budget')
-      .limit(MAX_READY_CONTENT)
-      .modify({ attempts: 0, nextAttemptAt: 0, errorCode: undefined });
+  const day = await budgetWorldDay(d, worldId),
+    now = Date.now();
+  await d.contentJobs
+    .where('[worldId+status+at]')
+    .between([worldId, 'failed', Dexie.minKey], [worldId, 'failed', Dexie.maxKey])
+    .filter(
+      (j) =>
+        j.errorCode === 'budget' &&
+        ((settings?.unlimitedUsage &&
+          (!settings.costControls?.budget ||
+            settings.costControls.budget.period === 'unlimited')) ||
+          (j.budgetBlockedDay !== undefined && day !== undefined && day > j.budgetBlockedDay) ||
+          (j.budgetBlockedAt !== undefined &&
+            Math.floor(now / 86400000) > Math.floor(j.budgetBlockedAt / 86400000))),
+    )
+    .limit(MAX_READY_CONTENT)
+    .modify({ attempts: 0, nextAttemptAt: 0, errorCode: undefined });
   const viewed = activeConversations.get(worldId);
   if (viewed)
     for (const status of ['pending', 'failed'])
@@ -56,8 +68,8 @@ async function candidates(worldId: string, d: AquariumDB) {
   return [...new Map(out.map((j) => [j.id, j])).values()]
     .sort(
       (a, b) =>
-        Number(b.conversation?.id === activeConversations.get(worldId)) -
-          Number(a.conversation?.id === activeConversations.get(worldId)) || a.at - b.at,
+        Number(!!viewed && b.conversation?.id === viewed) -
+          Number(!!viewed && a.conversation?.id === viewed) || a.at - b.at,
     )
     .slice(0, MAX_READY_CONTENT);
 }
@@ -106,6 +118,23 @@ export async function drainAdaptive(
       });
       continue;
     }
+    if (
+      scope.hasNarrativeChanges &&
+      ((
+        await Promise.all(
+          job.event.participants.map((id) => canParticipate(job.event, id, job.at, d)),
+        )
+      ).some((ok) => !ok) ||
+        (job.conversation?.groupId &&
+          !(await canGroupAt(worldId, job.conversation.groupId, job.at, d))))
+    ) {
+      await d.contentJobs.update(job.id, {
+        status: 'failed',
+        attempts: 3,
+        error: '生命或组织状态不允许普通互动；计划与历史保留。',
+      });
+      continue;
+    }
     if (!(await d.events.get(job.event.id))) continue;
     if (job.kind === 'chat' && job.conversation) {
       const c = await d.conversations.get(job.conversation.id);
@@ -115,7 +144,6 @@ export async function drainAdaptive(
     ready.push(job);
   }
   if (!ready.length) return;
-  const client = provider ?? (await liveProvider(d));
   // One scene per drain yields the generation slot back to user work between micro-batches.
   const scene = ready.find((j) => j.kind === 'scene');
   const first =
@@ -126,6 +154,16 @@ export async function drainAdaptive(
     const c = await d.checkpoints.get(worldId);
     return !!c && !c.paused && (c.controlVersion ?? 0) === version && !signal.aborted;
   };
+  if (first.kind === 'life' && (await d.settings.get('app'))?.costControls?.localDescriptions) {
+    if (!(await commitAllowed())) return;
+    await d.contentJobs.update(first.id, {
+      status: 'complete',
+      completedAt: Date.now(),
+      error: undefined,
+    });
+    return;
+  }
+  const client = provider ?? (await liveProvider(d));
   if (first.kind === 'scene') {
     await d.contentJobs.update(first.id, {
       status: 'running',
@@ -174,6 +212,8 @@ export async function drainAdaptive(
         status: signal.aborted ? 'pending' : 'failed',
         error: String(e),
         errorCode: e instanceof ProviderError ? e.code : 'validation',
+        budgetBlockedAt: e instanceof ProviderError && e.code === 'budget' ? Date.now() : undefined,
+        budgetBlockedDay: e instanceof ProviderError ? e.budgetDay : undefined,
         nextAttemptAt: signal.aborted ? 0 : Date.now() + 30000,
       });
     }
@@ -259,6 +299,8 @@ export async function drainAdaptive(
       at: job.at,
       createdAt: job.createdAt ?? Date.now(),
       scale: job.batchScale,
+      attempt: job.attempts,
+      retryOf: job.lastRequestId,
     });
     byId.set(job.id, job);
     if (job.kind === 'chat' && units.length >= 12) break;
@@ -297,6 +339,8 @@ export async function drainAdaptive(
         nextAttemptAt: signal.aborted ? 0 : Date.now() + 30000,
         error: String(e),
         errorCode: e instanceof ProviderError ? e.code : 'validation',
+        budgetBlockedAt: e instanceof ProviderError && e.code === 'budget' ? Date.now() : undefined,
+        budgetBlockedDay: e instanceof ProviderError ? e.budgetDay : undefined,
       });
     return;
   }
@@ -310,6 +354,7 @@ export async function drainAdaptive(
       });
   for (const u of batch.selected) {
     const job = byId.get(u.id)!;
+    await d.contentJobs.update(job.id, { lastRequestId: batch.requestId ?? job.lastRequestId });
     try {
       if (!batch.values.has(u.id)) throw batch.error ?? new Error('批次缺少该任务，保留待恢复');
       const value = batch.values.get(u.id);
@@ -375,6 +420,7 @@ export async function drainAdaptive(
           continue;
         }
         if (result.messages.length < job.plan!.expectedMessages) {
+          await recordValidation(d, batch.requestId, 'partial', 'short-output');
           await d.contentJobs.update(job.id, {
             status: 'pending',
             partial: { dialogue: result },
@@ -411,7 +457,12 @@ export async function drainAdaptive(
           for (const m of saved)
             for (const actor of job.conversation!.participants) {
               const state = await d.states.get(`${worldId}:${actor}`);
-              if (state && (state.lastPhone ?? 0) >= m.simAt) {
+              if (
+                state &&
+                (state.lastPhone ?? 0) >= m.simAt &&
+                (!scope.hasNarrativeChanges ||
+                  (await actorAvailable(job.conversation!, actor, m.simAt, d)))
+              ) {
                 await d.readStates.put({
                   id: `character:${m.id}:${actor}`,
                   messageId: m.id,
@@ -431,6 +482,10 @@ export async function drainAdaptive(
               }
             }
         }
+        await recordOutcome(d, batch.requestId, job.id, {
+          events: 1,
+          messages: result?.messages.length ?? 0,
+        });
         await d.contentJobs.update(job.id, {
           status: 'complete',
           completedAt: Date.now(),
@@ -439,12 +494,20 @@ export async function drainAdaptive(
         });
       });
     } catch (e) {
+      await recordValidation(
+        d,
+        batch.requestId,
+        'rejected',
+        e instanceof ProviderError ? e.code : 'validation',
+      );
       await d.contentJobs.update(job.id, {
         status: signal.aborted ? 'pending' : 'failed',
         nextAttemptAt: signal.aborted ? 0 : Date.now() + 30000,
         batchScale: Math.max(0.25, batch.scale / 2),
         error: String(e),
         errorCode: e instanceof ProviderError ? e.code : 'validation',
+        budgetBlockedAt: e instanceof ProviderError && e.code === 'budget' ? Date.now() : undefined,
+        budgetBlockedDay: e instanceof ProviderError ? e.budgetDay : undefined,
       });
     }
   }

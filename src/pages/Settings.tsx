@@ -1,3 +1,6 @@
+import { UsageAnalysis } from '../components/UsageAnalysis';
+import { budgetedCompletion } from '../ai/orchestrator';
+import { getPrompts } from '../ai/prompts';
 import { GenerationPerformance } from '../components/GenerationPerformance';
 import { DEFAULT_CONTEXT_BUDGET_TOKENS, MAX_CONTEXT_BUDGET_TOKENS } from '../core/ai-limits';
 import { TouhouPortraitEntry } from '../components/TouhouPortraitManager';
@@ -64,7 +67,16 @@ export function ApiSettings({ onDone }: { onDone?: () => void }) {
         setModels(list);
         setNotice('已获取模型列表，请选择模型后测试连接。');
       } else {
-        await client.complete([{ role: 'user', content: 'Reply OK.' }]);
+        await budgetedCompletion(
+          db,
+          client,
+          [{ role: 'user', content: 'Reply OK.' }],
+          (await db.settings.get('app'))?.worldId ?? 'global',
+          'connection',
+          await getPrompts(db),
+          undefined,
+          { outputBudget: 32 },
+        );
         patch({ status: 'connected' });
         setNotice('连接成功，可以使用角色 AI 功能。');
       }
@@ -343,7 +355,12 @@ function SimulationSettings() {
                 onChange={(e) => {
                   const v = Number(e.target.value);
                   if (Number.isInteger(v) && v >= min && v <= max)
-                    void db.settings.update('app', { [k]: v });
+                    void db.settings
+                      .where('id')
+                      .equals('app')
+                      .modify((row) => {
+                        row[k] = v;
+                      });
                 }}
               />
             </Field>
@@ -622,6 +639,7 @@ export function Settings({ initialTab = 'api' }: { initialTab?: string }) {
       <div className="settings-tabs">
         {[
           ['api', 'AI 设置', Plug],
+          ['usage', '用量分析', Sliders],
           ['prompts', '提示词管理', BookOpen],
           ['simulation', '模拟器', Sliders],
           ['appearance', '外观与动效', Sparkles],
@@ -681,6 +699,7 @@ export function Settings({ initialTab = 'api' }: { initialTab?: string }) {
           </button>
         </>
       )}
+      {tab === 'usage' && <UsageAnalysis onObserve={() => setTab('observation')} />}
       {tab === 'prompts' && <PromptManager />}
       {tab === 'simulation' && <SimulationSettings />}
       {tab === 'appearance' && <AppearanceSettings />}

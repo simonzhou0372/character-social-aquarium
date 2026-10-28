@@ -1,3 +1,5 @@
+import { recordOutcome } from './usage-ledger';
+import { canParticipate } from '../core/narrative';
 import { generatePlannedScene } from './planned-scenes';
 import type { ContentJob } from '../core/types';
 import { historicalCharacter } from '../core/selective-observation';
@@ -53,6 +55,9 @@ export async function generateScene(
   signal?: AbortSignal,
   plannedJob?: ContentJob,
 ): Promise<InPersonScene> {
+  for (const id of event.participants)
+    if (!(await canParticipate(event, id, event.start, d)))
+      throw new Error('非存活人物不能参加普通场景');
   if (event.participants.length < 2) throw new Error('线下场景至少两人');
   const world = await d.worlds.get(event.worldId);
   const characters = await d.characters.where('id').anyOf(event.participants).toArray();
@@ -206,6 +211,7 @@ export async function generateScene(
   for (let i = scene.generationCheckpoint ?? scene.phases.length; i < plan.phases.length; i++) {
     const p = plan.phases[i];
     let failure = '';
+    let phaseRequestId: string | undefined;
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         let entries = p.entries;
@@ -233,8 +239,14 @@ export async function generateScene(
             task,
             snapshot,
             signal,
-            { outputBudget: attempt ? 5000 : 3500, tightContext: attempt > 0 },
+            {
+              outputBudget: attempt ? 5000 : 3500,
+              tightContext: attempt > 0,
+              attempt,
+              retryOf: phaseRequestId,
+            },
           );
+          phaseRequestId = response.requestId;
           if (response.finishReason === 'length')
             throw new ProviderError('truncated', '当前阶段输出被截断');
           entries = z
@@ -290,6 +302,9 @@ export async function generateScene(
         );
         scene = candidate;
         await save();
+        await recordOutcome(d, phaseRequestId, `${scene.id}:phase:${i}`, {
+          dialogue: normalized.filter((e) => e.kind === 'dialogue').length,
+        });
         failure = '';
         break;
       } catch (e) {

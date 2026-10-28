@@ -1,0 +1,19 @@
+{
+  "source": "Read-only replay of the user-provided real archive; no paid calls, no new text, no replacement fixtures",
+  "characters": 100,
+  "groups": 24,
+  "virtualDays": 7,
+  "messages": 3538,
+  "dialogue": 56,
+  "scenes": 8,
+  "majorEvents": 9,
+  "serializedBatches": 2304,
+  "originalBytes": 537732,
+  "compactBytes": 392580,
+  "originalTokenEstimate": 170170,
+  "compactTokenEstimate": 129249,
+  "originalContractTokenEstimate": 854784,
+  "compactContractTokenEstimate": 490752,
+  "textIdentity": "all persisted message strings, sender IDs, conversation IDs and timestamps unchanged",
+  "billing": "Byte counts are exact for reconstructed communication objects; token values use the local estimator and are not measured provider usage or invoice savings. Original response extras and full original wire requests were not retained."
+}

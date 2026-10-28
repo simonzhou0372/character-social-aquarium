@@ -36,6 +36,8 @@ export async function novelGoalFacts(d: AquariumDB, worldId: string) {
         id: c!.id,
         name: c!.name,
         identity: m?.identity,
+        life: m?.life,
+        deathProtected: m?.allowAutomaticDeath !== true,
         bio: (m?.bioOverride || c!.bio).slice(0, 180),
         personality: effective.personality.slice(0, 120),
       };

@@ -1,3 +1,4 @@
+import { lethalCandidates } from './narrative';
 import { db, type AquariumDB } from '../data/db';
 import {
   DAY,
@@ -6,6 +7,7 @@ import {
   type World,
   type MajorSchedule,
   type MajorEvent,
+  type Membership,
 } from './types';
 import { clockTarget } from './time';
 import { foregroundStart } from './clock-presence';
@@ -48,7 +50,7 @@ export async function configureMajor(
     const w = await d.worlds.get(worldId),
       cp = await d.checkpoints.get(worldId);
     if (!w || !cp) throw new Error('世界不存在');
-    if(w.novel?.enabled && !settings.enabled) throw new Error('小说模式必须启用重大事件');
+    if (w.novel?.enabled && !settings.enabled) throw new Error('小说模式必须启用重大事件');
     await d.worlds.update(worldId, { majorEventSettings: settings });
     const schedule = await d.majorSchedules.get(worldId);
     if (
@@ -73,6 +75,7 @@ export function planMajor(
   schedule: MajorSchedule,
   events: ActivityEvent[],
   end: number,
+  members: Membership[] = [],
 ) {
   if (!world.majorEventSettings?.enabled || end < schedule.plannedAt || !events.length) return;
   const candidates = events.filter((e) => e.phone > 0.3 && e.end > schedule.plannedAt);
@@ -87,12 +90,27 @@ export function planMajor(
   const sequence = schedule.sequence + 1,
     id = `major:${world.id}:${sequence}`;
   const types = ['opportunity', 'decision', 'project', 'reconnection'];
+  const dangerous =
+    world.novel?.enabled &&
+    world.novel.lifeRules?.allowDeath &&
+    /(致命|战斗|灾难|末日|遇险|战争|绝症|灭绝)/.test(
+      world.rules + world.novel.goal + world.majorEventSettings.tendency,
+    );
   let kind = types[(sequence - 1) % types.length];
   if (kind === schedule.lastType) kind = types[sequence % types.length];
   if (kind === 'reconnection' && base.participants.length === 1)
     kind = schedule.lastType === 'decision' ? 'opportunity' : 'decision';
+  if (dangerous && sequence % 3 === 0) kind = 'hazard';
+  const spirit =
+    world.novel?.lifeRules?.spiritCommunication && sequence % 4 === 0
+      ? members.find((m) => m.life?.status === 'dead' && m.life.canCommunicate && !m.inactive)
+      : undefined;
+  if (spirit) kind = 'spiritContact';
   const awake = base.phone > 0.3;
   const descriptions: Record<string, string> = {
+    spiritContact:
+      '依据当前世界的亡灵交流规则，与已明确存在的亡灵进行一次特殊沟通，不能视为复活或恢复普通日程。',
+    hazard: '在世界既有危险条件下发生一次险情，当事人需要共同应对，不能预先假定有人死亡。',
     opportunity: awake
       ? '收到一项需要认真考虑的重要邀请，并决定安排后续沟通。'
       : '一项重要邀请已经送达，等待当事人醒后处理。',
@@ -104,6 +122,10 @@ export function planMajor(
     ...base,
     id,
     worldId: world.id,
+    participants: spirit
+      ? [...new Set([...base.participants, spirit.characterId])]
+      : base.participants,
+    spiritParticipantIds: spirit ? [spirit.characterId] : undefined,
     type: 'major',
     start: timestamp,
     end: base.end,
@@ -119,9 +141,14 @@ export function planMajor(
     id,
     eventId: id,
     worldId: world.id,
-    title: ['新的重要机会', '一次重要决定', '计划的关键节点', '重新沟通的契机'][
-      types.indexOf(kind)
-    ],
+    title:
+      kind === 'spiritContact'
+        ? '来自亡灵的特殊交流'
+        : kind === 'hazard'
+          ? '需要共同应对的险情'
+          : ['新的重要机会', '一次重要决定', '计划的关键节点', '重新沟通的契机'][
+              types.indexOf(kind)
+            ],
     timestamp,
     participantIds: event.participants,
     groupIds: [],

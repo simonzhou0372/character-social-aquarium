@@ -155,6 +155,17 @@ export async function purgeEntity(kind: RecycleKind, id: string, d: AquariumDB =
         gone('conversations', r.conversation?.id) ||
         (kind === 'groups' && r.conversation?.groupId === id),
     );
+    mark(
+      'narrativeChanges',
+      (r) =>
+        gone('events', r.eventId) ||
+        (r.entityKind === 'character' && gone('characters', r.entityId)) ||
+        (r.entityKind === 'group' && gone('groups', r.entityId)),
+    );
+    mark('organizationStates', (r) => gone('events', r.eventId) || gone('groups', r.groupId));
+    for (const member of rows.memberships)
+      if (member.life && gone('events', member.life.eventId) && !gone('memberships', member.id))
+        await d.memberships.update(member.id, { life: undefined });
     mark('majorEvents', (r) => gone('events', r.eventId));
     mark('notifications', (r) => gone('majorEvents', r.eventId));
     mark('readStates', (r) => gone('messages', r.messageId));

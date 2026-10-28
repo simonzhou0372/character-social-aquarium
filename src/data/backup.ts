@@ -5,6 +5,9 @@ import { realLocalDate } from '../core/calendar';
 import { BackupSchema, type Backup } from '../core/types';
 import { db, dataTables, type AquariumDB } from './db';
 const names = [
+  'usageLedger',
+  'narrativeChanges',
+  'organizationStates',
   'taskSnapshots',
   'expansionJobs',
   'observationConfigs',
@@ -86,6 +89,17 @@ export function validateBackup(input: unknown): Backup {
   }
   const member = (w: string, c: string) =>
     b.memberships.some((m) => m.worldId === w && m.characterId === c);
+  b.narrativeChanges.forEach((r) =>
+    assert(
+      worlds.has(r.worldId) &&
+        events.has(r.eventId) &&
+        (r.entityKind === 'character' ? member(r.worldId, r.entityId) : groups.has(r.entityId)),
+      '叙事后果',
+    ),
+  );
+  b.organizationStates.forEach((r) =>
+    assert(worlds.has(r.worldId) && groups.has(r.groupId) && events.has(r.eventId), '组织状态'),
+  );
   b.expansionJobs.forEach((j) => assert(worlds.has(j.worldId), '世界扩展任务'));
   b.memberships.forEach((x) =>
     assert(chars.has(x.characterId) && worlds.has(x.worldId), '角色世界成员'),

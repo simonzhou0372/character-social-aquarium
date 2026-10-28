@@ -1,3 +1,5 @@
+import { actorAvailable } from './narrative';
+import { lethalCandidates } from './narrative';
 import Dexie from 'dexie';
 import { contentPlan, planningHistory, MAX_PENDING_CONTENT } from './adaptive-batching';
 import { simulatedReaction } from './reaction-emojis';
@@ -234,6 +236,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
         const world = await d.worlds.get(worldId);
         if (
           !world ||
+          (world.narrativeVersion ?? 0) !== observation.narrativeVersion ||
           ((await d.observationConfigs.get(worldId))?.updatedAt ?? 0) !==
             observation.config.updatedAt
         )
@@ -250,7 +253,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             .where('participants')
             .anyOf([...observation.activeIds])
             .distinct()
-            .and((c) => c.worldId === worldId && observation.allowsConversation(c))
+            .and((c) => c.worldId === worldId && observation.canScheduleConversation(c))
             .toArray(),
         ]);
         const controlled = new Set(allConvs.map((c) => c.controlledId).filter(Boolean));
@@ -413,7 +416,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             nextMajorSchedule(worldId, cp.simTime, world.majorEventSettings.maximumIntervalDays))
           : undefined;
         const majorPlan = majorSchedule
-          ? planMajor(world, majorSchedule, plan.events, end)
+          ? planMajor(world, majorSchedule, plan.events, end, observation.members)
           : undefined;
         if (majorPlan) {
           plan.events = majorPlan.events;
@@ -470,6 +473,11 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             }
             for (const char of [...characters, ...(influence ? [influence.character] : [])]) {
               const state = plan.states.find((s) => s.characterId === char.id)!;
+              if (
+                c.groupId &&
+                !observation.gm.some((m) => m.groupId === c.groupId && m.characterId === char.id)
+              )
+                continue;
               if (
                 last?.senderId === char.id ||
                 controlled.has(char.id) ||
@@ -561,6 +569,16 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               initiating: best.initiating,
             });
           }
+        }
+        if (majorPlan) {
+          majorPlan.event.lethalCandidateIds = lethalCandidates(
+            world,
+            majorPlan.event,
+            observation.members,
+            seed,
+          );
+          if (majorPlan.event.lethalCandidateIds.length)
+            majorPlan.event.lethalReason = world.majorEventSettings?.tendency || world.novel?.goal;
         }
         const queued: ContentJob[] = [];
         const chatChoices: SocialChoice[] = [];
@@ -803,7 +821,12 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
         const committed = await d.transaction(
           'rw',
           [
+            d.worlds,
             d.observationCoverage,
+            d.organizationStates,
+            d.narrativeChanges,
+            d.memberships,
+            d.usageLedger,
             d.majorSchedules,
             d.majorEvents,
             d.notifications,
@@ -834,7 +857,9 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               current.simTime !== before.simTime ||
               current.seed !== before.seed ||
               (current.controlVersion ?? 0) !== (before.controlVersion ?? 0) ||
-              current.paused
+              current.paused ||
+              ((await d.worlds.get(worldId))?.narrativeVersion ?? 0) !==
+                observation.narrativeVersion
             )
               return false;
             const activeNow = await d.characters
@@ -1019,6 +1044,11 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                   const joinedAt = conv.participantJoinedAt?.[state.characterId] ?? 0;
                   const visible = messages.filter((m) => m.simAt <= end && m.simAt >= joinedAt);
                   for (const message of visible.filter((m) => m.seq > (old?.seq ?? 0))) {
+                    if (
+                      observation.hasNarrativeChanges &&
+                      !(await actorAvailable(conv, state.characterId, message.simAt, d))
+                    )
+                      continue;
                     const readId = `character:${message.id}:${state.characterId}`;
                     if (await d.readStates.get(readId)) continue;
                     await d.readStates.put({

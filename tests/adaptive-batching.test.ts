@@ -193,6 +193,10 @@ it('drains identical plans without losing messages or scene phases and measures 
         p = new FixtureProvider();
       try {
         await planDay(d, 1000);
+        // Private chats may have no mutually authorized batching partner. Include four
+        // sequential fact-description jobs to guarantee a real, safe batching opportunity.
+        for (let i = 0; i < 4; i++)
+          await addJob(d, 'shared-fact-' + i, 'life', NOW + (24 + i) * HOUR);
         const plans = await d.contentJobs.toArray();
         const started = Date.now(),
           heap = process.memoryUsage().heapUsed;
@@ -515,6 +519,8 @@ it('keeps valid later phases across backup while retrying a missing earlier phas
     const partial = await d.contentJobs.get(j.id);
     expect(Object.keys(partial?.partial?.phases ?? {})).toHaveLength(2);
     expect((await d.scenes.get('scene:' + j.event.id))?.phases).toHaveLength(0);
+    const firstRequest = (await d.usageLedger.toArray())[0];
+    expect(firstRequest.dialogue).toBe(0);
     await importBackup(validateBackup(await exportBackup(d)), d);
     await d.checkpoints.update('w-harbor', { paused: false, speed: 300 });
     await d.contentJobs.update(j.id, { nextAttemptAt: 0 });
@@ -524,6 +530,9 @@ it('keeps valid later phases across backup while retrying a missing earlier phas
     expect(
       scene.phases.flatMap((p) => p.entries).filter((e) => e.kind === 'dialogue'),
     ).toHaveLength(j.plan!.expectedDialogue);
+    const ledger = await d.usageLedger.toArray();
+    expect(ledger.reduce((n, row) => n + row.dialogue, 0)).toBe(j.plan!.expectedDialogue);
+    expect((await d.usageLedger.get(firstRequest.id))!.dialogue).toBeGreaterThan(0);
     // Backup deliberately clears the API profile, so the 2048-token fallback splits the missing phase.
     expect(p.calls).toHaveLength(3);
     for (const m of p.calls.slice(1))
@@ -711,6 +720,18 @@ it('resumes the same queued task after restoring a recycled participant', async 
     await recycleEntity('characters', j.speakerId!, true, d);
     await drainAll(d, p);
     expect((await d.contentJobs.get(j.id))?.status).toBe('complete');
+  } finally {
+    await d.delete();
+  }
+});
+it('batches independent shared life facts without reducing their planned count', async () => {
+  const d = await fixture();
+  try {
+    for (let i = 0; i < 4; i++) await addJob(d, 'fact-' + i, 'life', NOW + i * HOUR);
+    const p = new FixtureProvider();
+    await drainAll(d, p);
+    expect(await d.contentJobs.filter((j) => j.status === 'complete').count()).toBe(4);
+    expect(p.calls.length).toBeLessThan(4);
   } finally {
     await d.delete();
   }

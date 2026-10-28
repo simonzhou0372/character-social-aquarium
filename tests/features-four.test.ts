@@ -212,7 +212,7 @@ it('queues retroactive content without losing messages when user writes ahead', 
   const c = (await d.conversations.get('conv-cafe'))!;
   await sendUserMessage(c.id, '时钟已到现在。', 'user', d);
   const after = (await d.messages.where('conversationId').equals(c.id).sortBy('seq')).at(-1)!;
-  await d.transaction('rw', d.messages, d.conversations, d.usage, d.settings, async () => {
+  await d.transaction('rw', d.tables, async () => {
     await persistDialogue(
       d,
       c.id,

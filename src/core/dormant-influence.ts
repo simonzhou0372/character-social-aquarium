@@ -28,6 +28,7 @@ export async function dormantInfluence(
   if (!relation) return;
   const dormant = await d.characters.get(relation.to);
   if (
+    scope.lifeBlocked.has(relation.to) ||
     !dormant ||
     dormant.deletedAt ||
     dormant.entityMode === 'background' ||

@@ -4,7 +4,7 @@ import { resolveObservation } from '../core/selective-observation';
 import { generateMajor, applyMajor } from './major-events';
 import type { AquariumDB } from '../data/db';
 import { withWorldLock, db } from '../data/db';
-import type { Provider } from './provider';
+import { ProviderError, type Provider } from './provider';
 import { describeEvent, generateDialogue, liveProvider, persistDialogue } from './orchestrator';
 import { generateScene } from './scenes';
 import { diagnostic } from '../core/diagnostics';
@@ -177,6 +177,10 @@ export async function drainContent(worldId: string, d: AquariumDB = db, provider
           await d.contentJobs.update(job.id, {
             status: 'failed',
             error,
+            errorCode: e instanceof ProviderError ? e.code : 'validation',
+            budgetBlockedAt:
+              e instanceof ProviderError && e.code === 'budget' ? Date.now() : undefined,
+            budgetBlockedDay: e instanceof ProviderError ? e.budgetDay : undefined,
             nextAttemptAt: Date.now() + 30000,
           });
           diagnostic(worldId, { phase: 'error', error });

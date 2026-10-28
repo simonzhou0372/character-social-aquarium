@@ -275,11 +275,19 @@ export async function importWorld(input: unknown, d: AquariumDB = db) {
       p.memberships.map((m) => ({
         ...m,
         id: uid('member'),
+        life: undefined,
         worldId: id,
         characterId: cIds.get(m.characterId)!,
       })),
     );
-    await d.groups.bulkAdd(p.groups.map((g) => ({ ...g, id: gIds.get(g.id)!, worldIds: [id] })));
+    await d.groups.bulkAdd(
+      p.groups.map((g) => ({
+        ...g,
+        predecessorGroupId: g.predecessorGroupId ? gIds.get(g.predecessorGroupId) : undefined,
+        id: gIds.get(g.id)!,
+        worldIds: [id],
+      })),
+    );
     for (const g of p.groups) {
       const members = [
         ...new Set(

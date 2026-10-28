@@ -1,3 +1,4 @@
+import { recordOutcome, recordValidation } from './usage-ledger';
 import { z } from 'zod';
 import type { AquariumDB } from '../data/db';
 import type { ContentJob, InPersonScene } from '../core/types';
@@ -68,6 +69,9 @@ export async function generatePlannedScene(
   const drafts: Record<string, InPersonScene['phases'][number]['entries']> = structuredClone(
     (job.partial?.phases as any) ?? {},
   );
+  const phaseUsage: Record<string, { requestId: string; dialogue: number }[]> = structuredClone(
+    (job.partial?.phaseUsage as any) ?? {},
+  );
   for (let i = 0; i < count; i++) if (scene.phases[i]) drafts[String(i)] = scene.phases[i].entries;
   const desired = (i: number) => Math.floor(total / count) + (i < total % count ? 1 : 0);
   const outputLimit = (await d.profiles.get('api'))?.outputBudgetTokens ?? 2048;
@@ -94,9 +98,12 @@ export async function generatePlannedScene(
       at: p.start,
       createdAt: job.createdAt ?? Date.now(),
       scale: job.batchScale,
+      attempt: Math.max(0, job.attempts - 1),
+      retryOf: job.lastRequestId,
     });
   }
-  let failure = '';
+  let failure = '',
+    requestId: string | undefined;
   if (units.length) {
     const batch = await requestUnits(
       d,
@@ -107,6 +114,8 @@ export async function generatePlannedScene(
       provider,
       signal,
     );
+    requestId = batch.requestId;
+    await d.contentJobs.update(job.id, { lastRequestId: requestId });
     if (batch.error && !batch.values.size) throw batch.error;
     for (const u of batch.selected) {
       const i = units.indexOf(u) >= 0 ? Number(u.id.split(':').at(-1)) : -1,
@@ -133,13 +142,20 @@ export async function generatePlannedScene(
           snapshot.entries.find((e) => e.key === 'behavior')?.enabled ?? false,
         );
         drafts[String(i)] = entries;
+        if (requestId)
+          (phaseUsage[String(i)] ??= []).push({
+            requestId,
+            dialogue: normalized.filter((e) => e.kind === 'dialogue').length,
+          });
+        await recordValidation(d, requestId, 'accepted');
       } catch (e) {
+        await recordValidation(d, requestId, 'rejected', 'scene-validation');
         failure = e instanceof Error ? e.message : String(e);
       }
     }
     await allowed();
     await d.contentJobs.update(job.id, {
-      partial: { ...job.partial, phases: drafts },
+      partial: { ...job.partial, phases: drafts, phaseUsage },
       batchScale: failure ? Math.max(0.25, batch.scale / 2) : batch.scale,
     });
   }
@@ -165,6 +181,23 @@ export async function generatePlannedScene(
     snapshot.entries.find((e) => e.key === 'behavior')?.enabled ?? false,
   );
   await allowed();
-  await d.scenes.put(SceneSchema.parse(scene));
+  await d.transaction('rw', d.scenes, d.usageLedger, d.checkpoints, async () => {
+    await allowed();
+    await d.scenes.put(SceneSchema.parse(scene));
+    for (const p of scene.phases.filter((p) => !stored?.phases.some((old) => old.id === p.id))) {
+      const index = plannedPhases.findIndex((phase) => phase.id === p.id);
+      const credits = phaseUsage[String(index)];
+      if (credits?.length) {
+        for (const credit of credits)
+          await recordOutcome(d, credit.requestId, p.id, { dialogue: credit.dialogue });
+      } else {
+        await recordOutcome(d, requestId, p.id, {
+          dialogue: p.entries.filter((e) => e.kind === 'dialogue').length,
+        });
+      }
+    }
+    if (scene.generationStatus === 'complete')
+      await recordOutcome(d, requestId, scene.id, { events: 1 });
+  });
   return scene;
 }

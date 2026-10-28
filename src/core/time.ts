@@ -139,9 +139,22 @@ export async function rewindWorld(worldId: string, at: number, d: AquariumDB = d
               .filter(([a]) => a < at)
               .map(([a, b]) => [a, Math.min(b, at)]),
           });
-        const groups = await d.groups.filter((g) => g.worldIds.includes(worldId)).toArray();
+        const narrativeHistory = await d.narrativeChanges
+          .where('worldId')
+          .equals(worldId)
+          .toArray();
+        const futureGroups = new Set(
+          narrativeHistory.filter((r) => r.at > at).flatMap((r) => r.successorGroupIds),
+        );
+        const groups = await d.groups
+          .filter((g) => g.worldIds.includes(worldId) && !futureGroups.has(g.id))
+          .toArray();
         for (const g of groups) await d.groups.update(g.id, { worldIds: [...g.worldIds, id] });
-        const gm = await d.groupMembers.where('worldId').equals(worldId).toArray();
+        const gm = await d.groupMembers
+          .where('worldId')
+          .equals(worldId)
+          .and((m) => !futureGroups.has(m.groupId))
+          .toArray();
         await d.groupMembers.bulkAdd(gm.map((m) => ({ ...m, id: uid('gm'), worldId: id })));
         const relations = await d.relationships.where('worldId').equals(worldId).toArray();
         await d.relationships.bulkAdd(
@@ -161,6 +174,66 @@ export async function rewindWorld(worldId: string, at: number, d: AquariumDB = d
             dependsOn: e.dependsOn ? eventIds.get(e.dependsOn) : undefined,
           })),
         );
+        const changes = narrativeHistory
+          .filter((r) => r.at <= at && eventIds.has(r.eventId))
+          .sort((a, b) => a.at - b.at);
+        for (const r of changes) {
+          const eventId = eventIds.get(r.eventId)!;
+          const beforeLife =
+            r.beforeLife && eventIds.has(r.beforeLife.eventId)
+              ? { ...r.beforeLife, eventId: eventIds.get(r.beforeLife.eventId)! }
+              : undefined;
+          const afterLife = r.afterLife ? { ...r.afterLife, eventId } : undefined;
+          await d.narrativeChanges.add({
+            ...r,
+            id: uid('narrative'),
+            worldId: id,
+            eventId,
+            beforeLife,
+            afterLife,
+          });
+          if (r.entityKind === 'group')
+            await d.organizationStates.put({
+              id: `${id}:${r.entityId}`,
+              worldId: id,
+              groupId: r.entityId,
+              status: r.to as import('./narrative-types').OrganizationState['status'],
+              since: r.at,
+              eventId,
+            });
+        }
+        for (const m of await d.memberships.where('worldId').equals(id).toArray()) {
+          const latest = changes
+            .filter((r) => r.entityKind === 'character' && r.entityId === m.characterId)
+            .at(-1);
+          await d.memberships.update(m.id, {
+            life: latest?.afterLife
+              ? { ...latest.afterLife, eventId: eventIds.get(latest.eventId)! }
+              : undefined,
+          });
+        }
+        for (const m of await d.groupMembers.where('worldId').equals(id).toArray()) {
+          const latest = changes
+            .filter(
+              (r) =>
+                r.entityKind === 'group' &&
+                r.entityId === m.groupId &&
+                r.memberChanges.some((change) => change.characterId === m.characterId),
+            )
+            .at(-1);
+          const action = latest?.memberChanges.find(
+            (change) => change.characterId === m.characterId,
+          )?.action;
+          await d.groupMembers.update(m.id, {
+            departedAt: latest
+              ? action === 'leave'
+                ? latest.at
+                : undefined
+              : m.departedAt && m.departedAt <= at
+                ? m.departedAt
+                : undefined,
+          });
+        }
         const gifIds = new Map<string, string>();
         for (const asset of await d.gifAssets.where('scopeId').equals(worldId).toArray()) {
           if (asset.scopeType !== 'world') continue;
@@ -181,7 +254,11 @@ export async function rewindWorld(worldId: string, at: number, d: AquariumDB = d
             sourceEventIds: r.sourceEventIds.map((e) => eventIds.get(e)!),
             dependsOn: r.dependsOn ? evolutionIds.get(r.dependsOn) : undefined,
           });
-        const conversations = await d.conversations.where('worldId').equals(worldId).toArray();
+        const conversations = await d.conversations
+          .where('worldId')
+          .equals(worldId)
+          .and((c) => !c.groupId || !futureGroups.has(c.groupId))
+          .toArray();
         const convIds = new Map(conversations.map((c) => [c.id, uid('conv')]));
         for (const c of conversations) {
           const messages = (

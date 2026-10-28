@@ -1,3 +1,5 @@
+import { LifeStateSchema, OrganizationStateSchema, NarrativeChangeSchema } from './narrative-types';
+import { CostControlsSchema, TaskRouteSchema, UsageLedgerSchema } from './usage-types';
 import { MAX_CONTEXT_BUDGET_TOKENS } from './ai-limits';
 import { NovelSchema } from './novel-types';
 import { ExpansionJobSchema } from './expansion-types';
@@ -84,6 +86,7 @@ export const CharacterSchema = z.object({
 });
 export type Character = z.infer<typeof CharacterSchema>;
 export const WorldSchema = z.object({
+  narrativeVersion: z.number().int().nonnegative().optional(),
   novel: NovelSchema.optional(),
   novelHistory: z.array(NovelSchema).max(50).optional(),
   provenance: ProvenanceSchema.optional(),
@@ -128,6 +131,8 @@ export const WorldSchema = z.object({
 });
 export type World = z.infer<typeof WorldSchema>;
 export const MembershipSchema = z.object({
+  life: LifeStateSchema.optional(),
+  allowAutomaticDeath: z.boolean().optional(),
   inactive: z.boolean().optional(),
   behaviorOverride: z
     .object({
@@ -156,6 +161,7 @@ export const MembershipSchema = z.object({
 });
 export type Membership = z.infer<typeof MembershipSchema>;
 export const GroupSchema = z.object({
+  predecessorGroupId: z.string().optional(),
   provenance: ProvenanceSchema.optional(),
   deletedAt: time.optional(),
   id,
@@ -168,6 +174,7 @@ export const GroupSchema = z.object({
 });
 export type Group = z.infer<typeof GroupSchema>;
 export const GroupMemberSchema = z.object({
+  departedAt: z.number().optional(),
   id,
   groupId: id,
   worldId: id,
@@ -273,6 +280,9 @@ export const CursorSchema = z.object({
 });
 export type ReadCursor = z.infer<typeof CursorSchema>;
 export const EventSchema = z.object({
+  spiritParticipantIds: z.array(z.string()).optional(),
+  lethalCandidateIds: z.array(z.string()).optional(),
+  lethalReason: z.string().optional(),
   origin: z.enum(['realtime', 'backfill', 'macro']).optional(),
   generatedAt: time.optional(),
   id,
@@ -342,6 +352,7 @@ export const CheckpointSchema = z.object({
 export type Checkpoint = z.infer<typeof CheckpointSchema>;
 export const SettingsSchema = z.object({
   adaptiveBatching: z.boolean().optional(),
+  costControls: CostControlsSchema.optional(),
   installedPresets: z.record(z.number().int().positive()).optional(),
   id: z.literal('app'),
   worldId: z.string().max(160),
@@ -373,6 +384,19 @@ export const ProfileSchema = z.object({
   outputBudgetTokens: z.number().int().min(256).max(16000).optional(),
   structuredOutputMode: z.enum(['auto', 'json', 'off']).optional(),
   thinkingMode: z.enum(['auto', 'off', 'on']).optional(),
+  reasoningPolicy: z.enum(['auto', 'user', 'advanced']).optional(),
+  reasoningEffort: z.enum(['low', 'high', 'max']).optional(),
+  deepSeekCompatible: z.boolean().optional(),
+  stablePrefix: z.boolean().optional(),
+  compactProtocol: z.boolean().optional(),
+  unsupportedThinkingModels: z.array(z.string()).max(64).optional(),
+  taskRoutes: z
+    .object({
+      routine: TaskRouteSchema.optional(),
+      complex: TaskRouteSchema.optional(),
+      story: TaskRouteSchema.optional(),
+    })
+    .optional(),
   key: z.string().max(2000).optional(),
   status: z.enum(['untested', 'connected', 'invalid', 'error']),
   inputPrice: z.number().nonnegative().optional(),
@@ -463,6 +487,9 @@ export const ContentJobSchema = z
         expectedPhases: z.number().int().min(0).max(5),
       })
       .optional(),
+    budgetBlockedAt: z.number().optional(),
+    budgetBlockedDay: z.number().optional(),
+    lastRequestId: z.string().optional(),
     snapshotId: z.string().optional(),
     dependsOn: z.array(z.string()).optional(),
     createdAt: z.number().optional(),
@@ -566,7 +593,7 @@ export const MajorEventSchema = z.object({
   consequences: z
     .array(
       z.object({
-        kind: z.enum(['relationship', 'followUp']),
+        kind: z.enum(['relationship', 'followUp', 'life', 'organization']),
         description: text,
         from: id.optional(),
         to: id.optional(),
@@ -587,6 +614,9 @@ export const NotificationSchema = z.object({
 });
 export type EventNotification = z.infer<typeof NotificationSchema>;
 export const BackupSchema = z.object({
+  narrativeChanges: z.array(NarrativeChangeSchema).default([]),
+  organizationStates: z.array(OrganizationStateSchema).default([]),
+  usageLedger: z.array(UsageLedgerSchema).max(1000000).default([]),
   expansionJobs: z.array(ExpansionJobSchema).max(1000).default([]),
   observationConfigs: z.array(ObservationConfigSchema).default([]),
   observationCoverage: z.array(CoverageSchema).default([]),

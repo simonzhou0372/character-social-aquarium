@@ -1,3 +1,5 @@
+import { LifeRulesSchema } from '../core/narrative-types';
+import { Select } from './ui';
 import { useState } from 'react';
 import { novelGoalFacts } from '../ai/novel-context';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -71,6 +73,9 @@ export function StoryProgress({ worldId }: { worldId: string }) {
 }
 export function NovelSettings({ world, onChange }: { world: World; onChange: (w: World) => void }) {
   const n = world.novel ?? NovelSchema.parse({ enabled: false, goal: '' });
+  const life = LifeRulesSchema.parse(n.lifeRules ?? {});
+  const patchLife = (patch: Partial<typeof life>) =>
+    onChange({ ...world, novel: { ...n, lifeRules: { ...life, ...patch } } });
   const [constraints, setConstraints] = useState(''),
     [candidates, setCandidates] = useState<string[]>([]),
     [busy, setBusy] = useState(false),
@@ -92,6 +97,86 @@ export function NovelSettings({ world, onChange }: { world: World; onChange: (w:
         />
       </Field>
       <details>
+        <summary>角色生死与团体规则</summary>
+        <Toggle
+          label="允许小说重大事件造成角色死亡"
+          checked={life.allowDeath}
+          onChange={(allowDeath) => patchLife({ allowDeath })}
+        />
+        <p>
+          默认禁止自动死亡；还需在角色资料中逐个解除当前世界的自动死亡保护。风险只影响有致死条件的事件候选，不产生死亡配额。
+        </p>
+        <Field label="死亡风险">
+          <Select
+            value={life.risk}
+            onChange={(e) => patchLife({ risk: e.target.value as typeof life.risk })}
+          >
+            <option value="low">低</option>
+            <option value="standard">标准</option>
+            <option value="high">高</option>
+            <option value="custom">自定义</option>
+          </Select>
+        </Field>
+        {life.risk === 'custom' && (
+          <Field label="有资格候选的风险权重（0～1）">
+            <Input
+              type="number"
+              min="0"
+              max="1"
+              step="0.01"
+              value={life.riskWeight}
+              onChange={(e) =>
+                patchLife({ riskWeight: Math.max(0, Math.min(1, Number(e.target.value))) })
+              }
+            />
+          </Field>
+        )}
+        <Field label="复活策略">
+          <Select
+            value={life.resurrection}
+            onChange={(e) =>
+              patchLife({ resurrection: e.target.value as typeof life.resurrection })
+            }
+          >
+            <option value="forbidden">不允许复活</option>
+            <option value="conditional">有条件复活（最终完成须用户确认）</option>
+            <option value="worldRules">依照明确世界规则复活</option>
+          </Select>
+        </Field>
+        <Field label="世界复活规则">
+          <Textarea
+            value={life.resurrectionRules}
+            onChange={(e) => patchLife({ resurrectionRules: e.target.value })}
+            placeholder="例如：普通人不可复活；特定能力者需要在指定地点完成仪式。"
+          />
+        </Field>
+        <Field label="复活必备事实（每行一项，须在来源事件中明确出现）">
+          <Textarea
+            value={life.resurrectionRequirements.join('\n')}
+            onChange={(e) =>
+              patchLife({
+                resurrectionRequirements: e.target.value
+                  .split('\n')
+                  .filter((x) => x.trim())
+                  .slice(0, 12),
+              })
+            }
+          />
+        </Field>
+        <Toggle
+          label="世界允许明确的亡灵交流（不恢复普通日程）"
+          checked={life.spiritCommunication}
+          onChange={(spiritCommunication) => patchLife({ spiritCommunication })}
+        />
+        <Toggle
+          label="允许团体决裂、解散与有过程的和解重组"
+          checked={n.allowGroupChanges === true}
+          onChange={(allowGroupChanges) =>
+            onChange({ ...world, novel: { ...n, allowGroupChanges } })
+          }
+        />
+      </details>
+      <details>
         <summary>AI 帮我设计结局 · 生成候选后手动选择</summary>
         <Field label="结局额外要求">
           <Textarea value={constraints} onChange={(e) => setConstraints(e.target.value)} />
@@ -110,7 +195,13 @@ export function NovelSettings({ world, onChange }: { world: World; onChange: (w:
                   'novel',
                   snapshot,
                   {
-                    world: { name: world.name, rules: world.rules, description: world.description },
+                    world: {
+                      name: world.name,
+                      rules: world.rules,
+                      description: world.description,
+                      lifeRules: n.lifeRules,
+                      allowGroupChanges: n.allowGroupChanges,
+                    },
                     input: {
                       ...facts,
                       requirements: constraints,

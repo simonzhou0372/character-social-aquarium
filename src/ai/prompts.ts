@@ -337,6 +337,8 @@ export function migrateDefaults(config: PromptConfig, defaults: PromptConfig): P
   };
 }
 export type TaskKind =
+  | 'connection'
+  | 'major'
   | 'report'
   | 'evolution'
   | 'inPerson'
@@ -352,6 +354,8 @@ export type TaskKind =
   | 'expansion'
   | 'novel';
 const taskPrompts: Record<TaskKind, PromptKey[]> = {
+  connection: [],
+  major: ['life'],
   expansion: ['expansion'],
   novel: ['novel'],
   report: ['report'],

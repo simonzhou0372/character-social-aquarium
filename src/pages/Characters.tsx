@@ -1,3 +1,4 @@
+import { lifeNames } from '../core/narrative-types';
 import { MultiSelect } from '../components/MultiSelect';
 import { RecycleButton } from '../components/RecycleButton';
 import { PresetDetails } from '../components/PresetDetails';
@@ -36,6 +37,7 @@ export function CharacterEditor({
   const [selected, setSelected] = useState<string[] | null>(null);
   const [override, setOverride] = useState('');
   const [identity, setIdentity] = useState('');
+  const [allowAutomaticDeath, setDeath] = useState(false);
   const [styleOverride, setStyleOverride] = useState('');
   useEffect(() => {
     const m = memberships?.find((m) => m.worldId === worldId);
@@ -43,6 +45,7 @@ export function CharacterEditor({
       setOverride(m.bioOverride);
       setIdentity(m.identity);
       setStyleOverride(m.styleOverride);
+      setDeath(m.allowAutomaticDeath === true);
     }
   }, [memberships, worldId]);
   const patch = (v: Partial<Character>) => setC((s) => ({ ...s, ...v }));
@@ -62,6 +65,7 @@ export function CharacterEditor({
             id: old?.id ?? `${w}:${c.id}`,
             worldId: w,
             characterId: c.id,
+            allowAutomaticDeath: w === worldId ? allowAutomaticDeath : old?.allowAutomaticDeath,
             identity: w === worldId ? identity : (old?.identity ?? ''),
             bioOverride: w === worldId ? override : (old?.bioOverride ?? ''),
             styleOverride: w === worldId ? styleOverride : (old?.styleOverride ?? ''),
@@ -134,6 +138,20 @@ export function CharacterEditor({
             <Field label="原作 / 来源">
               <Input value={c.source} onChange={(e) => patch({ source: e.target.value })} />
             </Field>
+          </div>
+          <div className="panel">
+            <strong>
+              当前世界生命状态：
+              {lifeNames[memberships?.find((m) => m.worldId === worldId)?.life?.status ?? 'alive']}
+            </strong>
+            <label>
+              <input
+                type="checkbox"
+                checked={allowAutomaticDeath}
+                onChange={(e) => setDeath(e.target.checked)}
+              />
+              允许该角色在当前世界自动死亡（仍须世界规则及有依据的重大事件）
+            </label>
           </div>
           <Field label="性别（自由文本，可留空）">
             <Input value={c.gender ?? ''} onChange={(e) => patch({ gender: e.target.value })} />
@@ -482,9 +500,11 @@ export function Characters({ worldId, onChat }: { worldId: string; onChat: (id: 
               <div className="section-title">
                 <h3>{c.name}</h3>
                 <span className="tiny-status">
-                  {c.entityMode === 'background'
-                    ? '仅作为世界背景'
-                    : (states?.find((s) => s.characterId === c.id)?.activity ?? '尚未开始生活')}
+                  {memberships?.find((m) => m.characterId === c.id)?.life
+                    ? lifeNames[memberships.find((m) => m.characterId === c.id)!.life!.status]
+                    : c.entityMode === 'background'
+                      ? '仅作为世界背景'
+                      : (states?.find((s) => s.characterId === c.id)?.activity ?? '尚未开始生活')}
                 </span>
               </div>
               <p>

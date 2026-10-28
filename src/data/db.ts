@@ -1,3 +1,5 @@
+import type { NarrativeChange, OrganizationState } from '../core/narrative-types';
+import type { UsageLedger } from '../core/usage-types';
 import type { ExpansionJob } from '../core/expansion-types';
 import type {
   ObservationConfig,
@@ -37,6 +39,9 @@ import type {
   Usage,
 } from '../core/types';
 export class AquariumDB extends Dexie {
+  usageLedger!: Table<UsageLedger>;
+  narrativeChanges!: Table<NarrativeChange>;
+  organizationStates!: Table<OrganizationState>;
   expansionJobs!: Table<ExpansionJob>;
   observationConfigs!: Table<ObservationConfig>;
   observationCoverage!: Table<z.infer<typeof CoverageSchema>>;
@@ -208,6 +213,12 @@ export class AquariumDB extends Dexie {
       characters: 'id,name,entityMode,deletedAt',
       groups: 'id,*worldIds,deletedAt',
     });
+    this.version(15).stores({
+      usageLedger:
+        'id,worldId,model,task,startedAt,[worldId+startedAt],[worldId+virtualAt],[worldId+virtualDay],[worldId+budgetVirtualDay]',
+      narrativeChanges: 'id,worldId,entityId,eventId,[worldId+at],[worldId+entityId+at]',
+      organizationStates: 'id,worldId,groupId',
+    });
     this.version(14).upgrade((tx) =>
       tx
         .table('settings')
@@ -222,6 +233,9 @@ export class AquariumDB extends Dexie {
 }
 export const db = new AquariumDB();
 export const dataTables = (d: AquariumDB) => [
+  d.usageLedger,
+  d.narrativeChanges,
+  d.organizationStates,
   d.taskSnapshots,
   d.expansionJobs,
   d.observationConfigs,
