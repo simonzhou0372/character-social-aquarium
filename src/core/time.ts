@@ -1,6 +1,6 @@
 import { restartNovel } from './novel-types';
 import { historicalCharacter } from './selective-observation';
-import { nextMajorSchedule } from './major-events';
+import { nextMajorScheduleFor } from './major-events';
 import { foregroundStart } from './clock-presence';
 import { formatWorldTime, WorldDateTimeSchema } from './calendar';
 import { cancelWorld } from './tasks';
@@ -321,10 +321,10 @@ export async function rewindWorld(worldId: string, at: number, d: AquariumDB = d
         if (world.majorEventSettings?.enabled) {
           const latest = majors.sort((a, b) => b.timestamp - a.timestamp)[0];
           await d.majorSchedules.put(
-            nextMajorSchedule(
+            nextMajorScheduleFor(
               id,
               latest?.timestamp ?? at,
-              world.majorEventSettings.maximumIntervalDays,
+              world.majorEventSettings,
               majors.length,
               latest?.type ?? '',
             ),
@@ -533,7 +533,7 @@ export async function startCalendarBranch(
         await d.gifAssets.add({ ...asset, id: uid('gif'), scopeId: id });
     if (world.majorEventSettings?.enabled)
       await d.majorSchedules.put(
-        nextMajorSchedule(id, now, world.majorEventSettings.maximumIntervalDays),
+        nextMajorScheduleFor(id, now, world.majorEventSettings),
       );
     await d.checkpoints.add({
       ...cp,

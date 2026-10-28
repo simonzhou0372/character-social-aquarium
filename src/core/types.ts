@@ -10,6 +10,7 @@ import {
   BackfillSchema,
   EvolutionRecordSchema,
   EvolutionCursorSchema,
+  evolutionFields,
   WorldReportSchema,
   ReportCursorSchema,
 } from './focus-types';
@@ -67,6 +68,9 @@ export const CharacterSchema = z.object({
   personality: text,
   style: text,
   habits: text,
+  values: z.string().max(4000).optional(),
+  goal: z.string().max(4000).optional(),
+  fear: z.string().max(4000).optional(),
   tags: z.array(z.string().max(40)).max(20),
   initiative: z.number().min(0).max(1),
   initiationMode: z.enum(['interval', 'important', 'never']).optional(),
@@ -104,12 +108,33 @@ export const WorldSchema = z.object({
     .max(200)
     .optional(),
   deletedAt: time.optional(),
-  evolutionSettings: z.object({ enabled: z.boolean(), rules: z.string().max(4000) }).optional(),
+  evolutionSettings: z
+    .object({
+      enabled: z.boolean(),
+      rules: z.string().max(4000),
+      /** Optional daily evaluation cap; keeps one daily census from becoming a request storm. */
+      maxPerDay: z.number().int().min(1).max(100).optional(),
+    })
+    .optional(),
   reportSettings: ReportSettingsSchema.optional(),
   majorEventSettings: z
     .object({
       enabled: z.boolean(),
-      maximumIntervalDays: z.number().min(1).max(36500),
+      // Legacy day-based control. Kept so old archives import unchanged.
+      maximumIntervalDays: z.number().min(0.01).max(36500),
+      // Sub-day cadence. When present it takes precedence over maximumIntervalDays.
+      intervalMinutes: z.number().min(15).max(525600).optional(),
+      minimumGapMinutes: z.number().min(0).max(1440).optional(),
+      maxPerDay: z.number().int().min(1).max(48).optional(),
+      allowChainEvents: z.boolean().optional(),
+      maxChainDepth: z.number().int().min(0).max(3).optional(),
+      levels: z
+        .object({
+          local: z.boolean().default(true),
+          group: z.boolean().default(true),
+          world: z.boolean().default(true),
+        })
+        .optional(),
       tendency: z.string().max(4000),
       allowRelationshipChanges: z.boolean(),
       allowMultipleGroups: z.boolean(),
@@ -143,13 +168,16 @@ export const MembershipSchema = z.object({
       socialBehavior: CharacterSchema.shape.socialBehavior,
     })
     .optional(),
-  evolutionFields: z.array(z.enum(['initiative', 'personality', 'style', 'habits'])).optional(),
+  evolutionFields: z.array(z.enum(evolutionFields)).optional(),
   evolved: z
     .object({
       initiative: z.number().min(0).max(1).optional(),
       personality: text.optional(),
       style: text.optional(),
       habits: text.optional(),
+      goal: text.optional(),
+      values: text.optional(),
+      fear: text.optional(),
     })
     .optional(),
   id,
@@ -283,6 +311,10 @@ export const EventSchema = z.object({
   spiritParticipantIds: z.array(z.string()).optional(),
   lethalCandidateIds: z.array(z.string()).optional(),
   lethalReason: z.string().optional(),
+  majorLevel: z.enum(['local', 'group', 'world']).optional(),
+  parentEventId: z.string().optional(),
+  rootEventId: z.string().optional(),
+  chainDepth: z.number().int().min(0).max(3).optional(),
   origin: z.enum(['realtime', 'backfill', 'macro']).optional(),
   generatedAt: time.optional(),
   id,
@@ -387,6 +419,18 @@ export const ProfileSchema = z.object({
   reasoningPolicy: z.enum(['auto', 'user', 'advanced']).optional(),
   reasoningEffort: z.enum(['low', 'high', 'max']).optional(),
   deepSeekCompatible: z.boolean().optional(),
+  temperatures: z
+    .object({
+      chat: z.number().min(0).max(2).optional(),
+      scene: z.number().min(0).max(2).optional(),
+      major: z.number().min(0).max(2).optional(),
+      evolution: z.number().min(0).max(2).optional(),
+      report: z.number().min(0).max(2).optional(),
+      life: z.number().min(0).max(2).optional(),
+      novel: z.number().min(0).max(2).optional(),
+      expansion: z.number().min(0).max(2).optional(),
+    })
+    .optional(),
   stablePrefix: z.boolean().optional(),
   compactProtocol: z.boolean().optional(),
   unsupportedThinkingModels: z.array(z.string()).max(64).optional(),
@@ -576,8 +620,27 @@ export const MajorScheduleSchema = z.object({
   plannedAt: time,
   sequence: z.number().int().nonnegative(),
   lastType: z.string(),
+  dayKey: z.string().max(20).optional(),
+  countToday: z.number().int().nonnegative().optional(),
+  lastLevel: z.enum(['local', 'group', 'world']).optional(),
 });
 export type MajorSchedule = z.infer<typeof MajorScheduleSchema>;
+/** A causal follow-up whose time has not arrived yet; persisted so it cannot be lost. */
+export const MajorChainSchema = z.object({
+  id,
+  worldId: id,
+  parentEventId: id,
+  rootEventId: id,
+  depth: z.number().int().min(1).max(3),
+  dueAt: time,
+  level: z.enum(['local', 'group', 'world']),
+  groupId: id.optional(),
+  participantIds: z.array(id).min(2),
+  description: text,
+  location: text,
+  createdAt: time,
+});
+export type MajorChain = z.infer<typeof MajorChainSchema>;
 export const MajorEventSchema = z.object({
   id,
   eventId: id,
@@ -587,8 +650,12 @@ export const MajorEventSchema = z.object({
   participantIds: z.array(id).min(1),
   groupIds: z.array(id),
   importance: z.number().min(0).max(1),
-  status: z.enum(['contentPending', 'occurred']),
+  status: z.enum(['contentPending', 'occurred', 'cancelled']),
   type: z.string().max(80),
+  level: z.enum(['local', 'group', 'world']).optional(),
+  parentEventId: id.optional(),
+  rootEventId: id.optional(),
+  chainDepth: z.number().int().min(0).max(3).optional(),
   description: text,
   consequences: z
     .array(
@@ -626,6 +693,7 @@ export const BackupSchema = z.object({
   worldReports: z.array(WorldReportSchema).default([]),
   reportCursors: z.array(ReportCursorSchema).default([]),
   majorSchedules: z.array(MajorScheduleSchema).max(100).default([]),
+  majorChains: z.array(MajorChainSchema).max(5000).default([]),
   majorEvents: z.array(MajorEventSchema).max(100000).default([]),
   notifications: z.array(NotificationSchema).max(100000).default([]),
   reactions: z.array(ReactionSchema).max(200000).default([]),

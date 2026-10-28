@@ -1,6 +1,7 @@
 import Dexie from 'dexie';
 import { drainAdaptive, contentSnapshot } from './adaptive-queue';
 import { resolveObservation } from '../core/selective-observation';
+import { ordinaryLife } from '../core/narrative';
 import { generateMajor, applyMajor } from './major-events';
 import type { AquariumDB } from '../data/db';
 import { withWorldLock, db } from '../data/db';
@@ -22,7 +23,12 @@ export async function drainContent(worldId: string, d: AquariumDB = db, provider
         j.attempts = Math.min(j.attempts, 2);
       });
     try {
-      await drainAdaptive(worldId, d, provider, task.signal);
+      try {
+        await drainAdaptive(worldId, d, provider, task.signal);
+      } catch (e) {
+        // One unplayable thread must not take down the driver; jobs are retried or cancelled above.
+        console.warn('drainAdaptive skipped', String(e).slice(0, 200));
+      }
       const jobs = (
         await Promise.all(
           ['pending', 'failed'].map((status) =>
@@ -44,6 +50,24 @@ export async function drainContent(worldId: string, d: AquariumDB = db, provider
         if (!cp || cp.paused || task.signal.aborted || (await d.worlds.get(worldId))?.deletedAt)
           return;
         const members = await d.memberships.where('worldId').equals(worldId).toArray();
+        const deadParticipant = members.find(
+          (m) =>
+            job.event.participants.includes(m.characterId) &&
+            (!m.inactive ? !ordinaryLife(m.life?.status) : true),
+        );
+        if (deadParticipant && !(job.kind === 'major' && job.event.majorLevel === 'world')) {
+          await d.contentJobs.update(job.id, {
+            status: 'failed',
+            attempts: 3,
+            error: '参与者已死亡或失联，未实际发送的内容取消；历史与死讯记录保留',
+          });
+          if (job.kind === 'major')
+            await d.majorEvents
+              .where('eventId')
+              .equals(job.event.id)
+              .modify({ status: 'cancelled' });
+          continue;
+        }
         if (
           job.event.participants.some(
             (id) => !members.some((m) => m.characterId === id && !m.inactive),
@@ -124,7 +148,12 @@ export async function drainContent(worldId: string, d: AquariumDB = db, provider
               job.recovery,
               task.signal,
             );
-          if (job.kind === 'scene')
+          if (job.kind === 'scene') {
+            // A scene for a major event must see the final event text, not the planning seed.
+            if (job.event.type === 'major') {
+              const latest = await d.events.get(job.event.id);
+              if (latest) job.event = latest;
+            }
             result = await generateScene(
               d,
               job.event,
@@ -133,6 +162,7 @@ export async function drainContent(worldId: string, d: AquariumDB = db, provider
               job.recovery,
               task.signal,
             );
+          }
           await d.transaction('rw', d.tables, async () => {
             const current = await d.checkpoints.get(worldId);
             if (

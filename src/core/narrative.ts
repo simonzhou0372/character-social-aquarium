@@ -39,39 +39,52 @@ export async function canGroupAt(worldId: string, id: string, at: number, d: Aqu
   if (!s || s.since <= at) return ordinaryGroup(s?.status);
   return ordinaryGroup((await narrativeStateAt(worldId, id, at, d))?.to);
 }
-/** Only a locally selected dangerous major event can authorize automatic death proposals. */
+/** Risk is local and stateful: crisis pressure, event scope, location and personal protection. */
 export function lethalCandidates(
   world: World,
   event: ActivityEvent,
   members: Membership[],
   seed: number,
+  options: { day?: number; pressure?: number } = {},
 ) {
   const rules = world.novel?.lifeRules;
-  if (
-    !/险情|危险|事故|战斗|灾难/.test(event.description) ||
-    !world.novel?.enabled ||
-    !rules?.allowDeath ||
-    !/(致命|战斗|灾难|末日|遇险|战争|绝症|灭绝)/.test(
-      [world.rules, world.novel.goal, world.majorEventSettings?.tendency].join(' '),
-    )
-  )
-    return [];
-  const weight =
+  if (!world.novel?.enabled || !rules?.allowDeath) return [];
+  const level = event.majorLevel ?? 'local';
+  const hazardous =
+    level === 'world' ||
+    /险情|危险|事故|战斗|灾难|冲突|踩踏|火灾|爆炸|袭击|失控|坠|撞|病|伤/.test(event.description);
+  if (!hazardous) return [];
+  const day = options.day ?? Math.max(1, Math.floor((event.start - (world.novel.startedAt ?? event.start)) / 86400000) + 1);
+  const pressure = options.pressure ?? Math.max(0, Math.min(1, (day - 1) / 6));
+  const scopeBase = level === 'world' ? 0.42 : level === 'group' ? 0.26 : 0.15;
+  const base =
     rules.risk === 'custom'
-      ? rules.riskWeight
-      : { low: 0.05, standard: 0.15, high: 0.3 }[rules.risk];
-  return event.participants
-    .filter((id) => {
-      const m = members.find((m) => m.characterId === id);
-      let hash = seed >>> 0;
-      for (const c of id) hash = (hash * 31 + c.charCodeAt(0)) >>> 0;
-      return (
-        m?.allowAutomaticDeath === true &&
-        ordinaryLife(m.life?.status) &&
-        (hash % 10000) / 10000 < weight
-      );
+      ? Math.max(0, Math.min(1, rules.riskWeight))
+      : Math.min(0.85, scopeBase * (1 + pressure * 1.45));
+  const maxCount = level === 'world' ? 8 : level === 'group' ? 4 : 2;
+  const scored = event.participants
+    .map((id) => {
+      const m = members.find((x) => x.characterId === id);
+      if (!m || m.inactive || !ordinaryLife(m.life?.status) || m.allowAutomaticDeath !== true)
+        return undefined;
+      const h = (() => {
+        let v = seed >>> 0;
+        for (const c of id) v = (Math.imul(v, 31) + c.charCodeAt(0)) >>> 0;
+        return v / 4294967296;
+      })();
+      // People already wounded/missing and people in the event's immediate location are more exposed.
+      const health = m.life?.body === 'unknown' ? 0.05 : m.life?.status === 'missing' ? 0.02 : 0;
+      const local = level === 'world' || event.location === '全球' ? 0 : 0.03;
+      const personal = Math.min(0.55, base + health + local);
+      return { id, risk: personal, roll: h };
     })
-    .slice(0, 2);
+    .filter((x): x is { id: string; risk: number; roll: number } => !!x)
+    .sort((a, b) => b.risk - a.risk || b.roll - a.roll);
+  const selected = scored.filter((x) => x.roll < x.risk).slice(0, maxCount).map((x) => x.id);
+  // A world-level catastrophe at high pressure always has at least one plausible victim,
+  // but the victim is still chosen by location/health/risk, never by a global quota.
+  if (!selected.length && level === 'world' && pressure > 0.55 && scored[0]) selected.push(scored[0].id);
+  return selected;
 }
 export async function applyNarrativeConsequences(
   worldId: string,
@@ -155,7 +168,17 @@ export async function applyNarrativeConsequences(
           if (!confirmed && !event.lethalCandidateIds?.includes(p.entityId))
             throw new Error('死亡缺少本地致死风险候选');
           const state = await d.states.get(`${worldId}:${p.entityId}`);
-          if (state && (state.location !== event.location || state.eventId !== eventId))
+          const worldScope = event.majorLevel === 'world' || event.location === '全球';
+          // A later planning tick may already have replaced the current state. The event's own
+          // risk candidate list is the authoritative evidence that this person was exposed.
+          const lethalAuthorized = event.type === 'major' && !!event.lethalCandidateIds?.includes(p.entityId);
+          if (!state) throw new Error('死亡缺少人物当前状态');
+          if (
+            !worldScope &&
+            !lethalAuthorized &&
+            state.eventId !== eventId &&
+            state.location !== event.location
+          )
             throw new Error('死亡与人物所在位置或当前活动矛盾');
         }
         if (['resurrecting', 'resurrected'].includes(p.to)) {
@@ -187,6 +210,25 @@ export async function applyNarrativeConsequences(
           canCommunicate: ordinaryLife(p.to) || !!p.spirit,
         });
         await d.memberships.update(m.id, { life: afterLife });
+        if (p.to === 'dead') {
+          // Scheduled content that has not actually happened must not continue as if the person were alive.
+          const jobs = await d.contentJobs.where('worldId').equals(worldId).toArray();
+          for (const job of jobs) {
+            if (job.status === 'complete' || job.at <= at) continue;
+            if (job.event.participants.includes(p.entityId) || job.speakerId === p.entityId) {
+              await d.contentJobs.update(job.id, {
+                status: 'failed',
+                attempts: 3,
+                error: '人物已确认死亡，预定内容取消；历史记录保留',
+              });
+              if (job.kind === 'major')
+                await d.majorEvents
+                  .where('eventId')
+                  .equals(job.event.id)
+                  .modify({ status: 'cancelled' });
+            }
+          }
+        }
       } else {
         if (!world.novel.allowGroupChanges || !(groupStates as readonly string[]).includes(p.to))
           throw new Error('团体动态变化未启用或状态非法');

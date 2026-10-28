@@ -2,7 +2,15 @@ import { LifeRulesSchema } from './narrative-types';
 import { z } from 'zod';
 const major = z.object({
   enabled: z.boolean(),
-  maximumIntervalDays: z.number().min(1).max(36500),
+  maximumIntervalDays: z.number().min(0.01).max(36500),
+  intervalMinutes: z.number().min(15).max(525600).optional(),
+  minimumGapMinutes: z.number().min(0).max(1440).optional(),
+  maxPerDay: z.number().int().min(1).max(48).optional(),
+  allowChainEvents: z.boolean().optional(),
+  maxChainDepth: z.number().int().min(0).max(3).optional(),
+  levels: z
+    .object({ local: z.boolean(), group: z.boolean(), world: z.boolean() })
+    .optional(),
   tendency: z.string().max(4000),
   allowRelationshipChanges: z.boolean(),
   allowMultipleGroups: z.boolean(),

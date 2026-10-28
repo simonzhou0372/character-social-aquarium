@@ -1,3 +1,4 @@
+import { canonical } from './model-policy';
 import { recordValidation } from './usage-ledger';
 import Dexie from 'dexie';
 import type { AquariumDB } from '../data/db';
@@ -18,6 +19,64 @@ export type BatchUnit = {
   attempt?: number;
   retryOf?: string;
 };
+export function batchEnvelope(list: BatchUnit[], batchId: string): ChatInput {
+  const first = list[0];
+  const locals = list.map((u) => JSON.parse(u.request[1].content));
+  const sharedContext: Record<string, any> = {};
+  for (const key of Object.keys(locals[0])) {
+    if (key === 'input') continue;
+    if (
+      locals.every(
+        (c) =>
+          JSON.stringify(canonical(c[key], key)) === JSON.stringify(canonical(locals[0][key], key)),
+      )
+    ) {
+      sharedContext[key] = locals[0][key];
+      locals.forEach((c) => delete c[key]);
+    }
+  }
+  const input = locals[0].input;
+  if (input && typeof input === 'object')
+    for (const key of Object.keys(input)) {
+      if (
+        locals.every(
+          (c) =>
+            JSON.stringify(canonical(c.input?.[key], key)) ===
+            JSON.stringify(canonical(input[key], key)),
+        )
+      ) {
+        (sharedContext.input ??= {})[key] = input[key];
+        locals.forEach((c) => delete c.input[key]);
+      }
+    }
+  const contracts = list.map((u) => u.request[0].content.split('【不可覆盖的输出契约】')[1]);
+  const sharedContract = contracts.every((c) => c === contracts[0]) ? contracts[0] : undefined;
+  return [
+    {
+      role: 'system',
+      content:
+        first.request[0].content.split('【不可覆盖的输出契约】')[0] +
+        '\n【不可覆盖的输出契约】\n每个任务使用局部 contract，缺省时使用 sharedContract。只返回 JSON {"batchId":"输入中的batchId","results":[{"taskId":"原任务ID","result":原任务输出对象}]}。sharedContext 为本组合法共享事实，任务 context 为局部补充，其 input 与 sharedContext.input 合并使用。任务事实不可跨任务改写，按任务ID分别返回，不合并消息、不省略条目。按任务时间顺序生成线下阶段，后续阶段承接前文；角色私有认知仅归属该角色，不能自动传播。',
+    },
+    {
+      role: 'user',
+      content: JSON.stringify({
+        sharedContext,
+        sharedContract,
+        batchId,
+        tasks: list.map((u, i) => {
+          const local = locals[i];
+          return {
+            taskId: u.id,
+            contract: sharedContract === undefined ? contracts[i] : undefined,
+            context: local,
+          };
+        }),
+      }),
+    },
+  ];
+}
+
 export async function requestUnits(
   d: AquariumDB,
   worldId: string,
@@ -27,6 +86,7 @@ export async function requestUnits(
   provider: Provider,
   signal?: AbortSignal,
 ) {
+  if (!units.length) throw new ProviderError('batch-empty', '批次不能为空');
   const cp = await d.checkpoints.get(worldId),
     settings = await d.settings.get('app'),
     profile = await d.profiles.get('api');
@@ -45,57 +105,21 @@ export async function requestUnits(
     settings?.adaptiveBatching !== false,
     profile?.outputBudgetTokens ?? 2048,
     health,
+    units.length,
   );
   const first = units[0];
   const selected: BatchUnit[] = [];
   let output = 150;
   const batchId = uid('batch');
-  function envelope(list: BatchUnit[]): ChatInput {
-    const locals = list.map((u) => JSON.parse(u.request[1].content));
-    const sharedContext: Record<string, any> = {};
-    for (const key of Object.keys(locals[0])) {
-      if (key === 'input') continue;
-      if (locals.every((c) => JSON.stringify(c[key]) === JSON.stringify(locals[0][key]))) {
-        sharedContext[key] = locals[0][key];
-        locals.forEach((c) => delete c[key]);
-      }
-    }
-    const input = locals[0].input;
-    if (input && typeof input === 'object')
-      for (const key of Object.keys(input)) {
-        if (locals.every((c) => JSON.stringify(c.input?.[key]) === JSON.stringify(input[key]))) {
-          (sharedContext.input ??= {})[key] = input[key];
-          locals.forEach((c) => delete c.input[key]);
-        }
-      }
-    return [
-      {
-        role: 'system',
-        content:
-          first.request[0].content.split('【不可覆盖的输出契约】')[0] +
-          '\n【批量输出契约】本次每个任务的原输出契约放在局部 contract 中。只返回 JSON {"batchId":"' +
-          batchId +
-          '","results":[{"taskId":"原任务ID","result":原任务输出对象}]}。sharedContext 为本组合法共享事实，任务 context 为局部补充，其 input 与 sharedContext.input 合并使用。任务事实不可跨任务改写，按任务ID分别返回，不合并消息、不省略条目。',
-      },
-      {
-        role: 'user',
-        content: JSON.stringify({
-          batchId,
-          sharedContext,
-          tasks: list.map((u, i) => {
-            const local = locals[i];
-            return {
-              taskId: u.id,
-              contract: u.request[0].content.split('【不可覆盖的输出契约】')[1],
-              context: local,
-            };
-          }),
-        }),
-      },
-    ];
-  }
+  const envelope = (list: BatchUnit[]) => batchEnvelope(list, batchId);
   for (const u of units) {
-    if (u.privacy !== first.privacy || selected.length >= limits.maxTasks) continue;
+    if (
+      u.privacy !== first.privacy ||
+      selected.length >= limits.maxTasks ||
+      u.request[0].content.split('【不可覆盖的输出契约】')[0] !==
+        first.request[0].content.split('【不可覆盖的输出契约】')[0]
+    )
+      continue;
     if (selected.length && output + u.outputTokens > limits.outputTokens) break;
     const candidate = [...selected, u];
     if (

@@ -10,7 +10,7 @@ export function requestCost(usage: Partial<UsageLedger>, pricing?: ModelPricing)
   const completeCache =
     usage.cacheHitTokens !== undefined &&
     usage.cacheMissTokens !== undefined &&
-    Math.abs(usage.cacheHitTokens + usage.cacheMissTokens - usage.inputTokens) <= 1;
+    usage.cacheHitTokens + usage.cacheMissTokens === usage.inputTokens;
   const hit = completeCache ? usage.cacheHitTokens! : 0,
     miss = completeCache ? usage.cacheMissTokens! : usage.inputTokens;
   // Provider completion_tokens includes reasoning_tokens: never add the latter a second time.

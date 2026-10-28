@@ -102,7 +102,7 @@ class FixtureProvider implements Provider {
           batchId: p.batchId,
           results: p.tasks.map((t: any) => ({
             taskId: t.taskId,
-            result: output(t.contract, {
+            result: output(t.contract ?? p.sharedContract, {
               ...p.sharedContext,
               ...t.context,
               input: { ...p.sharedContext?.input, ...t.context.input },

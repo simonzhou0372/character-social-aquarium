@@ -18,6 +18,7 @@ const names = [
   'worldReports',
   'reportCursors',
   'majorSchedules',
+  'majorChains',
   'majorEvents',
   'notifications',
   'reactions',
@@ -181,6 +182,15 @@ export function validateBackup(input: unknown): Backup {
     assert(
       worlds.has(s.id) && s.nextDueAt > s.lastOccurredAt && s.plannedAt <= s.nextDueAt,
       '大型事件截止时间',
+    ),
+  );
+  b.majorChains.forEach((c) =>
+    assert(
+      worlds.has(c.worldId) &&
+        events.has(c.parentEventId) &&
+        c.participantIds.every((id) => member(c.worldId, id)) &&
+        (!c.groupId || groups.has(c.groupId)),
+      '连锁事件',
     ),
   );
   b.majorEvents.forEach((m) =>

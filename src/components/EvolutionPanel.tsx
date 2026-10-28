@@ -10,6 +10,9 @@ const labels = {
   personality: '长期性格倾向',
   style: '说话习惯',
   habits: '生活习惯',
+  values: '核心价值观',
+  goal: '人生目标',
+  fear: '最大恐惧',
 };
 export function EvolutionPanel({ worldId, characterId }: { worldId: string; characterId: string }) {
   const data = useLiveQuery(

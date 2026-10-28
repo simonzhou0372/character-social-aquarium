@@ -13,7 +13,12 @@ import type {
   EvolutionCursorSchema,
   ReportCursorSchema,
 } from '../core/focus-types';
-import type { MajorSchedule, MajorEvent, EventNotification } from '../core/types';
+import type {
+  MajorSchedule,
+  MajorEvent,
+  MajorChain,
+  EventNotification,
+} from '../core/types';
 import type { MessageReaction, MessageReadState, GifAsset, LocalResource } from '../core/types';
 import type { ContentJob } from '../core/content-jobs';
 import { realLocalDate } from '../core/calendar';
@@ -51,6 +56,7 @@ export class AquariumDB extends Dexie {
   worldReports!: Table<WorldReport>;
   reportCursors!: Table<z.infer<typeof ReportCursorSchema>>;
   majorSchedules!: Table<MajorSchedule>;
+  majorChains!: Table<MajorChain>;
   majorEvents!: Table<MajorEvent>;
   notifications!: Table<EventNotification>;
   reactions!: Table<MessageReaction>;
@@ -219,6 +225,7 @@ export class AquariumDB extends Dexie {
       narrativeChanges: 'id,worldId,entityId,eventId,[worldId+at],[worldId+entityId+at]',
       organizationStates: 'id,worldId,groupId',
     });
+    this.version(16).stores({ majorChains: 'id,worldId,dueAt,[worldId+dueAt]' });
     this.version(14).upgrade((tx) =>
       tx
         .table('settings')
@@ -246,6 +253,7 @@ export const dataTables = (d: AquariumDB) => [
   d.worldReports,
   d.reportCursors,
   d.majorSchedules,
+  d.majorChains,
   d.majorEvents,
   d.notifications,
   d.reactions,

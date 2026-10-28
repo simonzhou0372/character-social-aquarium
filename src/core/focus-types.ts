@@ -38,7 +38,15 @@ export const BackfillSchema = z.object({
   createdAt: at,
 });
 export type BackfillJob = z.infer<typeof BackfillSchema>;
-export const evolutionFields = ['initiative', 'personality', 'style', 'habits'] as const;
+export const evolutionFields = [
+  'initiative',
+  'personality',
+  'style',
+  'habits',
+  'goal',
+  'values',
+  'fear',
+] as const;
 export type EvolutionField = (typeof evolutionFields)[number];
 export const EvolutionRecordSchema = z.object({
   id,

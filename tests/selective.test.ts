@@ -215,7 +215,7 @@ it('rejects locked / core / disabled / excessive evolution and cancades dependen
   ).rejects.toThrow();
   await expect(
     applyEvolution(worldId, { ...proposal, newValue: c.initiative + 0.2 }, d),
-  ).rejects.toThrow('0.05');
+  ).rejects.toThrow('0.15');
   const first = await applyEvolution(worldId, proposal, d);
   const secondEvent = {
     ...events[0],

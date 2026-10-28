@@ -166,6 +166,7 @@ export async function purgeEntity(kind: RecycleKind, id: string, d: AquariumDB =
     for (const member of rows.memberships)
       if (member.life && gone('events', member.life.eventId) && !gone('memberships', member.id))
         await d.memberships.update(member.id, { life: undefined });
+    mark('majorChains', (r) => gone('events', r.parentEventId));
     mark('majorEvents', (r) => gone('events', r.eventId));
     mark('notifications', (r) => gone('majorEvents', r.eventId));
     mark('readStates', (r) => gone('messages', r.messageId));

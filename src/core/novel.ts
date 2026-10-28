@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { db, type AquariumDB } from '../data/db';
 import { DAY, WorldSchema, type World } from './types';
-import { defaultMajorSettings, nextMajorSchedule } from './major-events';
+import { defaultMajorSettings, nextMajorScheduleFor } from './major-events';
 import { NovelSchema, StoryConditionSchema, type NovelConfig } from './novel-types';
 export function normalizeNovel(world: World, previous?: World, at = Date.now()): World {
   const n = world.novel;
@@ -82,10 +82,10 @@ export async function saveManagedWorld(input: World, d: AquariumDB = db) {
         world.majorEventSettings.maximumIntervalDays !== old.majorEventSettings.maximumIntervalDays)
     )
       await d.majorSchedules.put(
-        nextMajorSchedule(
+        nextMajorScheduleFor(
           world.id,
           cp?.simTime ?? Date.now(),
-          world.majorEventSettings.maximumIntervalDays,
+          world.majorEventSettings,
         ),
       );
     if (cp) await d.checkpoints.update(world.id, { controlVersion: (cp.controlVersion ?? 0) + 1 });

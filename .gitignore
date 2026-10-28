@@ -6,3 +6,7 @@ test-results/
 playwright-report/
 *.tsbuildinfo
 experiments/
+
+# Last Seven Days experiment working files (deliverable: /LastSevenDays_Archive/)
+docs/last-seven-days/
+LastSevenDays_Archive/

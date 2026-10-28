@@ -65,24 +65,8 @@ export function compressContext(
 ): { context: PromptContext; removedHistory: number; removedMemories: number } {
   const clean = stripDecorative(context) as PromptContext,
     compact = tier === 'tight';
-  const character = record(clean.character);
-  if (Object.keys(character).length) {
-    clean.character = {
-      ...character,
-      personality: selectiveText(character.personality, compact ? 300 : 700),
-      style: selectiveText(character.style, compact ? 220 : 500),
-      habits: selectiveText(character.habits, compact ? 120 : 250),
-    };
-  }
-  if (Array.isArray(clean.relationships))
-    clean.relationships = clean.relationships.map((item) => {
-      const r = record(item);
-      return {
-        ...r,
-        history: selectiveText(r.history, compact ? 120 : 260),
-        attitude: selectiveText(r.attitude, compact ? 100 : 200),
-      };
-    });
+  // Character settings and relationship facts are mandatory. Their prefix must
+  // not change when unrelated history crosses the tight-context threshold.
   const history = Array.isArray(clean.history) ? clean.history : [];
   const retained = new Set(history.slice(compact ? -3 : -7));
   const latestUser = [...history].reverse().find((item) => {
@@ -106,7 +90,7 @@ export function compressContext(
   const memoryLimit = compact ? 2 : 4;
   const important = memories.filter((m) => critical.test(String(record(m).content ?? '')));
   const ordinary = memories.filter((m) => !important.includes(m));
-  const kept = [...important, ...ordinary].slice(0, memoryLimit);
+  const kept = [...important, ...ordinary.slice(0, Math.max(0, memoryLimit - important.length))];
   clean.memories = kept.map((m) => ({
     ...record(m),
     content: selectiveText(record(m).content, compact ? 240 : 450),

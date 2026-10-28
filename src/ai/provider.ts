@@ -157,7 +157,12 @@ export class CompatibleProvider implements Provider {
         ? compactChatRequest(messages, options?.task)
         : undefined;
     if (compact) messages = compact.messages;
-    if (policy.deepSeek && this.profile.stablePrefix !== false) messages = cachedMessages(messages);
+    // Prefix reuse is independent of the model's thinking-parameter support.
+    const deepSeekEndpoint =
+      new URL(this.profile.baseUrl).hostname === 'api.deepseek.com' ||
+      this.profile.deepSeekCompatible === true;
+    if (deepSeekEndpoint && this.profile.stablePrefix !== false)
+      messages = cachedMessages(messages);
     const data = await this.request(
       'chat/completions',
       'POST',
@@ -170,7 +175,7 @@ export class CompatibleProvider implements Provider {
             }
           : {}),
         messages,
-        temperature: 0.65,
+        temperature: this.temperatureFor(options?.task),
         max_tokens: options?.maxOutputTokens ?? 1400,
         ...((this.profile.structuredOutputMode === 'json' ||
           (this.profile.structuredOutputMode !== 'off' &&
@@ -209,6 +214,22 @@ export class CompatibleProvider implements Provider {
       accounting: reportedUsage(data.usage),
       policy,
     };
+  }
+  temperatureFor(task?: string) {
+    const map = this.profile.temperatures;
+    const key =
+      task === 'scene' || task === 'inPerson'
+        ? 'scene'
+        : task === 'major' || task === 'novel'
+          ? 'major'
+          : task === 'evolution'
+            ? 'evolution'
+            : task === 'report'
+              ? 'report'
+              : task === 'life' || task === 'expansion'
+                ? 'life'
+                : 'chat';
+    return map?.[key] ?? 0.65;
   }
   describe(task?: string) {
     const p = modelPolicy(this.profile, task);

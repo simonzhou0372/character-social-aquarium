@@ -82,11 +82,12 @@ describe('selective context packing', () => {
       { role: 'system' as const, content: '全局禁用规则，不允许泄露秘密。' },
       { role: 'user' as const, content: JSON.stringify(context) },
     ];
-    const packed = packRequest(request, 'chat', 2500);
+    const packed = packRequest(request, 'chat', 8000);
     const result = JSON.parse(packed.messages[1].content);
     expect(packed.messages[0]).toEqual(request[0]);
     expect(result.world).toEqual(world);
-    expect(result.relationships[0].boundaries).toBe('不得泄露秘密');
+    expect(result.relationships).toEqual(context.relationships);
+    expect(() => packRequest(request, 'chat', 2500)).toThrow('必要的世界事实');
     expect(result.history.at(-1)).toEqual(latest);
     expect(result.state).toEqual(context.state);
     expect(result.input.constraints).toBe('必须保留此项');

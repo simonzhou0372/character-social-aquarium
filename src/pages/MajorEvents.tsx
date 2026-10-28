@@ -53,7 +53,7 @@ export function MajorEventDetail({
             {data.world && formatWorldTime(data.world, e.timestamp)} ·{' '}
             {data.activity?.location ?? '未知地点'}
             {data.groups.length ? ` · ${data.groups.map((g) => g.name).join('、')}` : ''} ·{' '}
-            {e.status === 'contentPending' ? '细节生成中' : '已归档'}
+            {e.status === 'contentPending' ? '细节生成中' : e.status === 'cancelled' ? '已取消' : '已归档'}
           </p>
           <div className="major-event-hero-cast">
             {e.participantIds.slice(0, 8).map((id) => (
@@ -73,7 +73,7 @@ export function MajorEventDetail({
         <>
           <p>
             {data.world && formatWorldTime(data.world, e.timestamp)} ·{' '}
-            {e.status === 'contentPending' ? '事件已发生，细节生成中' : '已记录'}
+            {e.status === 'contentPending' ? '事件已发生，细节生成中' : e.status === 'cancelled' ? '事件已取消：参与者在该事件前死亡' : '已记录'}
           </p>
           <div className="toolbar">
             {e.participantIds.map((id) => (

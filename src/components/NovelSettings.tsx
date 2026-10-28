@@ -243,22 +243,27 @@ export function NovelSettings({ world, onChange }: { world: World; onChange: (w:
           <Status>
             保存后强制启用人物演化与周期重大事件，核心锁定仍受保护。关闭小说模式会恢复启用前的两项配置，已发生剧情不回滚。
           </Status>
-          <Field label="最长重大事件间隔（虚拟日）">
+          <Field label="重大事件目标/最大间隔（分钟）">
             <Input
               type="number"
-              min={1}
-              max={36500}
-              value={world.majorEventSettings?.maximumIntervalDays ?? 7}
-              onChange={(e) =>
+              min={15}
+              max={525600}
+              value={
+                world.majorEventSettings?.intervalMinutes ??
+                Math.round((world.majorEventSettings?.maximumIntervalDays ?? 1) * 1440)
+              }
+              onChange={(e) => {
+                const minutes = Number(e.target.value);
                 onChange({
                   ...world,
                   majorEventSettings: {
                     ...(world.majorEventSettings ?? defaultMajorSettings),
                     enabled: true,
-                    maximumIntervalDays: Number(e.target.value),
+                    intervalMinutes: minutes,
+                    maximumIntervalDays: Math.max(0.01, minutes / 1440),
                   },
-                })
-              }
+                });
+              }}
             />
           </Field>
           <p>人物动态演化：已强制开启 · 重大事件：已强制开启。仍需在角色页解锁允许变化的字段。</p>

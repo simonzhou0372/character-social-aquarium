@@ -1,6 +1,6 @@
 import { db, withWorldLock, type AquariumDB } from '../data/db';
 import { DAY, uid, type Character } from './types';
-import { EvolutionRecordSchema, type EvolutionField } from './focus-types';
+import { EvolutionRecordSchema, evolutionFields, type EvolutionField } from './focus-types';
 import { resolveObservation } from './selective-observation';
 import { composePrompt, getPrompts } from '../ai/prompts';
 import { budgetedCompletion } from '../ai/orchestrator';
@@ -10,7 +10,7 @@ import { z } from 'zod';
 const Values = z.union([z.number(), z.string().max(1200)]);
 const Proposal = z.object({
   characterId: z.string(),
-  field: z.enum(['initiative', 'personality', 'style', 'habits']),
+  field: z.enum(evolutionFields),
   newValue: Values,
   sourceEventIds: z.array(z.string()).min(1).max(8),
   reason: z.string().min(1).max(1500),
@@ -45,17 +45,17 @@ export async function applyEvolution(worldId: string, input: unknown, d: Aquariu
       )
         throw new Error('演化依据缺失或不属于角色经历');
       const events = sources as NonNullable<(typeof sources)[number]>[];
-      if (events.length < 3 && !events.some((e) => (e.importance ?? 0) >= 0.9))
-        throw new Error('长期变化需要多次经历或明确重大事件');
-      const previous = m.evolved?.[p.field] ?? character[p.field];
+      if (events.length < 2 && !events.some((e) => (e.importance ?? 0) >= 0.8))
+        throw new Error('长期变化需要至少两段经历或一次明确重大事件');
+      const previous = (m.evolved as Record<string, unknown> | undefined)?.[p.field] ?? (character as unknown as Record<string, unknown>)[p.field];
       if (
         p.field === 'initiative' &&
         (typeof p.newValue !== 'number' ||
-          Math.abs(p.newValue - Number(previous)) > 0.0500001 ||
+          Math.abs(p.newValue - Number(previous)) > 0.1500001 ||
           p.newValue < 0 ||
           p.newValue > 1)
       )
-        throw new Error('主动性每次演化最多变化0.05');
+        throw new Error('主动性每次演化最多变化0.15');
       if (p.field !== 'initiative' && (typeof p.newValue !== 'string' || !p.newValue.trim()))
         throw new Error('演化文本无效');
       if (p.newValue === previous) return undefined;
@@ -131,35 +131,43 @@ export async function revertEvolution(recordId: string, cascade: boolean, d: Aqu
     for (const item of affected) await d.evolutionRecords.update(item.id, { status: 'reverted' });
   });
 }
-/** Event-driven eligibility, at most one assessment per seven virtual days per world. */
+/** Daily, event-driven assessment; high-pressure worlds get rapid but evidence-bound change. */
 export async function evaluateEvolution(worldId: string, d: AquariumDB = db, provider?: Provider) {
   return withWorldLock('evolution:' + worldId, async () => {
     const world = await d.worlds.get(worldId),
       cp = await d.checkpoints.get(worldId);
     if (world?.deletedAt || !world?.evolutionSettings?.enabled || !cp || cp.paused) return;
     const cursor = await d.evolutionCursors.get(worldId),
-      since = cursor?.lastAt ?? world.calendarAnchor?.tick ?? cp.simTime;
-    if (cp.simTime - since < 7 * DAY) return;
+      since = cursor?.lastAt ?? world.novel?.startedAt ?? world.calendarAnchor?.tick ?? cp.simTime;
+    if (cp.simTime - since < DAY) return;
     const scope = await resolveObservation(worldId, d);
     const events = await d.events
       .where('[worldId+start]')
       .between([worldId, since], [worldId, cp.simTime], true, false)
-      .and((e) => (e.importance ?? 0) >= 0.7 && scope.allowsEvent(e))
+      .and((e) => (e.importance ?? 0) >= 0.62 && scope.allowsEvent(e))
       .toArray();
-    const candidates = [...new Set(events.flatMap((e) => e.participants))].filter((id) =>
-      scope.activeIds.has(id),
+    const members = await d.memberships.where('worldId').equals(worldId).toArray();
+    const alive = new Set(
+      members.filter((m) => !m.inactive && (m.life?.status ?? 'alive') !== 'dead').map((m) => m.characterId),
     );
+    const candidates = [...new Set(events.flatMap((e) => e.participants))].filter(
+      (id) => scope.activeIds.has(id) && alive.has(id),
+    );
+    // Rotate away from whoever changed most recently, so coverage is not monopolised.
+    const records = await d.evolutionRecords.where('worldId').equals(worldId).toArray();
+    const lastChange = new Map<string, number>();
+    for (const r of records) lastChange.set(r.characterId, Math.max(lastChange.get(r.characterId) ?? 0, r.at));
+    candidates.sort((a, b) => (lastChange.get(a) ?? 0) - (lastChange.get(b) ?? 0));
     // Persist assessment cadence before network work, so failures cannot turn this into per-tick polling.
     await d.evolutionCursors.put({ id: worldId, lastAt: cp.simTime });
-    for (const id of candidates.slice(0, 8)) {
-      const membership = await d.memberships
-          .where('[worldId+characterId]')
-          .equals([worldId, id])
-          .first(),
+    const day = Math.max(1, Math.floor((cp.simTime - (world.novel?.startedAt ?? cp.simTime)) / DAY) + 1);
+    const dailyCap = Math.max(1, Math.min(100, world.evolutionSettings.maxPerDay ?? 28));
+    for (const id of candidates.slice(0, dailyCap)) {
+      const membership = members.find((m) => m.characterId === id),
         character = await d.characters.get(id);
       if (!character || !membership?.evolutionFields?.length) continue;
-      const evidence = events.filter((e) => e.participants.includes(id)).slice(-8);
-      if (evidence.length < 3 && !evidence.some((e) => (e.importance ?? 0) >= 0.9)) continue;
+      const evidence = events.filter((e) => e.participants.includes(id)).slice(-10);
+      if (evidence.length < 2 && !evidence.some((e) => (e.importance ?? 0) >= 0.85)) continue;
       let proposal: unknown;
       if (provider) {
         const snap = await getPrompts(d);
@@ -170,40 +178,48 @@ export async function evaluateEvolution(worldId: string, d: AquariumDB = db, pro
             'evolution',
             snap,
             {
-              world: { rules: world.rules, evolutionRules: world.evolutionSettings.rules },
+              world: {
+                rules: world.rules,
+                evolutionRules: world.evolutionSettings.rules,
+                day,
+                crisisPressure: Math.min(1, (day - 1) / 6),
+              },
               character: {
                 id,
                 name: character.name,
                 personality: character.personality,
                 style: character.style,
                 habits: character.habits,
+                values: character.values,
+                goal: character.goal,
+                fear: character.fear,
                 initiative: character.initiative,
                 evolved: membership.evolved,
               },
-              input: { allowedFields: membership.evolutionFields, evidence },
+              input: { allowedFields: membership.evolutionFields, evidence, day },
             },
-            '仅返回 JSON {"proposal":null} 或 {"proposal":{"characterId":"ID","field":"允许的字段","newValue":"新值或主动性数值","sourceEventIds":["已有事件ID"],"reason":"变化依据"}}。只做缓慢变化；核心身份、世界覆盖的简介与锁定属性不能改变。initiative每次变化不超过0.05；已有世界口吻覆盖优先。不足以支持长期变化则proposal为null。',
+            '仅返回 JSON {"proposal":null} 或 {"proposal":{"characterId":"ID","field":"允许的字段","newValue":"新值或主动性数值","sourceEventIds":["已有事件ID"],"reason":"变化依据"}}。这是极高压力末日社会：允许价值观崩溃、信念反转、目标彻底改变、从怯懦变勇敢、从善良变冷酷、从傲慢变谦卑、从理性变冲动、从孤僻变依赖；也允许人物在压力下异常稳定或反复矛盾。但每次变化必须由 evidence 中实际发生的事件支撑，写清触发过程与后续行为影响，不能只换形容词。initiative 每次变化不超过0.15；不得修改姓名、年龄、国籍、已发生历史与世界规则。不足以支持变化则 proposal 为 null。',
           ),
           worldId,
           'evolution',
           snap,
           undefined,
-          { outputBudget: 2000 },
+          { outputBudget: 2200 },
         );
         proposal = z
           .object({ proposal: Proposal.nullable() })
           .parse(parseStructuredJSON(response.content)).proposal;
       } else if (membership.evolutionFields.includes('initiative')) {
         const previous = membership.evolved?.initiative ?? character.initiative,
-          negative = evidence.some((e) => /冲突|失败|争吵/.test(e.description));
+          negative = evidence.some((e) => /冲突|失败|争吵|死亡|背叛|灾难/.test(e.description));
         proposal = {
           characterId: id,
           field: 'initiative',
-          newValue: Math.max(0, Math.min(1, previous + (negative ? -0.03 : 0.03))),
+          newValue: Math.max(0, Math.min(1, previous + (negative ? -0.06 : 0.06))),
           sourceEventIds: evidence.map((e) => e.id),
           reason: negative
-            ? '多次重要经历中的挫折，社交主动倾向小幅下降。'
-            : '多次重要共同经历，使社交主动倾向小幅增加。',
+            ? '多次高压力事件中的挫折与失去，社交主动倾向发生可见变化。'
+            : '多次重要共同经历，使社交主动倾向发生可见变化。',
         };
       }
       const latest = await d.checkpoints.get(worldId);
@@ -215,7 +231,12 @@ export async function evaluateEvolution(worldId: string, d: AquariumDB = db, pro
           parsed.sourceEventIds.some((id) => !evidence.some((e) => e.id === id))
         )
           throw new Error('演化建议引用了未提供的人物或经历');
-        await applyEvolution(worldId, parsed, d);
+        try {
+          await applyEvolution(worldId, parsed, d);
+        } catch (e) {
+          // One under-supported proposal must not abort the daily census for everyone else.
+          console.warn('evolution skipped', parsed.characterId, String(e).slice(0, 160));
+        }
       }
     }
     await d.evolutionCursors.put({ id: worldId, lastAt: cp.simTime });

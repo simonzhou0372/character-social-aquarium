@@ -341,7 +341,7 @@ export async function historicalCharacter(
     .equals(c.id)
     .and((r) => r.worldId === worldId && r.status === 'applied')
     .sortBy('at');
-  for (const field of ['initiative', 'personality', 'style', 'habits'] as const) {
+  for (const field of ['initiative', 'personality', 'style', 'habits', 'goal', 'values', 'fear'] as const) {
     const chain = records.filter((r) => r.field === field),
       past = chain.filter((r) => r.at <= at).at(-1),
       future = chain.find((r) => r.at > at);

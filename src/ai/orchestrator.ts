@@ -18,6 +18,7 @@ import { completedField } from './structured';
 import { validateMessageExtras } from '../data/chat';
 import { availableGifs } from '../data/gifs';
 import { clockTarget } from '../core/time';
+import { crisisPrompt } from '../core/crisis';
 import { foregroundStart } from '../core/clock-presence';
 import {
   markdownPattern as markdown,
@@ -413,6 +414,7 @@ export async function dialogueContext(
     : undefined;
   return {
     world,
+    environment: world ? crisisPrompt(world, at) : undefined,
     character: {
       ...effective,
       bio: membership?.bioOverride || character?.bio,
@@ -445,6 +447,7 @@ export async function dialogueContext(
     })),
     state,
     input: {
+      speakerId,
       conversationKind: c.kind,
       conversationId: c.id,
       groupId: c.groupId,

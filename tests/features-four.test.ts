@@ -378,6 +378,7 @@ it('migrates version-six archives in place without changing prompts, profiles or
     'gifAssets',
     'resources',
     'majorSchedules',
+    'majorChains',
     'majorEvents',
     'notifications',
   ]);

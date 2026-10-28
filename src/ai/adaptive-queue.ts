@@ -140,6 +140,17 @@ export async function drainAdaptive(
       const c = await d.conversations.get(job.conversation.id);
       if (!c || c.controlledId === job.speakerId) continue;
       job.conversation = c;
+      // A death makes the whole thread unplayable: fail it here instead of letting the
+      // dialogue contract throw and abort the entire drain loop.
+      const gone = await Promise.all(c.participants.map((id) => canLiveAt(worldId, id, job.at, d)));
+      if (gone.some((ok) => !ok)) {
+        await d.contentJobs.update(job.id, {
+          status: 'failed',
+          attempts: 3,
+          error: '会话参与者已死亡或失联；该会话暂停，历史记录保留',
+        });
+        continue;
+      }
     }
     ready.push(job);
   }
@@ -219,6 +230,27 @@ export async function drainAdaptive(
     }
     return;
   }
+  const policyTask =
+    first.kind === 'life'
+      ? first.recovery
+        ? 'recovery'
+        : 'life'
+      : first.recovery
+        ? 'recoveryChat'
+        : 'chat';
+  const policyPrefix = composePrompt(policyTask, snapshot, {}, '')[0].content;
+  // Persisted jobs may only contain a stub; compare the authoritative snapshots.
+  const policies = new Map(
+    await Promise.all(
+      ready.map(
+        async (job) =>
+          [
+            job.id,
+            composePrompt(policyTask, await contentSnapshot(job, d), {}, '')[0].content,
+          ] as const,
+      ),
+    ),
+  );
   const units: BatchUnit[] = [],
     byId = new Map<string, ContentJob>();
   for (const job of ready
@@ -229,8 +261,7 @@ export async function drainAdaptive(
           (j.speakerId === first.speakerId &&
             JSON.stringify([...(j.conversation?.participants ?? [])].sort()) ===
               JSON.stringify([...(first.conversation?.participants ?? [])].sort()))) &&
-        j.snapshot.version === first.snapshot.version &&
-        j.snapshot.updatedAt === first.snapshot.updatedAt &&
+        policies.get(j.id) === policyPrefix &&
         j.recovery === first.recovery,
     )
     .slice(0, MAX_READY_CONTENT)) {

@@ -1,5 +1,6 @@
-import { actorAvailable } from './narrative';
-import { lethalCandidates } from './narrative';
+import { actorAvailable, lethalCandidates, ordinaryLife } from './narrative';
+import { crisisAt } from './crisis';
+import { computeCoverage, invalidateCoverage } from './coverage';
 import Dexie from 'dexie';
 import { contentPlan, planningHistory, MAX_PENDING_CONTENT } from './adaptive-batching';
 import { simulatedReaction } from './reaction-emojis';
@@ -10,7 +11,7 @@ import {
   observationKeys,
   evolvedCharacter,
 } from './selective-observation';
-import { nextMajorSchedule, planMajor } from './major-events';
+import { materializeChain, nextMajorSchedule, nextMajorScheduleFor, planMajorBatch } from './major-events';
 import type { ContentJob } from './content-jobs';
 import { drainContent } from '../ai/content-queue';
 import { foregroundStart } from './clock-presence';
@@ -28,7 +29,14 @@ import { type Provider, ProviderError } from '../ai/provider';
 import { planInWorker } from './planner';
 import { random, segmentEnd, socialWeight, topicPolicy, topicDue } from './simulation';
 import { clockTarget } from './time';
-import { HOUR, DAY, type Checkpoint, type Conversation } from './types';
+import {
+  HOUR,
+  DAY,
+  type Checkpoint,
+  type Conversation,
+  type ActivityEvent,
+  type MajorEvent,
+} from './types';
 export interface RecoveryProgress {
   worldId: string;
   from: number;
@@ -183,8 +191,8 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
       const cachedActiveRelations = cachedRelations.filter((r) =>
         observation.activeIds.has(r.from),
       );
-      const cachedMembers = observation.members.filter((m) =>
-        observation.activeIds.has(m.characterId),
+      const cachedMembers = observation.members.filter(
+        (m) => observation.activeIds.has(m.characterId) && !m.inactive && ordinaryLife(m.life?.status),
       );
       const historyCache = new Map<string, import('./types').Message[]>();
       const cursorCache = new Map<string, import('./types').ReadCursor | undefined>();
@@ -224,11 +232,14 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               ),
             )
           ).reduce((a, b) => a + b, 0);
-          const barrier = await d.contentJobs
-            .where('[worldId+kind+status]')
-            .anyOf(['pending', 'running', 'failed'].map((status) => [worldId, 'major', status]))
-            .first();
-          if (pending >= MAX_PENDING_CONTENT || barrier) {
+          // Cancelled-by-death majors are terminal; they must not block planning forever.
+          const majorPending = (
+            await d.contentJobs
+              .where('[worldId+kind+status]')
+              .anyOf(['pending', 'running', 'failed'].map((status) => [worldId, 'major', status]))
+              .toArray()
+          ).filter((j) => !/死亡|失联|取消/.test(j.error ?? '')).length;
+          if (pending >= MAX_PENDING_CONTENT || majorPending >= 3) {
             diagnostic(worldId, { queueLength: pending, phase: 'idle', planningBlocked: true });
             break; // The unexpanded interval is retained by recoveryTarget / the clock anchor.
           }
@@ -413,20 +424,87 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
         }));
         const majorSchedule = world.majorEventSettings?.enabled
           ? ((await d.majorSchedules.get(worldId)) ??
-            nextMajorSchedule(worldId, cp.simTime, world.majorEventSettings.maximumIntervalDays))
+            nextMajorScheduleFor(worldId, cp.simTime, world.majorEventSettings, 0, ''))
           : undefined;
-        const majorPlan = majorSchedule
-          ? planMajor(world, majorSchedule, plan.events, end, observation.members)
+        const majorDue = !!majorSchedule && majorSchedule.plannedAt <= end + 2 * HOUR;
+        const coverage =
+          world.majorEventSettings?.enabled && majorDue
+            ? await computeCoverage(worldId, d, end, false)
+            : undefined;
+        const majorGroups = cachedGroups.map((g) => ({
+          id: g.id,
+          name: g.name,
+          memberIds: [
+            ...new Set(
+              observation.gm
+                .filter((m) => m.groupId === g.id && !m.departedAt)
+                .map((m) => m.characterId)
+                .filter((id) => plan.states.some((s) => s.characterId === id)),
+            ),
+          ],
+        }));
+        const majorBatch = majorSchedule
+          ? planMajorBatch(world, majorSchedule, plan.events, end, observation.members, {
+              groups: majorGroups,
+              relationships: relations,
+              coverage: coverage?.rows,
+              locations: world.locations,
+              from: cp.simTime,
+            })
           : undefined;
-        if (majorPlan) {
-          plan.events = majorPlan.events;
-          for (const state of plan.states)
-            if (state.eventId === majorPlan.replacedId) {
-              state.eventId = majorPlan.event.id;
-              state.activity = '重要事件';
-            }
+        const dueChains = await d.majorChains
+          .where('[worldId+dueAt]')
+          .between([worldId, Dexie.minKey], [worldId, end], true, true)
+          .toArray();
+        const chainPlans: { event: ActivityEvent; major: MajorEvent }[] = [];
+        for (const chain of dueChains) {
+          const materialized = materializeChain(
+            world,
+            chain,
+            cp.simTime,
+            end,
+            plan.events,
+            observation.members,
+          );
+          if (!materialized) continue;
+          plan.events = materialized.events;
+          chainPlans.push({ event: materialized.event, major: materialized.major });
+          plan.states = plan.states.map((s) =>
+            materialized.event.participants.includes(s.characterId)
+              ? {
+                  ...s,
+                  eventId: materialized.event.id,
+                  activity: '连锁重大事件',
+                  location: materialized.event.location,
+                  phone: materialized.event.phone,
+                }
+              : s,
+          );
+          await d.majorChains.delete(chain.id);
+        }
+        if (majorBatch) {
+          plan.events = majorBatch.events;
+          for (const partial of majorBatch.states) {
+            const index = plan.states.findIndex((s) => s.characterId === partial.characterId);
+            if (index >= 0) plan.states[index] = { ...plan.states[index], ...partial };
+            else
+              plan.states.push({
+                id: partial.id!,
+                worldId,
+                characterId: partial.characterId!,
+                eventId: partial.eventId!,
+                activity: partial.activity ?? '重要事件',
+                location: partial.location ?? '未知',
+                phone: partial.phone ?? 0.3,
+                mood: 0,
+                lastPhone: 0,
+                lastAction: 0,
+                lastTopicAt: cp.simTime,
+              });
+          }
         }
 
+        const allMajorPlans = [...(majorBatch?.plans ?? []), ...chainPlans];
         let seed = plan.seed;
         const endedConversations: Conversation[] = [];
         type SocialChoice = {
@@ -501,6 +579,8 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               if (!unreplied && !topicDue(char, state, end, important, tuning.topicScale)) continue;
               const r = random(seed);
               seed = r.seed;
+              const deficit = coverage?.byId.get(char.id)?.deficit ?? 0;
+              const coverageBoost = 1 + Math.min(1.4, deficit * 0.035);
               const weight =
                 socialWeight(
                   char,
@@ -517,7 +597,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                 (c.kind === 'group'
                   ? tuning.groupWeight *
                     (1 + Math.max(0, c.participants.length - 2) * tuning.groupCrowdBonus)
-                  : tuning.directWeight);
+                  : tuning.directWeight) * coverageBoost;
               if (weight > tuning.threshold)
                 ranked.push({
                   c,
@@ -570,31 +650,55 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             });
           }
         }
-        if (majorPlan) {
-          majorPlan.event.lethalCandidateIds = lethalCandidates(
-            world,
-            majorPlan.event,
-            observation.members,
-            seed,
-          );
-          if (majorPlan.event.lethalCandidateIds.length)
-            majorPlan.event.lethalReason = world.majorEventSettings?.tendency || world.novel?.goal;
+        if (allMajorPlans.length) {
+          const snapshotCrisis = crisisAt(world, end);
+          for (const item of allMajorPlans) {
+            item.event.lethalCandidateIds = lethalCandidates(
+              world,
+              item.event,
+              observation.members,
+              seed,
+              { day: snapshotCrisis.day, pressure: snapshotCrisis.pressure },
+            );
+            if (item.event.lethalCandidateIds.length)
+              item.event.lethalReason =
+                (world.majorEventSettings?.tendency || world.novel?.goal) +
+                `（Day ${snapshotCrisis.day}，${snapshotCrisis.label}，风险压力 ${snapshotCrisis.pressure.toFixed(2)}）`;
+          }
         }
         const queued: ContentJob[] = [];
         const chatChoices: SocialChoice[] = [];
-        if (majorPlan && cp.mode === 'live')
-          queued.push({
-            id: `major-content:${majorPlan.event.id}`,
-            worldId,
-            kind: 'major',
-            event: majorPlan.event,
-            at: majorPlan.event.start,
-            snapshot,
-            recovery,
-            status: 'pending',
-            attempts: 0,
-            nextAttemptAt: 0,
-          });
+        if (allMajorPlans.length && cp.mode === 'live')
+          for (const item of allMajorPlans) {
+            queued.push({
+              id: `major-content:${item.event.id}`,
+              worldId,
+              kind: 'major',
+              event: item.event,
+              at: item.event.start,
+              snapshot,
+              recovery,
+              status: 'pending',
+              attempts: 0,
+              nextAttemptAt: 0,
+            });
+            // Local/group events also produce a real in-person scene, not only chat.
+            if (item.event.participants.length >= 2 && item.event.majorLevel !== 'world')
+              queued.push({
+                id: `scene:${item.event.id}:major`,
+                worldId,
+                kind: 'scene',
+                plan: contentPlan('scene', seed, snapshot, item.event),
+                createdAt: Date.now(),
+                event: item.event,
+                at: item.event.start,
+                snapshot,
+                recovery,
+                status: 'pending',
+                attempts: 0,
+                nextAttemptAt: 0,
+              });
+          }
         const enqueue = (
           kind: ContentJob['kind'],
           event: (typeof plan.events)[number],
@@ -828,6 +932,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             d.memberships,
             d.usageLedger,
             d.majorSchedules,
+            d.majorChains,
             d.majorEvents,
             d.notifications,
             d.readStates,
@@ -933,33 +1038,38 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                 if (choice.initiating) state.lastTopicAt = choice.at;
               }
             }
-            if (majorSchedule && !majorPlan) await d.majorSchedules.put(majorSchedule);
-            if (majorPlan) {
+            if (majorSchedule && !majorBatch) await d.majorSchedules.put(majorSchedule);
+            if (allMajorPlans.length) {
               const memberships = await d.groupMembers.where('worldId').equals(worldId).toArray();
-              const groupIds = [
-                ...new Set(
-                  memberships
-                    .filter((m) => majorPlan.event.participants.includes(m.characterId))
-                    .map((m) => m.groupId),
-                ),
-              ];
-              majorPlan.major.groupIds = world.majorEventSettings?.allowMultipleGroups
-                ? groupIds
-                : groupIds.slice(0, 1);
-              await d.majorEvents.put({
-                ...majorPlan.major,
-                status: cp!.mode === 'demo' ? 'occurred' : majorPlan.major.status,
-              });
-              await d.majorSchedules.put(majorPlan.schedule);
-              await d.notifications.put({
-                id: `notice:${majorPlan.major.id}`,
-                eventId: majorPlan.major.id,
-                worldId,
-                createdAt: Date.now(),
-                recovery,
-              });
+              for (const item of allMajorPlans) {
+                const groupIds = [
+                  ...new Set(
+                    memberships
+                      .filter((m) => item.event.participants.includes(m.characterId))
+                      .map((m) => m.groupId),
+                  ),
+                ];
+                item.major.groupIds = world.majorEventSettings?.allowMultipleGroups
+                  ? groupIds
+                  : groupIds.slice(0, 1);
+                await d.majorEvents.put({
+                  ...item.major,
+                  status: cp!.mode === 'demo' ? 'occurred' : item.major.status,
+                });
+                await d.notifications.put({
+                  id: `notice:${item.major.id}`,
+                  eventId: item.major.id,
+                  worldId,
+                  createdAt: Date.now(),
+                  recovery,
+                });
+              }
+              if (majorBatch) await d.majorSchedules.put(majorBatch.schedule);
             }
+            if (majorBatch?.deferredChains.length)
+              await d.majorChains.bulkPut(majorBatch.deferredChains);
             await d.events.bulkPut(plan.events);
+            invalidateCoverage(worldId);
             if (observation.config.mode === 'selective')
               await recordCoverage(
                 worldId,

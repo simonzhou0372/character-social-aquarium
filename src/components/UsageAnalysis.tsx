@@ -1,3 +1,4 @@
+import { cacheStatistics } from '../ai/cache-statistics';
 import { dayOrdinal, worldTime, fromOrdinal } from '../core/calendar';
 import { clockTarget } from '../core/time';
 import { foregroundStart } from '../core/clock-presence';
@@ -98,10 +99,7 @@ export function UsageAnalysis({ onObserve }: { onObserve?: () => void } = {}) {
       .filter((r) => r.virtualAt !== undefined)
       .map((r) => `${r.worldId}:${r.virtualDay ?? Math.floor(r.virtualAt! / DAY)}`),
   );
-  const cacheRows = rows.filter(
-    (r) => r.cacheHitTokens !== undefined && r.cacheMissTokens !== undefined,
-  );
-  const cacheInput = sum('cacheHitTokens', cacheRows) + sum('cacheMissTokens', cacheRows);
+  const cacheReport = cacheStatistics(rows);
   const online = rows.filter((r) => ['chat', 'recoveryChat'].includes(r.task)),
     scenes = rows.filter((r) => ['inPerson', 'offlineScene'].includes(r.task));
   const tasks = [...new Set(rows.map((r) => r.task))];
@@ -201,9 +199,17 @@ export function UsageAnalysis({ onObserve }: { onObserve?: () => void } = {}) {
         <p>
           输入 {sum('inputTokens')} · 输出 {sum('outputTokens')}（其中思考已知{' '}
           {sum('reasoningTokens')}，不重复收费）· 缓存命中率{' '}
-          {cacheInput
-            ? ((100 * sum('cacheHitTokens', cacheRows)) / cacheInput).toFixed(1) + '%'
-            : '未提供'}
+          {cacheReport.global.overallHitRate === null
+            ? '数据不完整'
+            : (100 * cacheReport.global.overallHitRate).toFixed(1) + '%'}{' '}
+          · 有效缓存记录 {cacheReport.global.measuredRequests}/{rows.length} · 已测部分{' '}
+          {cacheReport.global.measuredHitRate === null
+            ? '—'
+            : (100 * cacheReport.global.measuredHitRate).toFixed(1) + '%'}{' '}
+          · 输入成本 ¥{cacheReport.global.inputCostCny?.toFixed(4) ?? '未知'}
+          <Button onClick={() => downloadJson(cacheReport, 'cache-statistics.json')}>
+            导出各世界/任务缓存统计
+          </Button>
         </p>
         <p>
           已知Token占比：输入{' '}

@@ -55,8 +55,19 @@ export function adaptiveLimits(
   enabled: boolean,
   outputLimit: number,
   health: BatchHealth,
+  readyTasks = 1,
 ) {
-  const ceiling = !enabled || speed < 300 ? 1 : speed < 1000 ? 4 : speed < 3000 ? 8 : 12;
+  const ceiling = !enabled
+    ? 1
+    : speed < 300
+      ? readyTasks > 1
+        ? 4
+        : 1
+      : speed < 1000
+        ? 4
+        : speed < 3000
+          ? 8
+          : 12;
   return {
     maxTasks: Math.max(
       1,
