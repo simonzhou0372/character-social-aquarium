@@ -219,21 +219,49 @@ export function Confirm({
     </Modal>
   );
 }
+export const OPEN_CHARACTER_EVENT = 'aquarium:open-character';
 export function Avatar({
   character,
   size = 44,
+  quickEdit = true,
 }: {
   character?: Partial<Character>;
   size?: number;
+  /** Avatars open the character editor by default. Disable it inside the editor itself. */
+  quickEdit?: boolean;
 }) {
   const c = character;
   let hash = 0;
   for (const ch of c?.id ?? 'a') hash += ch.charCodeAt(0);
   const variant = hash % 3;
+  const editable = quickEdit && !!c?.id;
+  function open(event: React.MouseEvent<HTMLSpanElement>) {
+    if (!editable || !c?.id) return;
+    event.preventDefault();
+    event.stopPropagation();
+    window.dispatchEvent(new CustomEvent(OPEN_CHARACTER_EVENT, { detail: c.id }));
+  }
   return (
     <span
-      className="avatar"
+      className={`avatar ${editable ? 'avatar-editable' : ''}`}
       style={{ width: size, height: size, background: c?.color ?? '#d7ddd5' }}
+      {...(editable
+        ? {
+            role: 'button',
+            tabIndex: 0,
+            title: `编辑 ${c?.name ?? '角色'}`,
+            'aria-label': `编辑 ${c?.name ?? '角色'} 的资料`,
+            onClick: open,
+            onKeyDown: (event: React.KeyboardEvent<HTMLSpanElement>) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                event.stopPropagation();
+                if (c?.id)
+                  window.dispatchEvent(new CustomEvent(OPEN_CHARACTER_EVENT, { detail: c.id }));
+              }
+            },
+          }
+        : {})}
     >
       {c?.avatar ? (
         <img

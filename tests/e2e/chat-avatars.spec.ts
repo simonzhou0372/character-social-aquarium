@@ -1,9 +1,11 @@
+import { prepareSmallWorld } from './helpers/small-world';
 import { test, expect } from '@playwright/test';
+test.beforeEach(async ({ page }) => prepareSmallWorld(page));
 for (const width of [1440, 390])
   test(`conversation avatars and AI social actions at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
-    await page.getByRole('button', { name: '先看看演示世界' }).click();
+    await page.getByRole('button', { name: /先看看演示世界|先读这份七日存档/ }).click();
     const png = await page.evaluate(() => {
       const c = document.createElement('canvas');
       c.width = c.height = 16;

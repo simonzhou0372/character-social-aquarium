@@ -260,6 +260,19 @@ function SimulationSettings() {
   return (
     <section className="panel">
       <h2>让日常按自己的节奏发生。</h2>
+      <Field label="线下观察默认阅读模式">
+        <Select
+          value={s.sceneReadingMode ?? 'stage'}
+          onChange={(e) =>
+            void db.settings.update('app', {
+              sceneReadingMode: e.target.value as 'stage' | 'archive',
+            })
+          }
+        >
+          <option value="stage">演出模式</option>
+          <option value="archive">完整记录</option>
+        </Select>
+      </Field>
       <p className="muted">活跃度影响社交机会；角色的忙碌、睡眠与手机习惯仍然独立生效。</p>
       <div className="activity-presets game-activity-presets">
         {activityModes.map((item) => (
@@ -317,6 +330,23 @@ function SimulationSettings() {
               void db.settings.update('app', { sceneDailyBudget: v });
           }}
         />
+      </Field>
+      <Field
+        label="线上聊天中的线下互动入口"
+        hint="默认最积极：群聊里只要有一位成员参与了线下事件就显示；私聊始终要求双方都参与（三人以上事件只要两人都在场也显示）。"
+      >
+        <Select
+          value={s.sceneLinkMode ?? 'all'}
+          onChange={(e) =>
+            void db.settings.update('app', {
+              sceneLinkMode: e.target.value as 'all' | 'mutual' | 'off',
+            })
+          }
+        >
+          <option value="all">最积极（推荐）· 群聊任一人参与即显示</option>
+          <option value="mutual">仅共同参与 · 会话全员都在场才显示</option>
+          <option value="off">关闭 · 不在聊天里插入线下入口</option>
+        </Select>
       </Field>
       <Toggle
         checked={unlimited}
@@ -657,57 +687,59 @@ export function Settings({ initialTab = 'api' }: { initialTab?: string }) {
           </button>
         ))}
       </div>
-      {tab === 'api' && (
-        <>
-          <ApiSettings />
-          <div className="usage-strip">
-            <CheckCircle size={18} />
-            <span>
-              累计 {total?.requests ?? 0} 次请求 · {(total?.tokens ?? 0).toLocaleString()}{' '}
-              Token（缺少服务商统计时按估算记录）
-            </span>
-          </div>
-          {lastContext?.context && (
-            <div className="panel context-report">
-              <h3>最近请求的上下文取舍</h3>
-              <p>
-                估算 {lastContext.context.beforeTokens} → {lastContext.context.afterTokens} Token ·
-                输入预算 {lastContext.context.budgetTokens}
-              </p>
-              <p>
-                省略 {lastContext.context.removedHistory} 条旧消息、
-                {lastContext.context.removedMemories}{' '}
-                条低优先级记忆；保留世界事实、全局规则与最新消息。
-              </p>
-              <small>
-                来源任务：{lastContext.task} ·{' '}
-                {lastContext.finishReason === 'length'
-                  ? '上次输出截断，已尝试有限恢复'
-                  : lastContext.status === 'completed'
-                    ? '已完成'
-                    : '进行中或未完成'}
-              </small>
+      <div className="settings-panel" key={tab}>
+        {tab === 'api' && (
+          <>
+            <ApiSettings />
+            <div className="usage-strip">
+              <CheckCircle size={18} />
+              <span>
+                累计 {total?.requests ?? 0} 次请求 · {(total?.tokens ?? 0).toLocaleString()}{' '}
+                Token（缺少服务商统计时按估算记录）
+              </span>
             </div>
-          )}
-          <button className="prompt-entry" onClick={() => setTab('prompts')}>
-            <BookOpen size={22} />
-            <span>
-              <strong>提示词管理</strong>
-              <small>为各类 AI 任务设定独立的全局规则</small>
-            </span>
-            <span>→</span>
-          </button>
-        </>
-      )}
-      {tab === 'usage' && <UsageAnalysis onObserve={() => setTab('observation')} />}
-      {tab === 'prompts' && <PromptManager />}
-      {tab === 'simulation' && <SimulationSettings />}
-      {tab === 'appearance' && <AppearanceSettings />}
-      {tab === 'profile' && <UserSettings />}
-      {tab === 'data' && <DataSettings />}
-      {tab === 'observation' && activeWorld && (
-        <ObservationManager key={activeWorld.worldId} worldId={activeWorld.worldId} />
-      )}
+            {lastContext?.context && (
+              <div className="panel context-report">
+                <h3>最近请求的上下文取舍</h3>
+                <p>
+                  估算 {lastContext.context.beforeTokens} → {lastContext.context.afterTokens} Token
+                  · 输入预算 {lastContext.context.budgetTokens}
+                </p>
+                <p>
+                  省略 {lastContext.context.removedHistory} 条旧消息、
+                  {lastContext.context.removedMemories}{' '}
+                  条低优先级记忆；保留世界事实、全局规则与最新消息。
+                </p>
+                <small>
+                  来源任务：{lastContext.task} ·{' '}
+                  {lastContext.finishReason === 'length'
+                    ? '上次输出截断，已尝试有限恢复'
+                    : lastContext.status === 'completed'
+                      ? '已完成'
+                      : '进行中或未完成'}
+                </small>
+              </div>
+            )}
+            <button className="prompt-entry" onClick={() => setTab('prompts')}>
+              <BookOpen size={22} />
+              <span>
+                <strong>提示词管理</strong>
+                <small>为各类 AI 任务设定独立的全局规则</small>
+              </span>
+              <span>→</span>
+            </button>
+          </>
+        )}
+        {tab === 'usage' && <UsageAnalysis onObserve={() => setTab('observation')} />}
+        {tab === 'prompts' && <PromptManager />}
+        {tab === 'simulation' && <SimulationSettings />}
+        {tab === 'appearance' && <AppearanceSettings />}
+        {tab === 'profile' && <UserSettings />}
+        {tab === 'data' && <DataSettings />}
+        {tab === 'observation' && activeWorld && (
+          <ObservationManager key={activeWorld.worldId} worldId={activeWorld.worldId} />
+        )}
+      </div>
     </div>
   );
 }

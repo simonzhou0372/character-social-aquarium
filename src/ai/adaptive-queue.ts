@@ -240,13 +240,19 @@ export async function drainAdaptive(
         : 'chat';
   const policyPrefix = composePrompt(policyTask, snapshot, {}, '')[0].content;
   // Persisted jobs may only contain a stub; compare the authoritative snapshots.
+  const snapshots = new Map<string, ReturnType<typeof contentSnapshot>>();
+  function cachedSnapshot(job: ContentJob) {
+    const key = job.snapshotId ?? job.id;
+    if (!snapshots.has(key)) snapshots.set(key, contentSnapshot(job, d));
+    return snapshots.get(key)!;
+  }
   const policies = new Map(
     await Promise.all(
       ready.map(
         async (job) =>
           [
             job.id,
-            composePrompt(policyTask, await contentSnapshot(job, d), {}, '')[0].content,
+            composePrompt(policyTask, await cachedSnapshot(job), {}, '')[0].content,
           ] as const,
       ),
     ),
@@ -338,14 +344,18 @@ export async function drainAdaptive(
   }
   if (!units.length) return;
   // Claims precede network I/O; a crash leaves stable IDs and a reclaimable lease.
-  for (const u of units) {
-    const j = byId.get(u.id)!;
-    await d.contentJobs.update(j.id, {
-      status: 'running',
-      attempts: j.attempts + 1,
-      nextAttemptAt: Date.now() + 180000,
-    });
-  }
+  await d.transaction('rw', d.contentJobs, async () => {
+    await Promise.all(
+      units.map((u) => {
+        const j = byId.get(u.id)!;
+        return d.contentJobs.update(j.id, {
+          status: 'running',
+          attempts: j.attempts + 1,
+          nextAttemptAt: Date.now() + 180000,
+        });
+      }),
+    );
+  });
   let batch: Awaited<ReturnType<typeof requestUnits>>;
   try {
     batch = await requestUnits(

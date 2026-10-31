@@ -39,7 +39,7 @@ export function SceneDetail({ scene, onClose }: { scene: InPersonScene; onClose:
   scene = data?.stored ?? scene;
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
-    [readingMode, setReadingMode] = useState<'archive' | 'stage'>('archive'),
+    [readingMode, setReadingMode] = useState<'archive' | 'stage'>('stage'),
     [stageIndex, setStageIndex] = useState(0),
     [playing, setPlaying] = useState(false),
     [playSpeed, setPlaySpeed] = useState(1800);
@@ -53,11 +53,33 @@ export function SceneDetail({ scene, onClose }: { scene: InPersonScene; onClose:
       phaseParticipants: phase.participants,
     })),
   );
+  const progressKey = `scene-progress:${scene.id}`;
+  const [resumeIndex] = useState(() => {
+    try {
+      return Number(localStorage.getItem(progressKey) ?? 0);
+    } catch {
+      return 0;
+    }
+  });
+  useEffect(() => {
+    if (stageIndex > 0) {
+      try {
+        localStorage.setItem(progressKey, String(stageIndex));
+      } catch {}
+    }
+  }, [stageIndex, progressKey]);
   const stageLine = stageLines[Math.min(stageIndex, Math.max(0, stageLines.length - 1))];
   const stagePhaseIndex = scene.phases.findIndex((p) => p.id === stageLine?.phaseId);
   useEffect(() => {
+    let active = true;
+    void db.settings.get('app').then((s) => {
+      if (active) setReadingMode(s?.sceneReadingMode ?? 'stage');
+    });
     setStageIndex(0);
     setPlaying(false);
+    return () => {
+      active = false;
+    };
   }, [scene.id]);
   useEffect(() => {
     if (readingMode !== 'stage' || !playing || !stageLines.length) return;
@@ -110,8 +132,27 @@ export function SceneDetail({ scene, onClose }: { scene: InPersonScene; onClose:
         >
           <Clapperboard size={15} />
           演出阅读
-          <span>可选</span>
         </button>
+      </div>
+      <div className="chat-tools">
+        <Button
+          onClick={() => {
+            setPlaying(false);
+            setReadingMode('archive');
+          }}
+        >
+          跳过演出 / 完整记录
+        </Button>
+        {resumeIndex > 0 && (
+          <Button
+            onClick={() => {
+              setStageIndex(Math.min(resumeIndex, stageLines.length - 1));
+              setReadingMode('stage');
+            }}
+          >
+            继续上次位置
+          </Button>
+        )}
       </div>
       <div className="toolbar">
         {data?.chars.map((c) => (
@@ -590,7 +631,9 @@ export function Scenes({ worldId }: { worldId: string }) {
           description="共同活动发生后，将按独立场景预算生成并保留线下记录。"
         />
       )}
-      {selected && <SceneDetail scene={selected} onClose={() => setSelected(undefined)} />}
+      {selected && (
+        <SceneDetail key={selected.id} scene={selected} onClose={() => setSelected(undefined)} />
+      )}
     </div>
   );
 }

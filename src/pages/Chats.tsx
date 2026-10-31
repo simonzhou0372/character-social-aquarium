@@ -1,3 +1,11 @@
+import { sceneLinks } from '../data/chat-scenes';
+import { ChatHistoryMenu } from '../components/ChatHistoryMenu';
+import { ChatExport, isSelected, type ChatSelection } from '../components/ChatExport';
+import { SceneDetail } from './Scenes';
+import type { InPersonScene } from '../core/types';
+import Dexie from 'dexie';
+import { useChatHistory } from '../hooks/useChatHistory';
+import { historyRange } from '../data/chat-history';
 import { activeConversations } from '../core/adaptive-batching';
 import { ConversationAvatar } from '../components/ConversationAvatar';
 import type { Message } from '../core/types';
@@ -39,7 +47,20 @@ export function Chats({
       convs: await db.conversations.where('worldId').equals(worldId).reverse().sortBy('lastAt'),
       chars: await db.characters.toArray(),
       groups: await db.groups.toArray(),
-      messages: await db.messages.toArray(),
+      groupMembers: await db.groupMembers.where('worldId').equals(worldId).toArray(),
+      previews: await Promise.all(
+        (await db.conversations.where('worldId').equals(worldId).toArray()).map(async (c) => {
+          const cursor = await db.cursors.get(`observer:${c.id}`);
+          return {
+            id: c.id,
+            last: await historyRange(c.id).reverse().first(),
+            unread: await db.messages
+              .where('[conversationId+seq]')
+              .between([c.id, cursor?.seq ?? 0], [c.id, Dexie.maxKey], false, false)
+              .count(),
+          };
+        }),
+      ),
       cursors: await db.cursors.toArray(),
       states: await db.states.where('worldId').equals(worldId).toArray(),
       members: await db.memberships.where('worldId').equals(worldId).toArray(),
@@ -54,11 +75,18 @@ export function Chats({
     [mentionQuery, setMentionQuery] = useState<string>(),
     [mentionStart, setMentionStart] = useState(0),
     [viewCharacter, setViewCharacter] = useState(''),
-    [windowEnd, setWindowEnd] = useState<number>(),
     [jumpId, setJumpId] = useState('');
+  const [historyOpen, setHistoryOpen] = useState(false),
+    [selecting, setSelecting] = useState(false),
+    [exporting, setExporting] = useState(false);
+  const [selection, setSelection] = useState<ChatSelection>({
+    ids: new Set(),
+    excluded: new Set(),
+  });
+  const lastSelected = useRef<Message>();
+  const [scene, setScene] = useState<InPersonScene>();
   const [editingConversation, setEditingConversation] = useState(false);
-  const [holdReading, setHoldReading] = useState(false),
-    [heldIds, setHeldIds] = useState<string[]>([]);
+  const [holdReading, setHoldReading] = useState(false);
   const [search, setSearch] = useState(''),
     [text, setText] = useState(''),
     [identity, setIdentity] = useState('observer'),
@@ -66,23 +94,78 @@ export function Chats({
     [error, setError] = useState(''),
     [retryable, setRetryable] = useState(false),
     [newChat, setNewChat] = useState(false),
-    [pair, setPair] = useState(['', '']),
-    [limit, setLimit] = useState(100);
+    [pair, setPair] = useState(['', '']);
   const feed = useRef<HTMLDivElement>(null),
-    bottom = useRef(true),
     initialCursor = useRef<number>(),
     convo = data?.convs.find((c) => c.id === selectedId),
     tz = data?.world?.timezone;
   const time = (at: number) => (data?.world ? formatWorldClock(data.world, at) : fmtTime(at, tz));
   const date = (at: number) =>
     data?.world ? `${data.world.era ?? 'AD'} ${calendarDate(data.world, at)}` : fmtDate(at, tz);
-  const messages =
-    data?.messages
-      .filter((m) => m.conversationId === selectedId)
-      .sort((a, b) => a.simAt - b.simAt || a.seq - b.seq) ?? [];
-  const readingMessages = holdReading ? messages.filter((m) => heldIds.includes(m.id)) : messages;
-  const end = windowEnd ?? readingMessages.length;
-  const visible = readingMessages.slice(Math.max(0, end - limit), end);
+  const history = useChatHistory(selectedId, feed, holdReading);
+  const messages = history.rows;
+  const visible = messages;
+  const [latestReadSeq, setLatestReadSeq] = useState<number>();
+  useEffect(() => {
+    setLatestReadSeq(undefined);
+  }, [selectedId]);
+  useEffect(() => {
+    if (history.following && !holdReading && messages.length)
+      setLatestReadSeq(messages.at(-1)!.seq);
+  }, [history.following, holdReading, messages.at(-1)?.seq]);
+  const newMessages = useLiveQuery(() => {
+    const seq = latestReadSeq;
+    return seq === undefined
+      ? 0
+      : db.messages
+          .where('[conversationId+seq]')
+          .between([selectedId, seq], [selectedId, Dexie.maxKey], false, false)
+          .count();
+  }, [selectedId, latestReadSeq]);
+  const sceneLinkMode = data?.settings?.sceneLinkMode ?? 'all';
+  const timelineScenes = useLiveQuery(async () => {
+    if (!convo || !messages.length || convo.participants.length < 2) return [];
+    return sceneLinks(
+      convo,
+      messages[0].simAt,
+      messages.at(-1)!.simAt,
+      0,
+      160,
+      false,
+      db,
+      sceneLinkMode,
+    );
+  }, [worldId, selectedId, messages[0]?.simAt, messages.at(-1)?.simAt, sceneLinkMode]);
+  function toggleSelected(m: Message, range: boolean) {
+    if (range && lastSelected.current) {
+      const ordered = [m, lastSelected.current].sort(
+        (a, b) => a.simAt - b.simAt || (a.id < b.id ? -1 : 1),
+      );
+      setSelection({
+        ids: new Set(),
+        excluded: new Set(),
+        range: {
+          from: ordered[0].simAt,
+          to: ordered[1].simAt,
+          fromId: ordered[0].id,
+          toId: ordered[1].id,
+        },
+      });
+    } else
+      setSelection((s) => {
+        const ids = new Set(s.ids),
+          excluded = new Set(s.excluded);
+        if (isSelected(m, s)) {
+          ids.delete(m.id);
+          excluded.add(m.id);
+        } else {
+          ids.add(m.id);
+          excluded.delete(m.id);
+        }
+        return { ...s, ids, excluded };
+      });
+    lastSelected.current = m;
+  }
   useEffect(() => {
     if (convo) activeConversations.set(worldId, convo.id);
     return () => {
@@ -93,13 +176,17 @@ export function Chats({
     if (worldId) void ensureNotes(worldId).catch((e) => setError(String(e)));
   }, [worldId]);
   useEffect(() => {
+    setSelection({ ids: new Set(), excluded: new Set() });
+    setSelecting(false);
+    setExporting(false);
+    setScene(undefined);
+    lastSelected.current = undefined;
     initialCursor.current = undefined;
-    bottom.current = false;
-    setWindowEnd(undefined);
+
     setReply(undefined);
     setMentions([]);
     setMentionQuery(undefined);
-    setLimit(100);
+
     setError('');
     setRetryable(false);
     setText('');
@@ -110,12 +197,10 @@ export function Chats({
     if (!data || !convo) return;
     if (initialCursor.current === undefined)
       initialCursor.current = data.cursors.find((c) => c.id === `observer:${selectedId}`)?.seq ?? 0;
-    if (bottom.current && !holdReading) {
-      feed.current?.scrollTo({ top: feed.current.scrollHeight });
-    }
   }, [selectedId, messages.length, data?.cursors.length]);
   async function markRead() {
-    if (!convo || document.hidden || !feed.current) return;
+    if (!convo || document.hidden || !feed.current || document.querySelector('[aria-modal="true"]'))
+      return;
     const rect = feed.current.getBoundingClientRect();
     const ids = [...feed.current.querySelectorAll<HTMLElement>('[data-message-id]')]
       .filter((el) => {
@@ -128,31 +213,26 @@ export function Chats({
   useEffect(() => {
     const timer = setTimeout(() => void markRead(), 180);
     return () => clearTimeout(timer);
-  }, [selectedId, visible[0]?.id, visible.at(-1)?.id]);
-  useEffect(() => {
-    if (jumpId) {
-      requestAnimationFrame(() => {
-        feed.current
-          ?.querySelector(`[data-message-id="${CSS.escape(jumpId)}"]`)
-          ?.scrollIntoView({ block: 'center' });
-      });
-    }
-  }, [jumpId, visible[0]?.id]);
-  function jump(id: string) {
-    const i = messages.findIndex((m) => m.id === id);
-    if (i < 0) {
-      setError('原消息已删除或无法访问');
-      return;
-    }
-    setWindowEnd(Math.min(messages.length, i + 80));
-    setLimit(160);
-    bottom.current = false;
-    setJumpId(id);
+  }, [
+    selectedId,
+    historyOpen,
+    exporting,
+    scene?.id,
+    history.virtual.range?.startIndex,
+    history.virtual.range?.endIndex,
+    visible[0]?.id,
+    visible.at(-1)?.id,
+  ]);
+  async function jump(id: string) {
+    if (!(await history.jump(id))) setError('原消息已删除或无法访问');
+    else setJumpId(id);
   }
-  function firstUnread() {
-    const cursor = initialCursor.current ?? 0;
-    const m = messages.find((m) => m.seq > cursor);
-    if (m) jump(m.id);
+  async function firstUnread() {
+    const m = await db.messages
+      .where('[conversationId+seq]')
+      .between([selectedId, initialCursor.current ?? 0], [selectedId, Dexie.maxKey], false, false)
+      .first();
+    if (m) void jump(m.id);
   }
   async function sendGif(id: string) {
     if (!convo || identity === 'observer') return;
@@ -163,8 +243,7 @@ export function Chats({
       });
       setGifOpen(false);
       setReply(undefined);
-      bottom.current = true;
-      setWindowEnd(undefined);
+      history.latest();
     } catch (e) {
       setError(String(e));
     }
@@ -196,11 +275,11 @@ export function Chats({
       setReply(undefined);
       setMentions([]);
       setMentionQuery(undefined);
-      setWindowEnd(undefined);
+
       sent = true;
       setHoldReading(false);
       setText('');
-      bottom.current = true;
+      history.latest();
       if (convo.kind !== 'notes') await replyToUser(convo.id);
     } catch (e) {
       setRetryable(sent);
@@ -214,8 +293,8 @@ export function Chats({
     setBusy(true);
     setError('');
     try {
-      const latest = await db.messages.where('conversationId').equals(convo.id).sortBy('seq');
-      if (latest.at(-1)?.source !== 'user') {
+      const latest = await historyRange(convo.id).reverse().first();
+      if (latest?.source !== 'user') {
         setRetryable(false);
         setError('会话已经有了新消息，可以继续观察。');
         return;
@@ -228,10 +307,7 @@ export function Chats({
       setBusy(false);
     }
   }
-  const unread = (id: string) => {
-    const cursor = data?.cursors.find((c) => c.id === `observer:${id}`)?.seq ?? 0;
-    return data?.messages.filter((m) => m.conversationId === id && m.seq > cursor).length ?? 0;
-  };
+  const unread = (id: string) => data?.previews.find((p) => p.id === id)?.unread ?? 0;
   const roleCharacter = data?.chars.find((c) => c.id === identity);
   const roleAccent =
     roleCharacter?.color ??
@@ -282,10 +358,7 @@ export function Chats({
           .filter((c) => c.name.includes(search))
           .sort((a, b) => Number(b.kind === 'notes') - Number(a.kind === 'notes'))
           .map((c) => {
-            const last = data.messages
-              .filter((m) => m.conversationId === c.id)
-              .sort((a, b) => a.simAt - b.simAt || a.seq - b.seq)
-              .at(-1);
+            const last = data.previews.find((p) => p.id === c.id)?.last;
             const count = unread(c.id);
             return (
               <button
@@ -306,7 +379,9 @@ export function Chats({
                     </time>
                   </div>
                   <p>
-                    {last?.text ??
+                    {(last
+                      ? `${data.groupMembers.find((x) => x.groupId === c.groupId && x.characterId === last.senderId)?.nickname || data.chars.find((x) => x.id === last.senderId)?.name || data.settings?.nickname || '用户'}：${last.gifAssetId ? '[GIF]' : last.text}`
+                      : undefined) ??
                       (c.kind === 'notes'
                         ? '给自己写点备注，仅本地保存，不发给 AI。'
                         : '还没有消息，等一次自然的开场。')}
@@ -324,7 +399,7 @@ export function Chats({
       <section className="chat-main">
         {convo ? (
           <>
-            <header className="chat-header">
+            <header className="chat-header" key={convo.id}>
               <button
                 className="icon-button chat-back"
                 aria-label="返回会话列表"
@@ -366,39 +441,42 @@ export function Chats({
             <div className="chat-tools">
               <Button
                 onClick={() => {
-                  setHeldIds(messages.map((m) => m.id));
                   setHoldReading(!holdReading);
+                  if (holdReading) history.latest();
                 }}
               >
-                {holdReading
-                  ? `继续显示新消息（${messages.filter((m) => !heldIds.includes(m.id)).length}）`
-                  : '暂停跟随新消息'}
+                {holdReading ? '继续跟随新消息' : '暂停跟随新消息'}
               </Button>
+              <Button onClick={() => setHistoryOpen(true)}>历史导航</Button>
+              <Button onClick={() => setSelecting(!selecting)}>选择消息</Button>
+              {selecting && (
+                <>
+                  <Button onClick={() => setExporting(true)}>导出选中消息</Button>
+                  <Button onClick={() => setSelection({ ids: new Set(), excluded: new Set() })}>
+                    取消全选
+                  </Button>
+                </>
+              )}
               <Button onClick={firstUnread}>跳转到第一条未读</Button>
               <Button
                 onClick={() => {
                   setHoldReading(false);
-                  setWindowEnd(undefined);
-                  setLimit(100);
-                  bottom.current = true;
-                  requestAnimationFrame(() =>
-                    feed.current?.scrollTo({ top: feed.current.scrollHeight }),
-                  );
+                  history.latest();
                 }}
               >
                 回到最新消息
               </Button>
-            </div>
-            <div className="observer-banner">
-              <Eye size={15} />
-              <span>
-                {convo.kind === 'notes'
-                  ? '我的备忘 · 不进入角色记忆，不发送到模型'
-                  : identity === 'observer'
-                    ? '观察模式 · 你正悄悄看着他们的日常'
-                    : identity === 'user'
-                      ? `以「${data?.settings?.nickname}」参与`
-                      : `正在扮演「${data?.chars.find((c) => c.id === identity)?.name}」，AI 已让出该角色`}
+              <span className="observer-banner" title="观察模式下，你正悄悄看着他们的日常">
+                <Eye size={15} />
+                <span>
+                  {convo.kind === 'notes'
+                    ? '我的备忘 · 不进入角色记忆，不发送到模型'
+                    : identity === 'observer'
+                      ? '观察模式'
+                      : identity === 'user'
+                        ? `以「${data?.settings?.nickname}」参与`
+                        : `正在扮演「${data?.chars.find((c) => c.id === identity)?.name}」，AI 已让出该角色`}
+                </span>
               </span>
             </div>
             <div
@@ -407,123 +485,190 @@ export function Chats({
               onScroll={() => {
                 const f = feed.current;
                 if (!f) return;
-                bottom.current = f.scrollHeight - f.scrollTop - f.clientHeight < 48;
-                void markRead();
+                void history.onScroll();
               }}
             >
-              {messages.length > limit && (
-                <Button onClick={() => setLimit(limit + 100)}>加载更早的消息</Button>
-              )}
-              {visible.map((m, i) => {
-                const c = data?.chars.find((c) => c.id === m.senderId),
-                  isUser =
-                    identity === 'observer' ? m.senderId === 'user' : m.senderId === identity,
-                  prev = visible[i - 1],
-                  day = convo.kind === 'notes' ? fmtDate(m.realAt) : date(m.simAt),
-                  newDay =
-                    !prev ||
-                    (convo.kind === 'notes' ? fmtDate(prev.realAt) : date(prev.simAt)) !== day,
-                  cursor = initialCursor.current ?? 0,
-                  readBy =
-                    data?.cursors.filter(
-                      (x) =>
-                        x.kind === 'character' &&
-                        x.conversationId === selectedId &&
-                        x.readerId !== m.senderId &&
-                        x.seq >= m.seq,
-                    ).length ?? 0;
-                return (
-                  <div key={m.id}>
-                    {newDay && <div className="date-divider">{day}</div>}
-                    {m.seq === cursor + 1 && (
-                      <div className="unread-divider">以下是尚未阅读的消息</div>
-                    )}
+              <div
+                style={{
+                  height: history.virtual.getTotalSize(),
+                  position: 'relative',
+                  width: '100%',
+                }}
+              >
+                {history.virtual.getVirtualItems().map((item) => {
+                  const i = item.index,
+                    m = visible[i];
+                  const c = data?.chars.find((c) => c.id === m.senderId),
+                    isUser =
+                      identity === 'observer' ? m.senderId === 'user' : m.senderId === identity,
+                    prev = visible[i - 1],
+                    day = convo.kind === 'notes' ? fmtDate(m.realAt) : date(m.simAt),
+                    newDay =
+                      !prev ||
+                      (convo.kind === 'notes' ? fmtDate(prev.realAt) : date(prev.simAt)) !== day,
+                    cursor = initialCursor.current ?? 0,
+                    readBy =
+                      data?.cursors.filter(
+                        (x) =>
+                          x.kind === 'character' &&
+                          x.conversationId === selectedId &&
+                          x.readerId !== m.senderId &&
+                          x.seq >= m.seq,
+                      ).length ?? 0;
+                  return (
                     <div
-                      data-message-id={m.id}
-                      data-seq={m.seq}
-                      data-unread={m.seq > cursor || undefined}
-                      data-participant={m.senderId}
-                      className={`message ${isUser ? 'self' : ''} ${jumpId === m.id ? 'highlight' : ''} ${m.seq === cursor + 1 ? 'first-unread' : ''}`}
-                      style={{ '--speaker-color': c?.color ?? '#d9ef69' } as React.CSSProperties}
+                      key={m.id}
+                      data-index={i}
+                      ref={history.virtual.measureElement}
+                      style={{
+                        position: 'absolute',
+                        width: '100%',
+                        top: 0,
+                        transform: `translateY(${item.start}px)`,
+                      }}
                     >
-                      <Avatar
-                        character={
-                          c ?? {
-                            name: data?.settings?.nickname,
-                            avatar: data?.settings?.userAvatar,
-                            color: '#d9ef69',
-                          }
+                      {timelineScenes
+                        ?.filter((s) => s.start <= m.simAt && (!prev || s.start > prev.simAt))
+                        .map((s) => {
+                          const present = s.participants
+                            .filter((id) => convo.participants.includes(id))
+                            .map(
+                              (id) =>
+                                data?.chars.find((c) => c.id === id)?.name ??
+                                data?.settings?.nickname,
+                            )
+                            .filter(Boolean)
+                            .join('、');
+                          return (
+                            <button
+                              className="scene-link-row"
+                              key={s.eventId}
+                              onClick={() => void db.scenes.get(s.id).then(setScene)}
+                              title={`${time(s.start)} · ${s.location}`}
+                            >
+                              <span className="scene-link-dot" aria-hidden="true" />
+                              <time>{time(s.start)}</time>
+                              <strong>{present || '他们'}在线下互动：</strong>
+                              <span>[{s.title}]</span>
+                              <em>{s.location}</em>
+                              <b aria-hidden="true">查看 ↗</b>
+                            </button>
+                          );
+                        })}
+                      {selecting && (
+                        <label>
+                          <input
+                            type="checkbox"
+                            aria-label={`选择消息 ${m.id}`}
+                            checked={isSelected(m, selection)}
+                            onChange={(e) =>
+                              toggleSelected(m, (e.nativeEvent as MouseEvent).shiftKey)
+                            }
+                          />
+                          选择（Shift 连选）
+                        </label>
+                      )}
+                      {newDay && <div className="date-divider">{day}</div>}
+                      {m.seq === cursor + 1 && (
+                        <div className="unread-divider">以下是尚未阅读的消息</div>
+                      )}
+                      <div
+                        data-message-id={m.id}
+                        data-seq={m.seq}
+                        data-unread={m.seq > cursor || undefined}
+                        data-participant={m.senderId}
+                        className={`message ${isUser ? 'self' : ''} ${jumpId === m.id ? 'highlight' : ''} ${m.seq === cursor + 1 ? 'first-unread' : ''}`}
+                        style={
+                          {
+                            '--speaker-color': c?.color ?? '#d9ef69',
+                            animation: Date.now() - m.realAt < 1500 ? undefined : 'none',
+                          } as React.CSSProperties
                         }
-                        size={36}
-                      />
-                      <div className="message-content">
-                        <div className="message-label">
-                          <strong>{c?.name ?? data?.settings?.nickname}</strong>
-                          <time>{convo.kind === 'notes' ? fmtTime(m.realAt) : time(m.simAt)}</time>
-                          {m.source === 'demo' && <span className="demo-label">演示</span>}
-                          {m.backfilled && <span>补全记录</span>}
-                          {m.source === 'user' && <span>用户控制</span>}
-                        </div>
-                        {m.replyToMessageId && (
-                          <div className="quoted-message" onClick={() => jump(m.replyToMessageId!)}>
-                            {(() => {
-                              const original = messages.find((o) => o.id === m.replyToMessageId);
-                              return original
-                                ? `${data?.chars.find((c) => c.id === original.senderId)?.name ?? data?.settings?.nickname}：${original.text.slice(0, 100)}`
-                                : '原消息已删除或无法访问';
-                            })()}
-                          </div>
-                        )}
-                        <div className="message-bubble">
-                          {m.gifAssetId ? (
-                            <GifImage
-                              assetId={m.gifAssetId}
-                              autoplay={data?.settings?.gifAutoplay}
-                            />
-                          ) : (
-                            <>
-                              {(() => {
-                                const nodes: React.ReactNode[] = [];
-                                let end = 0;
-                                for (const mention of [...(m.mentions ?? [])].sort(
-                                  (a, b) => a.start - b.start,
-                                )) {
-                                  if (
-                                    mention.start < end ||
-                                    m.text.slice(mention.start, mention.end) !== mention.label
-                                  )
-                                    continue;
-                                  nodes.push(
-                                    m.text.slice(end, mention.start),
-                                    <button
-                                      className="mention"
-                                      key={mention.start}
-                                      onClick={() => setViewCharacter(mention.characterId)}
-                                    >
-                                      {' '}
-                                      @
-                                      {data?.chars.find((c) => c.id === mention.characterId)
-                                        ?.name ?? mention.label}{' '}
-                                    </button>,
-                                  );
-                                  end = mention.end;
-                                }
-                                nodes.push(m.text.slice(end));
-                                return nodes;
-                              })()}
-                            </>
-                          )}
-                        </div>
-                        <MessageDetails
-                          message={m}
-                          identity={identity}
-                          onReply={() => setReply(m)}
+                      >
+                        <Avatar
+                          character={
+                            c ?? {
+                              name: data?.settings?.nickname,
+                              avatar: data?.settings?.userAvatar,
+                              color: '#d9ef69',
+                            }
+                          }
+                          size={36}
                         />
+                        <div className="message-content">
+                          <div className="message-label">
+                            <strong>{c?.name ?? data?.settings?.nickname}</strong>
+                            <time>
+                              {convo.kind === 'notes' ? fmtTime(m.realAt) : time(m.simAt)}
+                            </time>
+                            {m.source === 'demo' && <span className="demo-label">演示</span>}
+                            {m.backfilled && <span>补全记录</span>}
+                            {m.source === 'user' && <span>用户控制</span>}
+                          </div>
+                          {m.replyToMessageId && (
+                            <div
+                              className="quoted-message"
+                              onClick={() => jump(m.replyToMessageId!)}
+                            >
+                              {(() => {
+                                const original = messages.find((o) => o.id === m.replyToMessageId);
+                                return original
+                                  ? `${data?.chars.find((c) => c.id === original.senderId)?.name ?? data?.settings?.nickname}：${original.text.slice(0, 100)}`
+                                  : '查看引用消息';
+                              })()}
+                            </div>
+                          )}
+                          <div className="message-bubble">
+                            {m.gifAssetId ? (
+                              <GifImage
+                                assetId={m.gifAssetId}
+                                autoplay={data?.settings?.gifAutoplay}
+                              />
+                            ) : (
+                              <>
+                                {(() => {
+                                  const nodes: React.ReactNode[] = [];
+                                  let end = 0;
+                                  for (const mention of [...(m.mentions ?? [])].sort(
+                                    (a, b) => a.start - b.start,
+                                  )) {
+                                    if (
+                                      mention.start < end ||
+                                      m.text.slice(mention.start, mention.end) !== mention.label
+                                    )
+                                      continue;
+                                    nodes.push(
+                                      m.text.slice(end, mention.start),
+                                      <button
+                                        className="mention"
+                                        key={mention.start}
+                                        onClick={() => setViewCharacter(mention.characterId)}
+                                      >
+                                        {' '}
+                                        @
+                                        {data?.chars.find((c) => c.id === mention.characterId)
+                                          ?.name ?? mention.label}{' '}
+                                      </button>,
+                                    );
+                                    end = mention.end;
+                                  }
+                                  nodes.push(m.text.slice(end));
+                                  return nodes;
+                                })()}
+                              </>
+                            )}
+                          </div>
+                          <MessageDetails
+                            message={m}
+                            identity={identity}
+                            onReply={() => setReply(m)}
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
               {!messages.length && (
                 <Empty
                   title="对话还没有开始"
@@ -544,6 +689,17 @@ export function Chats({
                 </div>
               )}
             </div>
+            {(!history.following || holdReading) && !!newMessages && (
+              <Button
+                className="chat-new-messages"
+                onClick={() => {
+                  setHoldReading(false);
+                  history.latest();
+                }}
+              >
+                有 {newMessages} 条新消息 · 回到最新
+              </Button>
+            )}
             {error && (
               <div className="chat-error">
                 <Status error>{error}</Status>
@@ -564,23 +720,6 @@ export function Chats({
                   <Button onClick={() => setReply(undefined)}>取消回复</Button>
                 </div>
               )}
-              <div className="chat-tools">
-                <Button disabled={convo.kind === 'notes'} onClick={() => setGifOpen(true)}>
-                  GIF 表情
-                </Button>
-                {convo.kind === 'group' && (
-                  <Button
-                    disabled={identity === 'observer'}
-                    onClick={() => {
-                      setMentionStart(text.length);
-                      setText(text + '@');
-                      setMentionQuery('');
-                    }}
-                  >
-                    @ 提及成员
-                  </Button>
-                )}
-              </div>
               {mentionQuery !== undefined && convo.kind === 'group' && (
                 <div className="check-list">
                   {data?.chars
@@ -614,6 +753,23 @@ export function Chats({
                 </div>
               )}
               <div className="composer-identity">
+                <div className="chat-tools composer-inline-tools">
+                  <Button disabled={convo.kind === 'notes'} onClick={() => setGifOpen(true)}>
+                    GIF 表情
+                  </Button>
+                  {convo.kind === 'group' && (
+                    <Button
+                      disabled={identity === 'observer'}
+                      onClick={() => {
+                        setMentionStart(text.length);
+                        setText(text + '@');
+                        setMentionQuery('');
+                      }}
+                    >
+                      @ 提及成员
+                    </Button>
+                  )}
+                </div>
                 <UserRound size={16} />
                 <Select
                   aria-label="聊天身份"
@@ -703,6 +859,28 @@ export function Chats({
           <p>已读，不一定意味着回复。角色的生活不会因为聊天而停下。</p>
         </div>
       </aside>
+      {scene && <SceneDetail key={scene.id} scene={scene} onClose={() => setScene(undefined)} />}
+      {historyOpen && convo && data?.world && (
+        <ChatHistoryMenu
+          conversation={convo}
+          world={data.world}
+          jump={(id) => void jump(id)}
+          latest={history.latest}
+          onClose={() => setHistoryOpen(false)}
+          select={(s) => {
+            setSelection(s);
+            setSelecting(true);
+          }}
+        />
+      )}
+      {exporting && convo && (
+        <ChatExport
+          key={convo.id}
+          conversation={convo}
+          selection={selection}
+          onClose={() => setExporting(false)}
+        />
+      )}
       {viewCharacter && data?.chars.find((c) => c.id === viewCharacter) && (
         <CharacterEditor
           character={data.chars.find((c) => c.id === viewCharacter)}

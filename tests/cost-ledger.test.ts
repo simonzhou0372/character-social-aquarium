@@ -479,7 +479,7 @@ it('upgrades a real v14 database without rewriting old messages, budgets, protec
     const settings = await old.table('settings').get('app');
     old.close();
     await next.open();
-    expect(next.verno).toBe(15);
+    expect(next.verno).toBe(17);
     expect(await next.messages.toArray()).toEqual(messages);
     expect(await next.checkpoints.get('w-harbor')).toEqual(clock);
     expect(await next.settings.get('app')).toEqual(settings);

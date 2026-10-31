@@ -4,7 +4,7 @@ test.beforeEach(async ({ page }) => {
 });
 async function enter(page: Page) {
   await page.goto('/');
-  await page.getByRole('button', { name: '先看看演示世界' }).click();
+  await page.getByRole('button', { name: /先看看演示世界|先读这份七日存档/ }).click();
 }
 async function nav(page: Page, name: string) {
   if ((page.viewportSize()?.width ?? 1280) < 760)
@@ -108,12 +108,10 @@ test('chat perspective, structured mentions, replies, emoji actors and read deta
   const self = page.locator('.message.self').last();
   await self.getByRole('button', { name: '回应', exact: true }).click();
   await self.getByRole('button', { name: '👍', exact: true }).click();
-  await self.getByRole('button', { name: '👍 1', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: 'Emoji 回应者' })).toContainText('观察员');
-  await page
-    .getByRole('dialog', { name: 'Emoji 回应者' })
-    .getByRole('button', { name: '关闭', exact: true })
-    .click();
+  // Reactor names appear directly after the emoji; no viewer dialog is needed.
+  await expect(self.locator('.reaction')).toContainText('👍');
+  await expect(self.locator('.reaction')).toContainText('观察员');
+  await expect(page.getByRole('dialog', { name: 'Emoji 回应者' })).toHaveCount(0);
   await self.getByRole('button', { name: /详情/ }).click();
   await expect(page.getByRole('dialog', { name: '消息阅读详情' })).toContainText(
     '观察者阅读不会改变虚拟角色',

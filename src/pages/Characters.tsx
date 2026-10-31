@@ -85,7 +85,7 @@ export function CharacterEditor({
           style={{ '--char-color': c.color } as React.CSSProperties}
         >
           <div className="sheet-avatar">
-            <Avatar character={c} size={118} />
+            <Avatar character={c} size={118} quickEdit={false} />
             <span>FILE // {(c.id.slice(-4) || '0000').toUpperCase()}</span>
           </div>
           <div className="sheet-name">

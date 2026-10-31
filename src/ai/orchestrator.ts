@@ -1,3 +1,4 @@
+import Dexie from 'dexie';
 import { dayOrdinal, worldTime } from '../core/calendar';
 import { assertConversationLife, canLiveAt, actorAvailable } from '../core/narrative';
 import {
@@ -393,7 +394,18 @@ export async function dialogueContext(
         .equals(speakerId)
         .and((m) => m.worldId === c.worldId && m.at <= at)
         .toArray(),
-      d.messages.where('conversationId').equals(c.id).sortBy('seq'),
+      d.messages
+        .where('[conversationId+simAt+seq]')
+        .between(
+          [c.id, c.participantJoinedAt?.[speakerId] ?? 0, Dexie.minKey],
+          [c.id, at, Dexie.maxKey],
+          true,
+          true,
+        )
+        .reverse()
+        .limit(48)
+        .toArray()
+        .then((rows) => rows.reverse()),
       d.states.get(`${c.worldId}:${speakerId}`),
       d.settings.get('app'),
     ]);
@@ -629,11 +641,11 @@ export async function persistDialogue(
       const c = await d.conversations.get(conversationId);
       if (!c || !c.participants.includes(speakerId) || c.controlledId === speakerId) return [];
       if (await d.messages.get(`${prefix}:0`)) return [];
-      const existing = await d.messages
-        .where('conversationId')
-        .equals(conversationId)
-        .sortBy('seq');
-      const last = existing.at(-1);
+      const last = await d.messages
+        .where('[conversationId+seq]')
+        .between([conversationId, Dexie.minKey], [conversationId, Dexie.maxKey])
+        .reverse()
+        .first();
       let seq = last?.seq ?? 0;
       const messages: Message[] = texts.map((text, i) => ({
         id: `${prefix}:${i}`,
@@ -784,18 +796,22 @@ export async function sendUserMessage(
             !(await availableGifs(c, identity, d)).some((a) => a.id === extras.gifAssetId)
           )
             throw new Error('无权使用此表情');
-          const last = await d.messages.where('conversationId').equals(c.id).sortBy('seq');
+          const last = await d.messages
+            .where('[conversationId+seq]')
+            .between([c.id, Dexie.minKey], [c.id, Dexie.maxKey])
+            .reverse()
+            .first();
           const cp = await d.checkpoints.get(c.worldId);
           const at = Math.max(
             cp ? clockTarget(cp, Date.now(), foregroundStart()) : Date.now(),
-            last.at(-1)?.simAt ?? 0,
+            last?.simAt ?? 0,
           );
           await d.messages.add({
             id: uid('user'),
             conversationId,
             senderId: identity,
             text: text.trim(),
-            seq: (last.at(-1)?.seq ?? 0) + 1,
+            seq: (last?.seq ?? 0) + 1,
             realAt: Date.now(),
             simAt: at,
             source: 'user',
@@ -832,16 +848,20 @@ export async function replyToUser(conversationId: string, d: AquariumDB = db) {
       (states.find((s) => s.characterId === id)?.phone ?? 1) > 0.3,
   );
   if (!eligible.length) throw new Error('大家现在不方便看手机，稍后会由模拟器决定是否回复。');
-  const last = await d.messages.where('conversationId').equals(c.id).sortBy('seq');
+  const last = await d.messages
+    .where('[conversationId+seq]')
+    .between([c.id, Dexie.minKey], [c.id, Dexie.maxKey])
+    .reverse()
+    .first();
   const candidate = eligible
-    .filter((id) => id !== last.at(-1)?.senderId)
+    .filter((id) => id !== last?.senderId)
     .sort(
       (a, b) =>
-        Number(last.at(-1)?.mentionCharacterIds?.includes(b)) -
-        Number(last.at(-1)?.mentionCharacterIds?.includes(a)),
+        Number(last?.mentionCharacterIds?.includes(b)) -
+        Number(last?.mentionCharacterIds?.includes(a)),
     )[0];
   if (!candidate) return;
-  const at = Math.max(cp?.simTime ?? Date.now(), (last.at(-1)?.simAt ?? 0) + 1000);
+  const at = Math.max(cp?.simTime ?? Date.now(), (last?.simAt ?? 0) + 1000);
   const generated = await generateDialogue(d, c, candidate, at, snapshot, provider);
   await d.transaction(
     'rw',
@@ -864,8 +884,12 @@ export async function replyToUser(conversationId: string, d: AquariumDB = db) {
       if (!(await conversationAvailable(c.id, d))) return;
       const current = await d.checkpoints.get(c.worldId);
       if ((current?.controlVersion ?? 0) !== (cp?.controlVersion ?? 0)) return;
-      const latest = await d.messages.where('conversationId').equals(c.id).sortBy('seq');
-      if (latest.at(-1)?.id !== last.at(-1)?.id) return;
+      const latest = await d.messages
+        .where('[conversationId+seq]')
+        .between([c.id, Dexie.minKey], [c.id, Dexie.maxKey])
+        .reverse()
+        .first();
+      if (latest?.id !== last?.id) return;
       await persistDialogue(
         d,
         c.id,
@@ -969,7 +993,14 @@ export async function consolidateMemory(
   const c = await d.conversations.get(conversationId);
   if (!c || c.kind === 'notes' || !(await conversationAvailable(c.id, d))) return;
   const snapshot = await getPrompts(d);
-  const history = await d.messages.where('conversationId').equals(c.id).sortBy('seq');
+  const history = (
+    await d.messages
+      .where('[conversationId+seq]')
+      .between([c.id, Dexie.minKey], [c.id, Dexie.maxKey])
+      .reverse()
+      .limit(30)
+      .toArray()
+  ).reverse();
   if (history.length < 4) throw new Error('至少有 4 条消息后再整理记忆。');
   const last = history.at(-1)!;
   const id = `summary:${c.id}:${last.seq}`;

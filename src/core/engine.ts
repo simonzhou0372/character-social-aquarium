@@ -11,7 +11,12 @@ import {
   observationKeys,
   evolvedCharacter,
 } from './selective-observation';
-import { materializeChain, nextMajorSchedule, nextMajorScheduleFor, planMajorBatch } from './major-events';
+import {
+  materializeChain,
+  nextMajorSchedule,
+  nextMajorScheduleFor,
+  planMajorBatch,
+} from './major-events';
 import type { ContentJob } from './content-jobs';
 import { drainContent } from '../ai/content-queue';
 import { foregroundStart } from './clock-presence';
@@ -100,6 +105,8 @@ export async function setRunning(
       recoveryRealTarget: undefined,
       recoveryKind: undefined,
       recoveryRequests: 0,
+      jumpTarget: undefined,
+      jumpResumePaused: undefined,
     });
     await d.taskSnapshots.delete(worldId);
   });
@@ -192,7 +199,8 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
         observation.activeIds.has(r.from),
       );
       const cachedMembers = observation.members.filter(
-        (m) => observation.activeIds.has(m.characterId) && !m.inactive && ordinaryLife(m.life?.status),
+        (m) =>
+          observation.activeIds.has(m.characterId) && !m.inactive && ordinaryLife(m.life?.status),
       );
       const historyCache = new Map<string, import('./types').Message[]>();
       const cursorCache = new Map<string, import('./types').ReadCursor | undefined>();
@@ -597,7 +605,8 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                 (c.kind === 'group'
                   ? tuning.groupWeight *
                     (1 + Math.max(0, c.participants.length - 2) * tuning.groupCrowdBonus)
-                  : tuning.directWeight) * coverageBoost;
+                  : tuning.directWeight) *
+                coverageBoost;
               if (weight > tuning.threshold)
                 ranked.push({
                   c,
@@ -1277,14 +1286,18 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               ...before,
               usageLimited:
                 cp!.mode === 'live' && choices.length > 0 && (generationSkipped || !canGenerate),
-              clockAnchor:
-                done && (current.clockAnchor?.realTime ?? 0) <= realTarget
-                  ? {
-                      simTime: clockTarget(current, realTarget, options.foregroundSince),
-                      realTime: realTarget,
-                    }
-                  : (current.clockAnchor ?? before.clockAnchor),
-              paused: end >= limit,
+              clockAnchor: done
+                ? before.jumpTarget
+                  ? // A deliberate jump lands exactly on its destination, not on natural-time drift.
+                    { simTime: end, realTime: realTarget }
+                  : (current.clockAnchor?.realTime ?? 0) <= realTarget
+                    ? {
+                        simTime: clockTarget(current, realTarget, options.foregroundSince),
+                        realTime: realTarget,
+                      }
+                    : current.clockAnchor
+                : (current.clockAnchor ?? before.clockAnchor),
+              paused: end >= limit || (done && before.jumpResumePaused === true),
               simTime: end,
               realTime: done ? realTarget : Math.min(realTarget, advancedReal),
               seed,
@@ -1297,6 +1310,8 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                     recoveryRealTarget: undefined,
                     recoveryKind: undefined,
                     recoveryRequests: 0,
+                    jumpTarget: undefined,
+                    jumpResumePaused: undefined,
                   }
                 : {}),
             };

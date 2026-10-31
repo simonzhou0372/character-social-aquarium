@@ -376,6 +376,10 @@ export const CheckpointSchema = z.object({
   usageLimited: z.boolean().optional(),
   recoveryRealTarget: time.optional(),
   recoveryKind: z.enum(['offline', 'foreground']).optional(),
+  /** When a deliberate time jump is catching up, the HUD shows this destination immediately. */
+  jumpTarget: time.optional(),
+  /** A jump started while paused lands paused; a jump started during playback keeps running. */
+  jumpResumePaused: z.boolean().optional(),
   mode: z.enum(['demo', 'live']),
   recoveryTarget: time.optional(),
   recoveryStart: time.optional(),
@@ -397,6 +401,9 @@ export const SettingsSchema = z.object({
   userBio: text,
   userAvatar: z.string().max(1500000).optional(),
   unlimitedUsage: z.boolean().optional(),
+  sceneReadingMode: z.enum(['stage', 'archive']).optional(),
+  /** How eagerly a chat timeline surfaces related in-person scenes. */
+  sceneLinkMode: z.enum(['all', 'mutual', 'off']).optional(),
   sceneFrequency: z.number().min(0).max(1).optional(),
   sceneDailyBudget: z.number().int().min(0).max(100).optional(),
   onboarded: z.boolean(),
@@ -660,7 +667,7 @@ export const MajorEventSchema = z.object({
   consequences: z
     .array(
       z.object({
-        kind: z.enum(['relationship', 'followUp', 'life', 'organization']),
+        kind: z.enum(['relationship', 'followUp', 'life', 'organization', 'world']),
         description: text,
         from: id.optional(),
         to: id.optional(),

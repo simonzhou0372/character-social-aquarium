@@ -13,12 +13,7 @@ import type {
   EvolutionCursorSchema,
   ReportCursorSchema,
 } from '../core/focus-types';
-import type {
-  MajorSchedule,
-  MajorEvent,
-  MajorChain,
-  EventNotification,
-} from '../core/types';
+import type { MajorSchedule, MajorEvent, MajorChain, EventNotification } from '../core/types';
 import type { MessageReaction, MessageReadState, GifAsset, LocalResource } from '../core/types';
 import type { ContentJob } from '../core/content-jobs';
 import { realLocalDate } from '../core/calendar';
@@ -224,6 +219,10 @@ export class AquariumDB extends Dexie {
         'id,worldId,model,task,startedAt,[worldId+startedAt],[worldId+virtualAt],[worldId+virtualDay],[worldId+budgetVirtualDay]',
       narrativeChanges: 'id,worldId,entityId,eventId,[worldId+at],[worldId+entityId+at]',
       organizationStates: 'id,worldId,groupId',
+    });
+    this.version(17).stores({
+      messages:
+        'id,conversationId,[conversationId+seq],[conversationId+simAt+id],[conversationId+simAt+seq],simAt,eventId,replyToMessageId',
     });
     this.version(16).stores({ majorChains: 'id,worldId,dueAt,[worldId+dueAt]' });
     this.version(14).upgrade((tx) =>

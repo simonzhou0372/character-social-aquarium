@@ -106,8 +106,14 @@ export async function requestUnits(
     profile?.outputBudgetTokens ?? 2048,
     health,
     units.length,
+    units.reduce((n, u) => n + Math.max(0, Date.now() - u.createdAt), 0) / units.length,
   );
   const first = units[0];
+  if (health.tokensPerSecond && health.tokensPerSecond > 0)
+    limits.outputTokens = Math.min(
+      limits.outputTokens,
+      Math.max(first.outputTokens + 150, Math.floor(health.tokensPerSecond * 45)),
+    );
   const selected: BatchUnit[] = [];
   let output = 150;
   const batchId = uid('batch');
@@ -131,6 +137,16 @@ export async function requestUnits(
     selected.push(u);
     output += u.outputTokens;
   }
+  // The envelope must pay for its task/result framing through shared-input savings.
+  // Keep all unselected tasks queued; never shrink the content contract.
+  if (selected.length > 1) {
+    const separate = selected.reduce(
+      (n, u) => n + u.request.reduce((sum, m) => sum + estimateTokens(m.content), 0),
+      0,
+    );
+    const combined = envelope(selected).reduce((n, m) => n + estimateTokens(m.content), 0);
+    if (combined + selected.length * 40 >= separate) selected.splice(1);
+  }
   const batched = selected.length > 1,
     request = batched ? envelope(selected) : first.request;
   const queueLength = (
@@ -144,6 +160,7 @@ export async function requestUnits(
     )
   ).reduce((a, b) => a + b, 0);
   const started = Date.now();
+  let observedOutputTokens = 0;
   let values = new Map<string, unknown>(),
     error: unknown,
     requestId: string | undefined;
@@ -158,6 +175,7 @@ export async function requestUnits(
       virtualAt: Math.min(...selected.map((u) => u.at)),
     });
     requestId = r.requestId;
+    observedOutputTokens = r.outputTokens;
     if (batched) {
       let parsed: any;
       try {
@@ -196,6 +214,14 @@ export async function requestUnits(
       error ? 'batch-schema' : 'missing-children',
     );
   health = {
+    batching: limits.batching,
+    tokensPerSecond:
+      observedOutputTokens > 0
+        ? (health.tokensPerSecond ??
+            observedOutputTokens / Math.max(0.001, (Date.now() - started) / 1000)) *
+            0.7 +
+          (observedOutputTokens / Math.max(0.001, (Date.now() - started) / 1000)) * 0.3
+        : health.tokensPerSecond,
     scale: success ? Math.min(1, health.scale + 0.1) : Math.max(0.25, health.scale / 2),
     latencyMs: health.latencyMs
       ? health.latencyMs * 0.7 + (Date.now() - started) * 0.3
@@ -212,6 +238,14 @@ export async function requestUnits(
     status: success ? 'completed' : 'partial',
     detail: JSON.stringify({
       health,
+      estimatedInputTokensSaved: Math.max(
+        0,
+        selected.reduce(
+          (n, u) => n + u.request.reduce((sum, m) => sum + estimateTokens(m.content), 0),
+          0,
+        ) - request.reduce((n, m) => n + estimateTokens(m.content), 0),
+      ),
+      requestsAvoided: selected.length - 1,
       queueLength,
       tasks: selected.length,
       returned: good,

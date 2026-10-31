@@ -6,7 +6,14 @@ test-results/
 playwright-report/
 *.tsbuildinfo
 experiments/
-
+*.zip
 # Last Seven Days experiment working files (deliverable: /LastSevenDays_Archive/)
 docs/last-seven-days/
 LastSevenDays_Archive/
+LastSevenDays_V2_Archive/
+LastSevenDays_V2_Deluxe_Archive/
+public/*
+!public/icon.svg
+!public/manifest.webmanifest
+!public/presets/
+!public/presets/*.json

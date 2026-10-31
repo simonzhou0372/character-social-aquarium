@@ -7,9 +7,13 @@ import { db } from '../data/db';
 import { configureTime, rewindWorld, startCalendarBranch, timeSpeeds } from '../core/time';
 import { setRunning } from '../core/engine';
 import { Button, Field, Select, Confirm, Status } from './ui';
+import { TimeJumpControls } from './TimeJumpControls';
 export function TimeControls({ worldId, compact = false }: { worldId: string; compact?: boolean }) {
   const data = useLiveQuery(
-    async () => ({ cp: await db.checkpoints.get(worldId), world: await db.worlds.get(worldId) }),
+    async () => ({
+      cp: await db.checkpoints.get(worldId),
+      world: await db.worlds.get(worldId),
+    }),
     [worldId],
   );
   const [error, setError] = useState(''),
@@ -72,6 +76,7 @@ export function TimeControls({ worldId, compact = false }: { worldId: string; co
             加速只作用于页面可见时。关闭、休眠或切到后台后，离线补全始终按真实时间 1×
             前进。高倍率会更快使用当天的 AI 预算。
           </p>
+          <TimeJumpControls worldId={worldId} />
           <div className="rewind-controls">
             <Field label="回到某一天（世界当地日期）">
               <WorldDateEditor value={date} onChange={setDate} />

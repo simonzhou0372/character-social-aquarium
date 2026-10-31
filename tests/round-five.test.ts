@@ -441,7 +441,7 @@ it('v11 migration preserves existing messages and leaves old worlds in ordinary 
   legacy.close();
   const upgraded = new AquariumDB(name);
   await upgraded.open();
-  expect(upgraded.verno).toBe(15);
+  expect(upgraded.verno).toBe(17);
   expect((await upgraded.worlds.get(w))?.novel).toBeUndefined();
   expect(await upgraded.messages.get(message.id)).toEqual(message);
   expect((await upgraded.settings.get('app'))?.activity).toBe('lively');

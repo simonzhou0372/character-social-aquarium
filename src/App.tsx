@@ -39,7 +39,7 @@ import { db } from './data/db';
 import { seed } from './data/seed';
 import { runWorld, setRunning, type RecoveryProgress } from './core/engine';
 import { getKey } from './ai/provider';
-import { Avatar, Button, Modal, Select, Status } from './components/ui';
+import { Avatar, Button, Modal, Select, Status, OPEN_CHARACTER_EVENT } from './components/ui';
 import { Home } from './pages/Home';
 import { Characters, CharacterEditor } from './pages/Characters';
 import { Worlds } from './pages/Worlds';
@@ -196,10 +196,26 @@ export default function App() {
     if (data?.profile?.status === 'invalid') setApiSetup(true);
   }, [data?.profile?.status]);
   useEffect(() => {
+    const open = async (event: Event) => {
+      const id = (event as CustomEvent<string>).detail;
+      if (!id) return;
+      const character = await db.characters.get(id);
+      if (character && !character.deletedAt) setSelectedCharacter(character);
+    };
+    window.addEventListener(OPEN_CHARACTER_EVENT, open);
+    return () => window.removeEventListener(OPEN_CHARACTER_EVENT, open);
+  }, []);
+  useEffect(() => {
     seed()
       .then(async () => {
         const { ensureTouhouPresets } = await import('./data/presets/touhou');
         await ensureTouhouPresets();
+        try {
+          const { ensureLastSevenDaysPreset } = await import('./data/presets/last-seven-days');
+          await ensureLastSevenDaysPreset();
+        } catch (e) {
+          console.warn('内置《最后七天》资料未加载', e);
+        }
         setReady(true);
         const s = await db.settings.get('app');
         if (!s?.onboarded) setOnboarding(true);
@@ -290,7 +306,7 @@ export default function App() {
       era: next?.era ?? 'AD',
     });
     window.clearTimeout(worldTimer.current);
-    worldTimer.current = window.setTimeout(() => setWorldShift(undefined), 1150);
+    worldTimer.current = window.setTimeout(() => setWorldShift(undefined), 1500);
     void db.settings.update('app', { worldId: id });
   };
   const openChat = (id: string) => {
@@ -696,7 +712,8 @@ export default function App() {
             </div>
             <h2>你离开的时候，故事也会继续。</h2>
             <p className="muted">
-              先认识海盐市的五位原创角色，或者连接自己的 AI，创建属于你的世界。
+              默认世界是《最后七天 · 终焉潮汐》的完整七日存档：100 位角色、24 个团体、423 条关系与
+              71 个重大事件。先读一遍，或者连接自己的 AI，继续创造属于你的世界。
             </p>
             <div className="onboarding-steps">
               <span>01 创建世界与角色</span>
@@ -725,7 +742,7 @@ export default function App() {
                   setOnboarding(false);
                 }}
               >
-                先看看演示世界
+                先读这份七日存档
               </Button>
             </div>
           </Modal>

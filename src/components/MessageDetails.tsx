@@ -26,7 +26,7 @@ export function MessageDetails({
     }),
     [m.id],
   );
-  const [open, setOpen] = useState<'reads' | 'reactions'>(),
+  const [open, setOpen] = useState<'reads'>(),
     [emojiOpen, setEmojiOpen] = useState(false),
     [reacting, setReacting] = useState(false),
     [error, setError] = useState('');
@@ -48,7 +48,12 @@ export function MessageDetails({
   const count = readers.filter(read).length;
   return (
     <div className="chat-tools message-actions">
-      <Button className="message-action" onClick={onReply}>
+      <Button
+        className="message-action"
+        disabled={identity === 'observer'}
+        title={identity === 'observer' ? '观察模式下不能回复，请先选择参与身份' : '回复这条消息'}
+        onClick={onReply}
+      >
         回复
       </Button>
       <Button
@@ -62,11 +67,28 @@ export function MessageDetails({
       <button className="text-button read-receipt" onClick={() => setOpen('reads')}>
         {count ? `${count} 人已读` : '尚未被角色阅读'} · 详情
       </button>
-      {reactions.map((e) => (
-        <button className="reaction" key={e} onClick={() => setOpen('reactions')}>
-          {e} {data?.reactions.filter((r) => r.emoji === e).length}
-        </button>
-      ))}
+      {reactions.map((e) => {
+        const actors = data?.reactions.filter((r) => r.emoji === e) ?? [];
+        const names = actors.map((r) => name(r.actorId));
+        const mine = actors.some((r) => r.actorId === identity);
+        return (
+          <button
+            className={`reaction ${mine ? 'mine' : ''} ${identity === 'observer' ? 'readonly' : ''}`}
+            key={e}
+            type="button"
+            title={`${e} ${names.join('、')}${identity === 'observer' ? '' : ' · 点击切换自己的回应'}`}
+            aria-label={`${e} 回应：${names.join('、')}`}
+            aria-disabled={identity === 'observer'}
+            onClick={() => {
+              if (identity === 'observer') return;
+              void toggleReaction(m.id, identity, e).catch((err) => setError(String(err)));
+            }}
+          >
+            <span className="reaction-glyph">{e}</span>
+            <span className="reaction-names">{names.join('、')}</span>
+          </button>
+        );
+      })}
       {emojiOpen && (
         <ReactionPicker
           busy={reacting}
@@ -87,54 +109,26 @@ export function MessageDetails({
         />
       )}
       {error && <Status error>{error}</Status>}
-      {open && (
-        <Modal
-          title={open === 'reads' ? '消息阅读详情' : 'Emoji 回应者'}
-          onClose={() => setOpen(undefined)}
-        >
-          {open === 'reactions' ? (
-            data?.reactions.map((r) => (
-              <p key={r.id}>
-                <Avatar
-                  character={
-                    data?.chars.find((c) => c.id === r.actorId) ?? {
-                      name: data?.settings?.nickname,
-                      avatar: data?.settings?.userAvatar,
-                    }
-                  }
-                  size={28}
-                />
-                {name(r.actorId)} {r.emoji}{' '}
-                <Button
-                  disabled={r.actorId !== identity}
-                  onClick={() => void toggleReaction(m.id, identity, r.emoji)}
-                >
-                  取消回应
-                </Button>
+      {open === 'reads' && (
+        <Modal title="消息阅读详情" onClose={() => setOpen(undefined)}>
+          <p>观察者阅读不会改变虚拟角色已读状态。</p>
+          {readers.map((id) => {
+            const r = read(id);
+            const at = r && ('readAt' in r ? r.readAt : r.at);
+            return (
+              <p key={id}>
+                <Avatar character={data?.chars.find((c) => c.id === id)} size={28} />
+                {name(id)} ·{' '}
+                {m.simAt < (data?.conversation?.participantJoinedAt?.[id] ?? 0)
+                  ? '加入前消息'
+                  : r
+                    ? '已读'
+                    : '未读'}{' '}
+                {at && world ? formatWorldTime(world, at) : ''}
+                {r && !('readAt' in r) ? '（历史游标记录）' : ''}
               </p>
-            ))
-          ) : (
-            <>
-              <p>观察者阅读不会改变虚拟角色已读状态。</p>
-              {readers.map((id) => {
-                const r = read(id);
-                const at = r && ('readAt' in r ? r.readAt : r.at);
-                return (
-                  <p key={id}>
-                    <Avatar character={data?.chars.find((c) => c.id === id)} size={28} />
-                    {name(id)} ·{' '}
-                    {m.simAt < (data?.conversation?.participantJoinedAt?.[id] ?? 0)
-                      ? '加入前消息'
-                      : r
-                        ? '已读'
-                        : '未读'}{' '}
-                    {at && world ? formatWorldTime(world, at) : ''}
-                    {r && !('readAt' in r) ? '（历史游标记录）' : ''}
-                  </p>
-                );
-              })}
-            </>
-          )}
+            );
+          })}
         </Modal>
       )}
     </div>

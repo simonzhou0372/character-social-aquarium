@@ -1,3 +1,4 @@
+import Dexie from 'dexie';
 import { assertConversationLife, canLiveAt } from '../core/narrative';
 import { db, type AquariumDB } from './db';
 import { clockTarget } from '../core/time';
@@ -66,14 +67,18 @@ export async function saveNote(
       throw new Error('备忘会话不可用');
     if (replyToMessageId && (await d.messages.get(replyToMessageId))?.conversationId !== c.id)
       throw new Error('引用消息不属于当前备忘');
-    const last = await d.messages.where('conversationId').equals(c.id).sortBy('seq');
-    const at = Math.max(Date.now(), last.at(-1)?.simAt ?? 0);
+    const last = await d.messages
+      .where('[conversationId+seq]')
+      .between([c.id, Dexie.minKey], [c.id, Dexie.maxKey])
+      .reverse()
+      .first();
+    const at = Math.max(Date.now(), last?.simAt ?? 0);
     await d.messages.add({
       id: uid('note'),
       conversationId: c.id,
       senderId: 'user',
       text: text.trim(),
-      seq: (last.at(-1)?.seq ?? 0) + 1,
+      seq: (last?.seq ?? 0) + 1,
       realAt: at,
       simAt: at,
       source: 'user',
@@ -160,27 +165,41 @@ export async function recordVisible(conversationId: string, seq: number, d: Aqua
 }
 export async function recordObserved(conversationId: string, ids: string[], d: AquariumDB = db) {
   await d.transaction('rw', d.messages, d.readStates, d.cursors, async () => {
-    const messages = await d.messages.where('conversationId').equals(conversationId).sortBy('seq');
-    const known = new Set(messages.map((m) => m.id));
-    for (const messageId of ids.filter((id) => known.has(id))) {
-      const key = 'observer:' + messageId;
-      if (!(await d.readStates.get(key)))
-        await d.readStates.put({
-          id: key,
-          messageId,
+    const messages = (await d.messages.bulkGet(ids)).filter(
+      (m): m is Message => !!m && m.conversationId === conversationId,
+    );
+    const existing = await d.readStates.bulkGet(messages.map((m) => 'observer:' + m.id));
+    await d.readStates.bulkPut(
+      messages
+        .filter((_, i) => !existing[i])
+        .map((m) => ({
+          id: 'observer:' + m.id,
+          messageId: m.id,
           readerId: 'observer',
-          kind: 'observer',
+          kind: 'observer' as const,
           readAt: Date.now(),
-        });
-    }
-    const records = await d.readStates.where('readerId').equals('observer').toArray();
-    const seen = new Set(records.map((r) => r.messageId)),
-      id = `observer:${conversationId}`,
+        })),
+    );
+    const id = `observer:${conversationId}`,
       old = await d.cursors.get(id);
     let seq = old?.seq ?? 0;
-    for (const m of messages.filter((m) => m.seq > seq)) {
-      if (!seen.has(m.id)) break;
-      seq = m.seq;
+    // Advance in bounded chunks; stop at the first genuinely unseen message.
+    while (true) {
+      const page = await d.messages
+        .where('[conversationId+seq]')
+        .between([conversationId, seq], [conversationId, Dexie.maxKey], false, false)
+        .limit(128)
+        .toArray();
+      const seen = await d.readStates.bulkGet(page.map((m) => 'observer:' + m.id));
+      let stopped = false;
+      for (let i = 0; i < page.length; i++) {
+        if (!seen[i]) {
+          stopped = true;
+          break;
+        }
+        seq = page[i].seq;
+      }
+      if (stopped || page.length < 128) break;
     }
     if (seq > (old?.seq ?? 0))
       await d.cursors.put({

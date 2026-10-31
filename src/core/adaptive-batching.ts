@@ -49,32 +49,45 @@ export function planningHistory(
     .sort((a, b) => a.simAt - b.simAt || a.seq - b.seq)
     .map((m, i) => ({ ...m, seq: i + 1 }));
 }
-export type BatchHealth = { scale: number; latencyMs: number; successes: number; failures: number };
+export type BatchHealth = {
+  scale: number;
+  latencyMs: number;
+  successes: number;
+  failures: number;
+  batching?: boolean;
+  tokensPerSecond?: number;
+};
 export function adaptiveLimits(
   speed: number,
   enabled: boolean,
   outputLimit: number,
   health: BatchHealth,
   readyTasks = 1,
+  averageWaitMs = 0,
 ) {
-  const ceiling = !enabled
+  // Enter at four ready jobs or a sustained wait; exit only after draining to one.
+  const batching =
+    enabled &&
+    (speed >= 300 ||
+      readyTasks >= 4 ||
+      (readyTasks >= 2 && averageWaitMs >= 5000) ||
+      (!!health.batching && readyTasks > 1));
+  const ceiling = !batching
     ? 1
-    : speed < 300
-      ? readyTasks > 1
-        ? 4
-        : 1
-      : speed < 1000
-        ? 4
-        : speed < 3000
-          ? 8
-          : 12;
+    : Math.min(
+        12,
+        Math.max(4, readyTasks >= 12 || averageWaitMs >= 30000 ? 12 : speed >= 1000 ? 8 : 4),
+      );
   return {
+    batching,
     maxTasks: Math.max(
       1,
       Math.floor(
         ceiling *
           health.scale *
-          (health.latencyMs > 25000 ? 0.65 : 1) *
+          // Slow successful output benefits from amortizing request overhead.
+          // Only validation failures reduce the batch, not latency alone.
+
           (health.failures > 2 && health.failures / (health.successes + health.failures) > 0.3
             ? 0.7
             : 1),

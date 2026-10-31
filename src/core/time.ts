@@ -2,7 +2,7 @@ import { restartNovel } from './novel-types';
 import { historicalCharacter } from './selective-observation';
 import { nextMajorScheduleFor } from './major-events';
 import { foregroundStart } from './clock-presence';
-import { formatWorldTime, WorldDateTimeSchema } from './calendar';
+import { calendarLimit, formatWorldTime, WorldDateTimeSchema } from './calendar';
 import { cancelWorld } from './tasks';
 import { db, withWorldLock, type AquariumDB } from '../data/db';
 import { type Checkpoint, type RuntimeState, uid, HOUR } from './types';
@@ -86,6 +86,40 @@ export async function configureTime(
         : { realTime: now }),
     });
   });
+}
+/**
+ * Jump the visible clock forward and let the normal batched recovery pipeline fill the gap.
+ * The checkpoint stays at the old sim time until content is committed, so a failed or
+ * interrupted jump can resume from the last saved segment instead of skipping history.
+ */
+export async function jumpWorldTime(worldId: string, deltaMs: number, d: AquariumDB = db) {
+  if (!Number.isFinite(deltaMs) || deltaMs <= 0) throw new Error('请选择要跳转的时间');
+  const world = await d.worlds.get(worldId),
+    cp = await d.checkpoints.get(worldId);
+  if (!world || !cp) throw new Error('世界不存在');
+  if (world.deletedAt) throw new Error('世界已移入回收站');
+  if (cp.timeMode === 'real') throw new Error('真实世界模式不能跳转，请先在时间控制中切回上帝模式');
+  const now = Date.now(),
+    visible = Math.max(cp.simTime, cp.recoveryTarget ?? clockTarget(cp, now, foregroundStart())),
+    target = Math.min(calendarLimit(world), visible + deltaMs);
+  if (target <= visible) throw new Error('已经到达当前历法的可跳转上限');
+  cancelWorld(worldId);
+  const from = cp.recoveryStart ?? cp.simTime;
+  await d.checkpoints.put({
+    ...cp,
+    controlVersion: (cp.controlVersion ?? 0) + 1,
+    paused: false,
+    clockAnchor: { simTime: cp.simTime, realTime: now },
+    realTime: now,
+    recoveryStart: from,
+    recoveryTarget: target,
+    recoveryRealTarget: now,
+    recoveryKind: 'offline',
+    recoveryRequests: cp.recoveryTarget ? cp.recoveryRequests : 0,
+    jumpTarget: target,
+    jumpResumePaused: cp.jumpResumePaused ?? cp.paused,
+  });
+  return { from, to: target };
 }
 /** Rewind creates an independent timeline; the original world and its records are preserved. */
 export async function rewindWorld(worldId: string, at: number, d: AquariumDB = db) {
@@ -532,9 +566,7 @@ export async function startCalendarBranch(
       if (asset.scopeType === 'world')
         await d.gifAssets.add({ ...asset, id: uid('gif'), scopeId: id });
     if (world.majorEventSettings?.enabled)
-      await d.majorSchedules.put(
-        nextMajorScheduleFor(id, now, world.majorEventSettings),
-      );
+      await d.majorSchedules.put(nextMajorScheduleFor(id, now, world.majorEventSettings));
     await d.checkpoints.add({
       ...cp,
       id,
