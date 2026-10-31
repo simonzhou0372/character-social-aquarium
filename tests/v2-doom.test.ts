@@ -31,6 +31,7 @@ async function fixture() {
   await seed(d, NOW);
   await d.worlds.update(W, {
     majorEventSettings: settings,
+    crisis: { enabled: true, startedAt: NOW, durationDays: 7 },
     novel: NovelSchema.parse({
       enabled: true,
       startedAt: NOW,
@@ -109,6 +110,49 @@ it('supports sub-day cadence and produces more than one major event inside a sin
 function planStart(batch: { plans: { event: ActivityEvent }[] }) {
   return Math.min(...batch.plans.map((p) => p.event.start));
 }
+it('ordinary worlds never inherit apocalypse copy or forbidden relationship/group changes', async () => {
+  const d = new AquariumDB('ordinary-major-' + crypto.randomUUID());
+  try {
+    await seed(d, NOW);
+    await d.worlds.update(W, {
+      majorEventSettings: {
+        ...defaultMajorSettings,
+        enabled: true,
+        intervalMinutes: 240,
+        maxPerDay: 12,
+        allowRelationshipChanges: false,
+        allowChainEvents: false,
+      },
+    });
+    const world = (await d.worlds.get(W))!;
+    const members = await d.memberships.where('worldId').equals(W).toArray();
+    const groups = await d.groups.filter((g) => g.worldIds.includes(W)).toArray();
+    const gm = await d.groupMembers.where('worldId').equals(W).toArray();
+    const groupsCtx = groups.map((g) => ({
+      id: g.id,
+      name: g.name,
+      memberIds: gm.filter((m) => m.groupId === g.id).map((m) => m.characterId),
+    }));
+    let schedule = nextMajorScheduleFor(W, NOW, world.majorEventSettings!, 0, '');
+    const copy: string[] = [];
+    for (let i = 0; i < 10; i++) {
+      const end = schedule.plannedAt + 5 * 60000;
+      const batch = planMajorBatch(world, schedule, personal(d, schedule.plannedAt), end, members, {
+        groups: groupsCtx,
+        from: schedule.plannedAt,
+        locations: world.locations,
+      })!;
+      for (const plan of batch.plans)
+        copy.push(plan.event.description, plan.major.title, plan.major.consequences[0].description);
+      schedule = batch.schedule;
+    }
+    const text = copy.join('\n');
+    expect(text).not.toMatch(/文明末期|末日|终焉|最后24小时|全球灾难/);
+    expect(text).not.toMatch(/永久关系变化|去留|死亡|致命/);
+  } finally {
+    await d.delete();
+  }
+});
 it('mixes local, group and world levels and derives one causal follow-up with a persistent parent link', async () => {
   const d = await fixture();
   try {
@@ -164,7 +208,9 @@ it('raises pressure and shortens cadence as the world approaches the final day',
     expect(late.violence).toBeGreaterThan(early.violence);
     expect(crisisIntervalFactor(7)).toBeLessThan(crisisIntervalFactor(1));
     expect(crisisAt(world, NOW + 7 * DAY + HOUR).band).toBe('final');
-    const levels = new Set([1, 3, 5, 7].map((day) => eventLevelFor(day, 2, world.majorEventSettings)));
+    const levels = new Set(
+      [1, 3, 5, 7].map((day) => eventLevelFor(day, 2, world.majorEventSettings)),
+    );
     expect(levels.size).toBeGreaterThan(1);
   } finally {
     await d.delete();
@@ -347,10 +393,15 @@ it('creates a relationship that did not exist when a major event produces a new 
     const members = await d.memberships.where('worldId').equals(W).toArray();
     const rows = await d.relationships.where('worldId').equals(W).toArray();
     const has = new Set(rows.map((r) => r.from + '>' + r.to));
-    let a = '', b = '';
+    let a = '',
+      b = '';
     for (const x of members)
       for (const y of members)
-        if (x.characterId !== y.characterId && !has.has(x.characterId + '>' + y.characterId) && !a) {
+        if (
+          x.characterId !== y.characterId &&
+          !has.has(x.characterId + '>' + y.characterId) &&
+          !a
+        ) {
           a = x.characterId;
           b = y.characterId;
         }
@@ -399,10 +450,7 @@ it('creates a relationship that did not exist when a major event produces a new 
       narrative: [],
       relationshipChanges: [{ from: a, to: b, delta: 9, trustDelta: 4, reason: '共同救人' }],
     });
-    const row = await d.relationships
-      .where('[worldId+from+to]')
-      .equals([W, a, b])
-      .first();
+    const row = await d.relationships.where('[worldId+from+to]').equals([W, a, b]).first();
     expect(await d.relationships.where('worldId').equals(W).count()).toBe(before + 1);
     expect(row?.trust).toBeGreaterThan(18);
     expect(row?.history).toContain('共同救人');

@@ -1,6 +1,7 @@
 import { DAY, HOUR, type Membership, type World } from './types';
 import { ordinaryLife } from './narrative';
 export type CrisisBand =
+  | 'none'
   | 'truth'
   | 'trust'
   | 'order'
@@ -21,7 +22,10 @@ export interface CrisisSnapshot {
   publicMood: string;
   guidance: string;
 }
-const bands: Record<number, { band: CrisisBand; label: string; services: string; mood: string; guidance: string }> = {
+const bands: Record<
+  number,
+  { band: CrisisBand; label: string; services: string; mood: string; guidance: string }
+> = {
   1: {
     band: 'truth',
     label: '真相公布',
@@ -72,12 +76,30 @@ const bands: Record<number, { band: CrisisBand; label: string; services: string;
     guidance: '允许密集的终局事件和多人死亡；最终00:00 UTC终焉潮汐抹去一切生命。',
   },
 };
+export function crisisEnabled(world: World) {
+  return world.crisis?.enabled === true;
+}
 export function crisisDay(world: World, at: number) {
-  const start = world.novel?.startedAt ?? world.calendarAnchor?.tick ?? at;
+  const start =
+    world.crisis?.startedAt ?? world.novel?.startedAt ?? world.calendarAnchor?.tick ?? at;
   return Math.max(1, Math.floor((at - start) / DAY) + 1);
 }
 export function crisisAt(world: World, at: number): CrisisSnapshot {
   const day = crisisDay(world, at);
+  if (!crisisEnabled(world))
+    return {
+      day,
+      band: 'none',
+      label: '日常',
+      pressure: 0,
+      infrastructure: 1,
+      trust: 1,
+      violence: 0,
+      services: '基础设施与社会秩序按世界自身规则运行。',
+      publicMood: '世界保持自己的日常节奏。',
+      guidance:
+        '遵循世界设定、人物关系与当前生活事实，不引入末日倒计时、文明崩溃或与世界观无关的灾难。',
+    };
   const capped = Math.min(7, day);
   const meta = bands[capped] ?? bands[7];
   const withinDay = Math.max(0, Math.min(1, ((at - (world.novel?.startedAt ?? at)) % DAY) / DAY));
@@ -97,6 +119,7 @@ export function crisisAt(world: World, at: number): CrisisSnapshot {
   };
 }
 export function crisisPrompt(world: World, at: number) {
+  if (!crisisEnabled(world)) return undefined;
   const c = crisisAt(world, at);
   return {
     day: c.day,
@@ -118,6 +141,7 @@ export function eventLevelFor(
   day: number,
   sequence: number,
   settings?: NonNullable<World['majorEventSettings']>,
+  crisis = true,
 ): 'local' | 'group' | 'world' {
   const levels = settings?.levels ?? { local: true, group: true, world: true };
   const allowed: ('local' | 'group' | 'world')[] = [];
@@ -126,9 +150,12 @@ export function eventLevelFor(
   if (levels.world) allowed.push('world');
   if (!allowed.length) return 'local';
   let preferred: 'local' | 'group' | 'world';
-  if (day <= 1) preferred = sequence % 4 === 0 ? 'group' : 'local';
+  // Everyday worlds keep a calm mix: mostly small events, occasional group and world events.
+  if (!crisis) preferred = sequence % 6 === 0 ? 'world' : sequence % 3 === 0 ? 'group' : 'local';
+  else if (day <= 1) preferred = sequence % 4 === 0 ? 'group' : 'local';
   else if (day === 2) preferred = sequence % 2 === 0 ? 'group' : 'local';
-  else if (day === 3 || day === 4) preferred = sequence % 4 === 0 ? 'world' : sequence % 2 === 0 ? 'group' : 'local';
+  else if (day === 3 || day === 4)
+    preferred = sequence % 4 === 0 ? 'world' : sequence % 2 === 0 ? 'group' : 'local';
   else if (day === 5 || day === 6) preferred = sequence % 3 === 0 ? 'world' : 'group';
   else preferred = sequence % 2 === 0 ? 'world' : 'group';
   return allowed.includes(preferred) ? preferred : allowed[0];

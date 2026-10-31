@@ -138,19 +138,7 @@ export function Chats({
   }, [worldId, selectedId, messages[0]?.simAt, messages.at(-1)?.simAt, sceneLinkMode]);
   function toggleSelected(m: Message, range: boolean) {
     if (range && lastSelected.current) {
-      const ordered = [m, lastSelected.current].sort(
-        (a, b) => a.simAt - b.simAt || (a.id < b.id ? -1 : 1),
-      );
-      setSelection({
-        ids: new Set(),
-        excluded: new Set(),
-        range: {
-          from: ordered[0].simAt,
-          to: ordered[1].simAt,
-          fromId: ordered[0].id,
-          toId: ordered[1].id,
-        },
-      });
+      selectTo(m);
     } else
       setSelection((s) => {
         const ids = new Set(s.ids),
@@ -165,6 +153,36 @@ export function Chats({
         return { ...s, ids, excluded };
       });
     lastSelected.current = m;
+  }
+  /** WeChat/QQ-style “select to here”: extend from the last selected message to this one. */
+  function selectTo(target: Message) {
+    const anchor = lastSelected.current;
+    if (!anchor || anchor.id === target.id) {
+      setSelection({ ids: new Set([target.id]), excluded: new Set() });
+      lastSelected.current = target;
+      return;
+    }
+    const ordered = [anchor, target].sort(
+      (a, b) => a.simAt - b.simAt || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+    );
+    setSelection({
+      ids: new Set(),
+      excluded: new Set(),
+      range: {
+        from: ordered[0].simAt,
+        to: ordered[1].simAt,
+        fromId: ordered[0].id,
+        toId: ordered[1].id,
+        fromSeq: ordered[0].seq,
+        toSeq: ordered[1].seq,
+      },
+    });
+    lastSelected.current = target;
+  }
+  function selectToVisible() {
+    const items = history.virtual.getVirtualItems();
+    const target = visible[Math.min(visible.length - 1, items.at(-1)?.index ?? -1)];
+    if (target) selectTo(target);
   }
   useEffect(() => {
     if (convo) activeConversations.set(worldId, convo.id);
@@ -451,8 +469,16 @@ export function Chats({
               <Button onClick={() => setSelecting(!selecting)}>选择消息</Button>
               {selecting && (
                 <>
+                  <Button disabled={!lastSelected.current} onClick={selectToVisible}>
+                    选择到这里
+                  </Button>
                   <Button onClick={() => setExporting(true)}>导出选中消息</Button>
-                  <Button onClick={() => setSelection({ ids: new Set(), excluded: new Set() })}>
+                  <Button
+                    onClick={() => {
+                      setSelection({ ids: new Set(), excluded: new Set() });
+                      lastSelected.current = undefined;
+                    }}
+                  >
                     取消全选
                   </Button>
                 </>
@@ -556,17 +582,27 @@ export function Chats({
                           );
                         })}
                       {selecting && (
-                        <label>
-                          <input
-                            type="checkbox"
-                            aria-label={`选择消息 ${m.id}`}
-                            checked={isSelected(m, selection)}
-                            onChange={(e) =>
-                              toggleSelected(m, (e.nativeEvent as MouseEvent).shiftKey)
-                            }
-                          />
-                          选择（Shift 连选）
-                        </label>
+                        <div className="select-range-row">
+                          <label>
+                            <input
+                              type="checkbox"
+                              aria-label={`选择消息 ${m.id}`}
+                              checked={isSelected(m, selection)}
+                              onChange={(e) =>
+                                toggleSelected(m, (e.nativeEvent as MouseEvent).shiftKey)
+                              }
+                            />
+                            选择
+                          </label>
+                          <button
+                            type="button"
+                            className="text-button select-to-here"
+                            title="从上次选择的消息一直选到这条"
+                            onClick={() => selectTo(m)}
+                          >
+                            选择到这里
+                          </button>
+                        </div>
                       )}
                       {newDay && <div className="date-divider">{day}</div>}
                       {m.seq === cursor + 1 && (

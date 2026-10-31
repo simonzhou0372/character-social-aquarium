@@ -91,6 +91,14 @@ export const CharacterSchema = z.object({
 export type Character = z.infer<typeof CharacterSchema>;
 export const WorldSchema = z.object({
   narrativeVersion: z.number().int().nonnegative().optional(),
+  /** Only worlds explicitly running a countdown crisis use apocalypse bands and wording. */
+  crisis: z
+    .object({
+      enabled: z.boolean(),
+      startedAt: time,
+      durationDays: z.number().min(1).max(3650).optional(),
+    })
+    .optional(),
   novel: NovelSchema.optional(),
   novelHistory: z.array(NovelSchema).max(50).optional(),
   provenance: ProvenanceSchema.optional(),

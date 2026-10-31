@@ -16,8 +16,7 @@ async function loadPreset(): Promise<Backup> {
   if (!res.ok) throw new Error(`内置《最后七天》资料读取失败（${res.status}）`);
   const raw = await res.json();
   // 终焉事件与潮汐同一时刻发生，长度为 0；补齐 1 分钟以满足事件时间约束。
-  for (const e of raw?.events ?? [])
-    if (!(e.end > e.start)) e.end = e.start + 60000;
+  for (const e of raw?.events ?? []) if (!(e.end > e.start)) e.end = e.start + 60000;
   // 场景保留了完整时长，事件行的 end 曾被截成 1 分钟；以场景时长为准修正。
   const eventById = new Map((raw?.events ?? []).map((e: { id: string }) => [e.id, e]));
   for (const sc of raw?.scenes ?? []) {
@@ -28,8 +27,7 @@ async function loadPreset(): Promise<Backup> {
   const eventIds = new Set((raw?.events ?? []).map((e: { id: string }) => e.id));
   const terminal = (raw?.events ?? []).find((e: { id: string }) => e.id.endsWith(':final-tide'));
   if (terminal)
-    for (const st of raw?.states ?? [])
-      if (!eventIds.has(st.eventId)) st.eventId = terminal.id;
+    for (const st of raw?.states ?? []) if (!eventIds.has(st.eventId)) st.eventId = terminal.id;
   // Deluxe 日报使用归档格式；转换为软件 WorldReport（正文放入 overview）。
   raw.worldReports = (raw?.worldReports ?? [])
     .filter((r: { worldId: string }) => r.worldId === LAST_SEVEN_DAYS_WORLD_ID)
@@ -66,6 +64,11 @@ async function loadPreset(): Promise<Backup> {
     if (w.id === LAST_SEVEN_DAYS_WORLD_ID) {
       w.name = LAST_SEVEN_DAYS_WORLD_NAME;
       w.presetVersion = PRESET_VERSION;
+      w.crisis = {
+        enabled: true,
+        startedAt: w.novel?.startedAt ?? w.calendarAnchor?.tick ?? Date.now(),
+        durationDays: 7,
+      };
     }
   return validateBackup(raw);
 }
@@ -74,12 +77,24 @@ async function loadPreset(): Promise<Backup> {
  * 首次启动写入内置《最后七天》完整七天存档，并把它设为默认世界。
  * 已存在同 ID 世界时直接跳过，不覆盖用户的任何编辑。
  */
-export function ensureLastSevenDaysPreset(d: AquariumDB = db): Promise<boolean> {
-  loading ??= install(d).catch((e) => {
+export async function ensureLastSevenDaysPreset(d: AquariumDB = db): Promise<boolean> {
+  const result = await (loading ??= install(d).catch((e) => {
     loading = null;
     throw e;
-  });
-  return loading;
+  }));
+  // Older installations already contain the seven-day archive. Mark that world as a
+  // countdown-crisis world without touching its history; all other worlds stay ordinary.
+  const world = await d.worlds.get(LAST_SEVEN_DAYS_WORLD_ID);
+  if (world && !world.crisis) {
+    await d.worlds.update(LAST_SEVEN_DAYS_WORLD_ID, {
+      crisis: {
+        enabled: true,
+        startedAt: world.novel?.startedAt ?? world.calendarAnchor?.tick ?? Date.now(),
+        durationDays: 7,
+      },
+    });
+  }
+  return result;
 }
 
 async function purgeWorld(d: AquariumDB, worldId: string) {
@@ -151,13 +166,9 @@ async function install(d: AquariumDB): Promise<boolean> {
     await d.worldReports.bulkPut(b.worldReports.filter((r) => r.worldId === worldId));
     await d.states.bulkPut(b.states.filter((s) => s.worldId === worldId));
     await d.memories.bulkPut(b.memories.filter((m) => m.worldId === worldId));
-    await d.backgroundKnowledge.bulkPut(
-      b.backgroundKnowledge.filter((k) => k.worldId === worldId),
-    );
+    await d.backgroundKnowledge.bulkPut(b.backgroundKnowledge.filter((k) => k.worldId === worldId));
     await d.narrativeChanges.bulkPut(b.narrativeChanges.filter((n) => n.worldId === worldId));
-    await d.organizationStates.bulkPut(
-      b.organizationStates.filter((o) => o.worldId === worldId),
-    );
+    await d.organizationStates.bulkPut(b.organizationStates.filter((o) => o.worldId === worldId));
     await d.evolutionRecords.bulkPut(b.evolutionRecords.filter((e) => e.worldId === worldId));
     await d.evolutionCursors.bulkPut(b.evolutionCursors.filter((e) => e.id === worldId));
     await d.observationConfigs.bulkPut(b.observationConfigs.filter((o) => o.id === worldId));

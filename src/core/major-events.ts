@@ -14,7 +14,7 @@ import {
 } from './types';
 import { clockTarget } from './time';
 import { foregroundStart } from './clock-presence';
-import { crisisAt, crisisDay, crisisIntervalFactor, eventLevelFor } from './crisis';
+import { crisisDay, crisisEnabled, crisisIntervalFactor, eventLevelFor } from './crisis';
 import { ordinaryLife } from './narrative';
 import type { CoverageRow } from './coverage';
 export const defaultMajorSettings = {
@@ -154,14 +154,22 @@ function pick<T>(list: T[], seed: number) {
   return list[Math.floor(hash('pick', seed) * list.length) % list.length];
 }
 function activeIds(members: Membership[]) {
-  return members.filter((m) => !m.inactive && ordinaryLife(m.life?.status)).map((m) => m.characterId);
+  return members
+    .filter((m) => !m.inactive && ordinaryLife(m.life?.status))
+    .map((m) => m.characterId);
 }
 function coverageMap(rows?: Iterable<CoverageRow>) {
   const map = new Map<string, CoverageRow>();
   if (rows) for (const row of rows) map.set(row.id, row);
   return map;
 }
-function leastCovered(ids: string[], cov: Map<string, CoverageRow>, seed: number, count: number, exclude = new Set<string>()) {
+function leastCovered(
+  ids: string[],
+  cov: Map<string, CoverageRow>,
+  seed: number,
+  count: number,
+  exclude = new Set<string>(),
+) {
   const ranked = ids
     .filter((id) => !exclude.has(id))
     .map((id) => ({
@@ -191,11 +199,7 @@ function localParticipants(
   ];
   return [...new Set([first, ...extras])].slice(0, 2 + (seed % 4));
 }
-function groupParticipants(
-  group: MajorGroupContext,
-  cov: Map<string, CoverageRow>,
-  seed: number,
-) {
+function groupParticipants(group: MajorGroupContext, cov: Map<string, CoverageRow>, seed: number) {
   const members = group.memberIds;
   const low = leastCovered(members, cov, seed, 6);
   return [...new Set(low)].slice(0, 3 + (seed % 4));
@@ -219,18 +223,59 @@ function worldParticipants(
   }
   return [...chosen].slice(0, 14);
 }
-function seedDescription(level: MajorLevel, day: number, pressure: number, groupName?: string) {
-  const band = day <= 1 ? '真相公布后的' : day <= 2 ? '信任崩塌中的' : day <= 4 ? '秩序失控中的' : day <= 6 ? '文明末期的' : '最后24小时的';
-  if (level === 'world')
-    return `全球或区域级灾难：${band}基础设施与政治秩序同时恶化，多个团体和大量人物被卷入一次不可忽视的重大危机，现场可能出现致命后果。`;
-  if (level === 'group')
-    return `团体「${groupName ?? '临时组织'}」内部重大事件：${band}压力下，成员之间围绕资源、责任或去留发生冲突或被迫合作，可能造成永久关系变化。`;
-  return `局部重大事件：${band}一次险情/事故/冲突影响数名彼此认识的人，当事人必须在有限时间内作出会改变后续生活的选择，现场存在受伤或死亡风险。`;
+function deathAllowed(world: World) {
+  return world.novel?.enabled === true && world.novel.lifeRules?.allowDeath === true;
 }
-function seedTitle(level: MajorLevel, day: number, groupName?: string) {
-  if (level === 'world') return `第${day}日 · 区域级危机`;
-  if (level === 'group') return `第${day}日 · ${groupName ?? '团体'}的裂痕`;
-  return `第${day}日 · 一场没有准备的险情`;
+function groupChangeAllowed(world: World) {
+  return world.novel?.enabled === true && world.novel.allowGroupChanges === true;
+}
+function seedDescription(world: World, level: MajorLevel, day: number, groupName?: string) {
+  const crisis = crisisEnabled(world),
+    death = world.novel?.enabled === true && world.novel.lifeRules?.allowDeath === true,
+    relationshipChanges = world.majorEventSettings?.allowRelationshipChanges === true,
+    groupChanges = world.novel?.enabled === true && world.novel.allowGroupChanges === true,
+    band =
+      day <= 1
+        ? '真相公布后的'
+        : day <= 2
+          ? '信任崩塌中的'
+          : day <= 4
+            ? '秩序失控中的'
+            : day <= 6
+              ? '文明末期的'
+              : '最后24小时的',
+    relationNote = relationshipChanges
+      ? '可能造成永久关系变化。'
+      : '不会自动改写既有关系数值，但会留下需要后续面对的影响。',
+    groupNote = groupChanges
+      ? '成员之间围绕资源、责任或去留发生冲突或被迫合作。'
+      : '成员围绕共同任务、职责或一次意外展开合作与争论。';
+  if (crisis) {
+    if (level === 'world')
+      return `全球或区域级灾难：${band}基础设施与政治秩序同时恶化，多个团体和大量人物被卷入一次不可忽视的重大危机，${death ? '现场可能出现致命后果。' : '需要相关人物共同应对现实后果。'}`;
+    if (level === 'group')
+      return `团体「${groupName ?? '临时组织'}」内部重大事件：${band}压力下，${groupNote}${relationNote}`;
+    return `局部重大事件：${band}一次险情/事故/冲突影响数名彼此认识的人，当事人必须在有限时间内作出选择，${death ? '现场存在受伤或死亡风险。' : '并承担随后的现实后果。'}`;
+  }
+  if (level === 'world')
+    return death
+      ? `世界级重大事件：一次跨团体的事故或危机把多位人物和他们的圈子卷在一起，现场可能出现致命后果，相关人物需要共同应对。`
+      : `世界级重大事件：一次跨团体的事件把多位人物和他们的圈子卷在一起，相关人物需要共同回应它带来的现实后果。`;
+  if (level === 'group')
+    return `团体「${groupName ?? '临时组织'}」的重大事件：${groupNote}${relationNote}`;
+  return death
+    ? `局部重大事件：一次事故、冲突或突发状况影响数名彼此认识的人，现场存在受伤或死亡风险，当事人需要作出选择。`
+    : `局部重大事件：一次突发状况或相遇影响数名彼此认识的人，当事人需要处理随后产生的现实问题。`;
+}
+function seedTitle(world: World, level: MajorLevel, day: number, groupName?: string) {
+  if (crisisEnabled(world)) {
+    if (level === 'world') return `第${day}日 · 区域级危机`;
+    if (level === 'group') return `第${day}日 · ${groupName ?? '团体'}的裂痕`;
+    return `第${day}日 · 一场没有准备的险情`;
+  }
+  if (level === 'world') return `第${day}日 · 跨团体事件`;
+  if (level === 'group') return `第${day}日 · ${groupName ?? '团体'}的波澜`;
+  return `第${day}日 · 一次意外的相遇`;
 }
 function overlaps(a: ActivityEvent, b: ActivityEvent) {
   return a.start < b.end && b.start < a.end;
@@ -254,16 +299,16 @@ export function planMajorBatch(
   const from = ctx.from ?? schedule.lastOccurredAt;
   const due = Math.max(schedule.plannedAt, from + 60000);
   if (due >= end - 60000) return;
-  const day = crisisDay(world, due);
-  const pressure = crisisAt(world, due).pressure;
-  const key = scheduleDayKey(due);
+  const crisis = crisisEnabled(world),
+    day = crisisDay(world, due),
+    key = scheduleDayKey(due);
   const countToday = schedule.dayKey === key ? (schedule.countToday ?? 0) : 0;
   const maxPerDay = settings.maxPerDay ?? 12;
   const ids = activeIds(members);
   if (!ids.length) return;
   const interval = Math.max(
     20 * 60000,
-    Math.round(majorIntervalMs(settings) * crisisIntervalFactor(day)),
+    Math.round(majorIntervalMs(settings) * (crisis ? crisisIntervalFactor(day) : 1)),
   );
   if (countToday >= maxPerDay) {
     const nextDay = Math.floor(due / DAY) * DAY + DAY + 5 * 60000;
@@ -273,7 +318,16 @@ export function planMajorBatch(
       plans: [],
       deferredChains: [],
       schedule: {
-        ...nextMajorScheduleFor(world.id, due, settings, schedule.sequence, schedule.lastType, interval, 0, scheduleDayKey(nextDay)),
+        ...nextMajorScheduleFor(
+          world.id,
+          due,
+          settings,
+          schedule.sequence,
+          schedule.lastType,
+          interval,
+          0,
+          scheduleDayKey(nextDay),
+        ),
         plannedAt: nextDay,
         nextDueAt: nextDay,
       },
@@ -287,7 +341,7 @@ export function planMajorBatch(
   );
   const relationships = ctx.relationships ?? [];
   const sequence = schedule.sequence + 1;
-  const level = eventLevelFor(day, sequence, settings);
+  const level = eventLevelFor(day, sequence, settings, crisis);
   const group =
     level !== 'local' && groups.length
       ? groups[(sequence + day + schedule.sequence) % groups.length]
@@ -343,7 +397,7 @@ export function planMajorBatch(
     end: Math.min(end, start + (level === 'world' ? 3 : 2) * HOUR),
     participants,
     location,
-    description: seedDescription(level, day, pressure, group?.name),
+    description: seedDescription(world, level, day, group?.name),
     phone: level === 'world' ? 0.65 : 0.35,
     status: 'planned',
     importance: level === 'world' ? 0.97 : level === 'group' ? 0.88 : 0.78,
@@ -356,13 +410,24 @@ export function planMajorBatch(
     id,
     eventId: id,
     worldId: world.id,
-    title: seedTitle(level, day, group?.name),
+    title: seedTitle(world, level, day, group?.name),
     timestamp: start,
     participantIds: participants,
     groupIds: group ? [group.id] : [],
     importance: event.importance ?? 0.8,
     status: 'contentPending',
-    type: level === 'world' ? 'world-crisis' : level === 'group' ? 'group-conflict' : 'local-incident',
+    type:
+      level === 'world'
+        ? crisis
+          ? 'world-crisis'
+          : 'world-event'
+        : level === 'group'
+          ? crisis
+            ? 'group-conflict'
+            : 'group-event'
+          : crisis
+            ? 'local-incident'
+            : 'local-event',
     level,
     rootEventId: id,
     chainDepth: 0,
@@ -372,9 +437,13 @@ export function planMajorBatch(
         kind: 'followUp',
         description:
           level === 'world'
-            ? '多个团体需要在下一次事件中回应基础设施、秩序与伤亡。'
+            ? crisis && deathAllowed(world)
+              ? '多个团体需要在下一次事件中回应基础设施、秩序与伤亡。'
+              : '相关团体需要在后续互动中回应这次事件带来的影响。'
             : level === 'group'
-              ? '该团体需要处理成员去留、责任归属或领导权问题。'
+              ? groupChangeAllowed(world)
+                ? '该团体需要处理成员去留、责任归属或领导权问题。'
+                : '该团体需要消化这次事件的后续影响。'
               : '当事人需要在后续互动中处理这次事件留下的后果。',
       },
     ],
@@ -385,11 +454,14 @@ export function planMajorBatch(
   const maxDepth = Math.min(2, settings.maxChainDepth ?? 2);
   if (settings.allowChainEvents !== false && maxDepth > 0 && day >= 2 && sequence % 2 === 0) {
     const followLevel: MajorLevel = level === 'world' ? 'group' : 'local';
-    const followGroup = followLevel === 'group' ? groups[(sequence + 1) % Math.max(1, groups.length)] : undefined;
+    const followGroup =
+      followLevel === 'group' ? groups[(sequence + 1) % Math.max(1, groups.length)] : undefined;
     const followParticipants =
       followLevel === 'group' && followGroup
         ? groupParticipants(followGroup, cov, sequence * 17 + day)
-        : localParticipants(ids, cov, relationships, sequence * 19 + day).filter((x) => !participants.includes(x));
+        : localParticipants(ids, cov, relationships, sequence * 19 + day).filter(
+            (x) => !participants.includes(x),
+          );
     const fp = followParticipants.length >= 2 ? followParticipants : participants.slice(0, 2);
     if (fp.length >= 2) {
       const fid = `major:${world.id}:${suffix}:c1`;
@@ -405,7 +477,7 @@ export function planMajorBatch(
           level: followLevel,
           groupId: followGroup?.id,
           participantIds: [...new Set(fp)],
-          description: `连锁后果：${event.description.slice(0, 80)} 由此引发的${followLevel === 'group' ? '团体内部' : '局部'}冲突/事故，要求当事人在更短时间内作出选择，可能导致伤亡。`,
+          description: `连锁后果：${event.description.slice(0, 80)} 由此引发的${followLevel === 'group' ? '团体内部' : '局部'}${crisis ? '冲突/事故' : '后续事件'}，要求当事人在更短时间内作出选择${deathAllowed(world) ? '，可能导致伤亡' : ''}。`,
           location: followLevel === 'group' ? (followGroup?.location ?? '线上协调') : location,
           createdAt: start,
         });
@@ -417,7 +489,7 @@ export function planMajorBatch(
           end: Math.min(end, fstart + 90 * 60000),
           participants: [...new Set(fp)],
           location: followLevel === 'group' ? (followGroup?.location ?? '线上协调') : location,
-          description: `连锁后果：${event.description.slice(0, 80)} 由此引发的${followLevel === 'group' ? '团体内部' : '局部'}冲突/事故，要求当事人在更短时间内作出选择，可能导致伤亡。`,
+          description: `连锁后果：${event.description.slice(0, 80)} 由此引发的${followLevel === 'group' ? '团体内部' : '局部'}${crisis ? '冲突/事故' : '后续事件'}，要求当事人在更短时间内作出选择${deathAllowed(world) ? '，可能导致伤亡' : ''}。`,
           majorLevel: followLevel,
           parentEventId: id,
           rootEventId: id,
@@ -429,7 +501,7 @@ export function planMajorBatch(
             ...major,
             id: fid,
             eventId: fid,
-            title: `连锁 · ${seedTitle(followLevel, day, followGroup?.name)}`,
+            title: `连锁 · ${seedTitle(world, followLevel, day, followGroup?.name)}`,
             timestamp: fstart,
             participantIds: fevent.participants,
             groupIds: followGroup ? [followGroup.id] : [],
@@ -452,7 +524,10 @@ export function planMajorBatch(
       .filter(
         (e) =>
           e.id === plan.event.id ||
-          !(overlaps(e, plan.event) && e.participants.some((p) => plan.event.participants.includes(p))),
+          !(
+            overlaps(e, plan.event) &&
+            e.participants.some((p) => plan.event.participants.includes(p))
+          ),
       )
       .concat(plan.event);
     for (const id of plan.event.participants)
@@ -461,7 +536,12 @@ export function planMajorBatch(
         worldId: world.id,
         characterId: id,
         eventId: plan.event.id,
-        activity: plan.event.majorLevel === 'world' ? '世界级危机' : plan.event.majorLevel === 'group' ? '团体重大事件' : '局部重大事件',
+        activity:
+          plan.event.majorLevel === 'world'
+            ? '世界级危机'
+            : plan.event.majorLevel === 'group'
+              ? '团体重大事件'
+              : '局部重大事件',
         location: plan.event.location,
         phone: plan.event.phone,
       });

@@ -16,7 +16,14 @@ const pages = temp.table('pages') as Table<{
 }>;
 export type ChatSelection = {
   ids: Set<string>;
-  range?: { from: number; to: number; fromId?: string; toId?: string };
+  range?: {
+    from: number;
+    to: number;
+    fromId?: string;
+    toId?: string;
+    fromSeq?: number;
+    toSeq?: number;
+  };
   excluded: Set<string>;
 };
 export const isSelected = (m: Message, s: ChatSelection) =>
@@ -25,8 +32,14 @@ export const isSelected = (m: Message, s: ChatSelection) =>
     (!!s.range &&
       m.simAt >= s.range.from &&
       m.simAt <= s.range.to &&
-      (m.simAt !== s.range.from || !s.range.fromId || m.id >= s.range.fromId) &&
-      (m.simAt !== s.range.to || !s.range.toId || m.id <= s.range.toId)));
+      (m.simAt !== s.range.from ||
+        (s.range.fromSeq !== undefined
+          ? m.seq >= s.range.fromSeq
+          : !s.range.fromId || m.id >= s.range.fromId)) &&
+      (m.simAt !== s.range.to ||
+        (s.range.toSeq !== undefined
+          ? m.seq <= s.range.toSeq
+          : !s.range.toId || m.id <= s.range.toId))));
 function save(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob),
     a = document.createElement('a');
@@ -190,6 +203,20 @@ export function ChatExport({
               ).filter((m): m is Message => !!m);
           selectedOffset += 40;
           if (!batch.length || (selection.range && batch[0].simAt > maxAt)) break;
+          const reactions = await db.reactions
+            .where('messageId')
+            .anyOf(batch.map((m) => m.id))
+            .toArray();
+          const reactionsByMessage = new Map<string, typeof reactions>();
+          for (const reaction of reactions) {
+            const list = reactionsByMessage.get(reaction.messageId) ?? [];
+            list.push(reaction);
+            reactionsByMessage.set(reaction.messageId, list);
+          }
+          const reactionName = (id: string) =>
+            id === 'user'
+              ? (settings?.nickname ?? '用户')
+              : (chars.find((c) => c?.id === id)?.name ?? '已移除成员');
           for (const m of batch) {
             if (cancel.current) break;
             if (!isSelected(m, selection)) continue;
@@ -261,6 +288,39 @@ export function ChatExport({
                   URL.revokeObjectURL(src);
                 }
               }
+            }
+            const reactionsForMessage = (reactionsByMessage.get(m.id) ?? []).sort(
+              (a, b) => a.reactedAt - b.reactedAt,
+            );
+            if (reactionsForMessage.length) {
+              const byEmoji = new Map<string, string[]>();
+              for (const reaction of reactionsForMessage) {
+                const names = byEmoji.get(reaction.emoji) ?? [];
+                names.push(reactionName(reaction.actorId));
+                byEmoji.set(reaction.emoji, names);
+              }
+              const reactionText = [...byEmoji]
+                .map(([emoji, names]) => `${emoji} ${[...new Set(names)].join('、')}`)
+                .join('   ');
+              ctx.font = '20px sans-serif';
+              ctx.fillStyle = '#6b7280';
+              let line = '';
+              const drawReactionLine = async () => {
+                if (y > 2300) {
+                  await flush();
+                  await header();
+                  ctx.font = '20px sans-serif';
+                  ctx.fillStyle = '#6b7280';
+                }
+                ctx.fillText(line, 128, y);
+                y += 30;
+                line = '';
+              };
+              for (const ch of Array.from(reactionText)) {
+                if (ctx.measureText(line + ch).width > 1150) await drawReactionLine();
+                line += ch;
+              }
+              if (line) await drawReactionLine();
             }
             y += 30;
             count++;
