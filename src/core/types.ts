@@ -278,6 +278,8 @@ export const ConversationSchema = z.object({
 });
 export type Conversation = z.infer<typeof ConversationSchema>;
 export const MessageSchema = z.object({
+  /** Part of a cross-medium storyline: a pre-arrangement or an after-the-fact reaction. */
+  storyRole: z.enum(['lead', 'follow']).optional(),
   planVersion: z.literal(1).optional(),
   backfilled: z.boolean().optional(),
   messageType: z.enum(['text', 'gif']).optional(),
@@ -388,6 +390,8 @@ export const CheckpointSchema = z.object({
   jumpTarget: time.optional(),
   /** A jump started while paused lands paused; a jump started during playback keeps running. */
   jumpResumePaused: z.boolean().optional(),
+  /** One opt-in agent fills the whole jump (or pending backlog) instead of many small jobs. */
+  fastCatchUp: z.boolean().optional(),
   mode: z.enum(['demo', 'live']),
   recoveryTarget: time.optional(),
   recoveryStart: time.optional(),
@@ -495,6 +499,8 @@ export const SceneSchema = z.object({
   id,
   worldId: id,
   eventId: id,
+  /** The online conversation this off-line scene is narratively connected to. */
+  sourceConversationId: id.optional(),
   titleMode: z.enum(['auto', 'custom']).optional(),
   customTitle: text.optional(),
   autoTitle: text.optional(),
@@ -559,6 +565,9 @@ export const ContentJobSchema = z
 
     id: z.string().max(512),
     worldId: z.string(),
+    /** Chat jobs that stage a scene: a prelude (`lead`) or a reaction (`follow`). */
+    storyRole: z.enum(['lead', 'follow']).optional(),
+    storyConversationId: z.string().optional(),
     kind: z.enum(['chat', 'life', 'scene', 'major']),
     event: EventSchema,
     conversation: ConversationSchema.optional(),

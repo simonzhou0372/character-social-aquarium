@@ -38,6 +38,7 @@ import {
 import { db } from './data/db';
 import { seed } from './data/seed';
 import { runWorld, setRunning, type RecoveryProgress } from './core/engine';
+import { runFastCatchUp } from './core/fast-catch-up';
 import { getKey } from './ai/provider';
 import { Avatar, Button, Modal, Select, Status, OPEN_CHARACTER_EVENT } from './components/ui';
 import { Home } from './pages/Home';
@@ -239,11 +240,28 @@ export default function App() {
         for (const world of worlds) {
           const cp = await db.checkpoints.get(world.id);
           if (!cp || cp.paused) continue;
-          void drainContent(world.id).catch((e) =>
-            diagnostic(world.id, { phase: 'error', error: String(e) }),
-          );
           cancelController.current = new AbortController();
           void maintainWorld(world.id).catch((e) =>
+            diagnostic(world.id, { phase: 'error', error: String(e) }),
+          );
+          const fastBacklog = cp.fastCatchUp
+            ? await db.contentJobs
+                .where('worldId')
+                .equals(world.id)
+                .and((j) => j.status !== 'complete' && j.attempts < 3)
+                .count()
+            : 0;
+          if (cp.fastCatchUp && cp.mode === 'live' && (cp.recoveryTarget || fastBacklog > 0)) {
+            await runFastCatchUp(world.id, {
+              signal: cancelController.current.signal,
+              now: startedAt,
+              onProgress: (p) => {
+                if (p.to - p.from > 900000) setProgress(p);
+              },
+            });
+            continue;
+          }
+          void drainContent(world.id).catch((e) =>
             diagnostic(world.id, { phase: 'error', error: String(e) }),
           );
           await runWorld(world.id, {

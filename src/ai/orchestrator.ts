@@ -40,6 +40,7 @@ import {
   type ActivityEvent,
   uid,
 } from '../core/types';
+import { storyPromptContext, type StoryRole } from '../core/storyline';
 import { composePrompt, getPrompts, type PromptConfig, type TaskKind } from './prompts';
 import {
   CompatibleProvider,
@@ -375,6 +376,7 @@ export async function dialogueContext(
   c: Conversation,
   speakerId: string,
   at: number,
+  story?: { event?: ActivityEvent; role?: StoryRole },
 ) {
   await assertConversationLife(c, at, d);
   const original = c;
@@ -424,6 +426,14 @@ export async function dialogueContext(
   const effective = character
     ? await historicalCharacter(d, character, membership, c.worldId, at)
     : undefined;
+  const storyContext = await storyPromptContext(d, {
+    worldId: c.worldId,
+    at,
+    participants: c.participants,
+    speakerId,
+    event: story?.event,
+    role: story?.role,
+  });
   return {
     world,
     environment: world ? crisisPrompt(world, at) : undefined,
@@ -478,6 +488,8 @@ export async function dialogueContext(
         ? await d.messages.get(recent.at(-1)!.replyToMessageId!)
         : undefined,
       backgroundKnowledge: await knownBackground(d, c.worldId, speakerId, at),
+      /** Cross-medium continuity: what happened offline, and what was said online about it. */
+      story: storyContext,
     },
   };
 }
@@ -490,7 +502,7 @@ export async function generateDialogue(
   provider: Provider,
   task: 'chat' | 'recoveryChat' = 'chat',
   signal?: AbortSignal,
-  current?: { state: unknown; event: unknown },
+  current?: { state: unknown; event: unknown; storyRole?: StoryRole },
 ) {
   if (c.kind === 'notes') throw new ProviderError('identity', '备忘会话不可用作 AI 对话');
   await assertConversationLife(c, at, d);
@@ -500,9 +512,28 @@ export async function generateDialogue(
     throw new ProviderError('identity', '背景团体不参与聊天');
   if (c.controlledId === speakerId || !c.participants.includes(speakerId))
     throw new ProviderError('identity', '该角色当前由用户控制。');
-  const context = await dialogueContext(d, c, speakerId, at);
+  const context = await dialogueContext(
+    d,
+    c,
+    speakerId,
+    at,
+    current
+      ? { event: current.event as ActivityEvent, role: current.storyRole }
+      : undefined,
+  );
   if (context.character.entityMode === 'background')
     throw new ProviderError('identity', '背景人物不参与聊天');
+  // A prelude or an after-the-fact reaction is a deliberate story beat: at least one
+  // message is required, otherwise the online half of the thread silently disappears.
+  if (current?.storyRole)
+    snapshot = {
+      ...snapshot,
+      rules: {
+        ...snapshot.rules,
+        minMessages: Math.min(1, snapshot.rules.maxMessages),
+        allowSilence: false,
+      },
+    };
   const prefs = context.character.messagePreferences;
   if (prefs) {
     const maxMessages = Math.min(snapshot.rules.maxMessages, prefs.maxMessages);
@@ -657,6 +688,7 @@ export async function persistDialogue(
         simAt: at + (offsets?.[i] ?? i * 2) * 1000,
         source,
         eventId,
+        storyRole: extras.storyRole,
         backfilled: extras.backfilled,
         planVersion: extras.planVersion,
         replyToMessageId: extras.replyToMessageId,

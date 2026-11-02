@@ -1,6 +1,6 @@
 import { WorldDateEditor } from './WorldDateEditor';
-import { calendarTick, realLocalDate, type WorldDateTime } from '../core/calendar';
-import { useState } from 'react';
+import { calendarTick, realLocalDate, worldTime, type WorldDateTime } from '../core/calendar';
+import { useEffect, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Clock3, Rewind } from 'lucide-react';
 import { db } from '../data/db';
@@ -23,6 +23,13 @@ export function TimeControls({ worldId, compact = false }: { worldId: string; co
     [newStory, setNewStory] = useState(false);
   const cp = data?.cp,
     mode = cp?.timeMode ?? 'god';
+  const dateWorldId = useRef('');
+  useEffect(() => {
+    // The rewind field must start from the world's own clock, not the observer's real date.
+    if (!data?.world || !data.cp || dateWorldId.current === data.cp.id) return;
+    dateWorldId.current = data.cp.id;
+    setDate(worldTime(data.world, data.cp.simTime));
+  }, [data]);
   async function change(nextMode: 'god' | 'real', speed: number) {
     if (!cp) return;
     setBusy(true);

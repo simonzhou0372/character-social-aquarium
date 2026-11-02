@@ -86,9 +86,23 @@ export async function drainAdaptive(
     scope = await resolveObservation(worldId, d);
   const ready: ContentJob[] = [];
   for (const job of jobs) {
-    if (job.at > cp.simTime || job.event.end > cp.simTime) continue;
+    // A chat is stamped at `job.at`; it does not need the whole underlying activity to end
+    // (a prelude can be generated while the meeting is still ahead). Scenes still wait.
+    if (job.at > cp.simTime || (job.kind !== 'chat' && job.event.end > cp.simTime)) continue;
     if (
-      (await d.contentJobs.bulkGet(job.dependsOn ?? [])).some((j) => !j || j.status !== 'complete')
+      (await d.contentJobs.bulkGet(job.dependsOn ?? [])).some(
+        (dep) =>
+          !dep ||
+          (dep.status !== 'complete' &&
+            // A scene may still be written from the confirmed event when the optional
+            // online lead-up failed for good. A follow-up, however, needs its scene.
+            !(
+              dep.status === 'failed' &&
+              dep.attempts >= 3 &&
+              dep.storyRole === 'lead' &&
+              job.kind === 'scene'
+            )),
+      )
     )
       continue;
     if (
@@ -284,7 +298,10 @@ export async function drainAdaptive(
     } else {
       const c = job.conversation!,
         speaker = job.speakerId!,
-        context = await dialogueContext(d, c, speaker, job.at);
+        context = await dialogueContext(d, c, speaker, job.at, {
+          event: job.event,
+          role: job.storyRole,
+        });
       const previous = job.partial?.dialogue as ReturnType<typeof parseDialogue> | undefined,
         remaining = job.plan!.expectedMessages - (previous?.messages.length ?? 0);
       if (remaining <= 0) continue;
@@ -452,7 +469,12 @@ export async function drainAdaptive(
         };
         if (
           offsets.some(
-            (v, i) => v > 60 || job.at + v * 1000 > job.event.end || (i > 0 && v < offsets[i - 1]),
+            (v, i) =>
+              v > 60 ||
+              // A follow-up beat is deliberately stamped after the shared activity,
+              // so it may legitimately extend past event.end.
+              (job.storyRole !== 'follow' && job.at + v * 1000 > job.event.end) ||
+              (i > 0 && v < offsets[i - 1]),
           )
         )
           throw new Error('消息时间越界或倒序');
@@ -491,7 +513,7 @@ export async function drainAdaptive(
             job.id,
             job.event.id,
             result.offsets,
-            { ...result, backfilled: true, planVersion: 1 },
+            { ...result, backfilled: true, planVersion: 1, storyRole: job.storyRole },
           );
           if (saved.length !== job.plan!.expectedMessages && !(await d.messages.get(job.id + ':0')))
             throw new Error('消息未完整写入，任务保持待恢复');

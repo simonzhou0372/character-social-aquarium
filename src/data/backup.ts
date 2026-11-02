@@ -1,6 +1,7 @@
 import Dexie from 'dexie';
 import { validateGif } from './gifs';
 import { validateScene } from '../core/scenes';
+import { noteWorldHasScenes } from '../core/storyline';
 import { realLocalDate } from '../core/calendar';
 import { BackupSchema, type Backup } from '../core/types';
 import { db, dataTables, type AquariumDB } from './db';
@@ -437,6 +438,7 @@ export async function importBackup(input: unknown, d: AquariumDB = db) {
     await d.profiles.clear();
     await d.taskSnapshots.filter((s) => !s.id.startsWith('content:')).delete();
     await d.taskLogs.clear();
+    for (const scene of await d.scenes.toArray()) noteWorldHasScenes(d, scene.worldId);
     await d.checkpoints.toCollection().modify({
       paused: true,
       recoveryTarget: undefined,

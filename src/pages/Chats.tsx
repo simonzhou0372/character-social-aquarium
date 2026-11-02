@@ -574,9 +574,15 @@ export function Chats({
                             >
                               <span className="scene-link-dot" aria-hidden="true" />
                               <time>{time(s.start)}</time>
-                              <strong>{present || '他们'}在线下互动：</strong>
+                              <strong>
+                                {present || '他们'}
+                                {s.leadCount ? '在线上约好后相聚：' : '在线下互动：'}
+                              </strong>
                               <span>[{s.title}]</span>
                               <em>{s.location}</em>
+                              {s.followCount > 0 && (
+                                <small className="scene-link-follow">之后线上聊起</small>
+                              )}
                               <b aria-hidden="true">查看 ↗</b>
                             </button>
                           );

@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../data/db';
-import { jumpWorldTime } from '../core/time';
+import { jumpWorldTime, setFastCatchUp } from '../core/time';
 import { setRunning } from '../core/engine';
 import { getKey } from '../ai/provider';
 import { DAY, HOUR } from '../core/types';
 import { formatWorldTime } from '../core/calendar';
 import { Button, Input, Select, Confirm, Status } from './ui';
+import { Zap } from 'lucide-react';
 
 const jumpPresets = [
   ['+1 小时', HOUR],
@@ -31,6 +32,11 @@ export function TimeJumpControls({
       cp: await db.checkpoints.get(worldId),
       world: await db.worlds.get(worldId),
       profile: await db.profiles.get('api'),
+      pendingJobs: await db.contentJobs
+        .where('worldId')
+        .equals(worldId)
+        .and((j) => j.status !== 'complete' && j.attempts < 3)
+        .count(),
     }),
     [worldId],
   );
@@ -40,7 +46,25 @@ export function TimeJumpControls({
     [jumpHours, setJumpHours] = useState(6),
     [jumpUnit, setJumpUnit] = useState<'hour' | 'day'>('hour'),
     [pendingJump, setPendingJump] = useState<number>();
-  const cp = data?.cp;
+  const cp = data?.cp,
+    pendingJobs = data?.pendingJobs ?? 0;
+  async function toggleFastCatchUp() {
+    if (!cp) return;
+    setBusy(true);
+    setError('');
+    try {
+      await setFastCatchUp(worldId, !cp.fastCatchUp);
+      setJumpNotice(
+        cp.fastCatchUp
+          ? '已关闭单 Agent 快速补全，恢复普通批量补全。'
+          : '已开启单 Agent 快速补全：整段跳转和积压任务会交给一个 Agent 集中完成。',
+      );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '快速补全开关失败');
+    } finally {
+      setBusy(false);
+    }
+  }
   async function jump(ms: number) {
     if (busy || !cp) return;
     setBusy(true);
@@ -113,6 +137,30 @@ export function TimeJumpControls({
             跳转并补全
           </Button>
         </div>
+        <div className={`time-jump-fast ${cp?.fastCatchUp ? 'is-on' : ''}`}>
+          <div>
+            <strong>单 Agent 快速补全</strong>
+            <span>
+              一个 Agent
+              一次性生成整段跳转的生活、聊天和线下场景，并集中消化积压任务，避免逐条等待。
+            </span>
+            {(cp?.recoveryTarget || pendingJobs > 0) && (
+              <em>
+                {cp?.recoveryTarget ? '正在补全跳转' : '有待处理积压'}
+                {pendingJobs ? ` · ${pendingJobs} 个任务` : ''}
+              </em>
+            )}
+          </div>
+          <Button
+            variant={cp?.fastCatchUp ? 'primary' : 'default'}
+            disabled={busy}
+            aria-pressed={!!cp?.fastCatchUp}
+            onClick={() => void toggleFastCatchUp()}
+          >
+            <Zap size={15} />
+            {cp?.fastCatchUp ? '已开启' : '开启快速补全'}
+          </Button>
+        </div>
         {cp?.jumpTarget ? (
           <div className="time-jump-active">
             <Status>
@@ -131,9 +179,9 @@ export function TimeJumpControls({
           </div>
         ) : null}
         <small className="time-jump-hint">
-          建议单次不超过 1 天（24 小时）。跳得越远，AI
-          要生成的事件、消息和线下场景越多，等待会明显变长；最长 7
-          天，超过建议分几次跳转。跳转过程中可以安全暂停，已完成批次会保留。
+          {cp?.fastCatchUp
+            ? '单 Agent 模式会按最多 7 天一个窗口集中生成生活、聊天和线下场景；输出被截断时会自动缩小窗口，不会退回逐条高频请求。跳转过程中可以安全暂停，已完成窗口会保留。'
+            : '建议单次不超过 1 天（24 小时）。跳得越远，AI 要生成的事件、消息和线下场景越多，等待会明显变长；最长 7 天，超过建议分几次跳转。跳转过程中可以安全暂停，已完成批次会保留。'}
         </small>
         {error && <Status error>{error}</Status>}
         {jumpNotice && <Status>{jumpNotice}</Status>}

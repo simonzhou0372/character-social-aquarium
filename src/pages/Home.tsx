@@ -1,4 +1,5 @@
 import { ConversationAvatar } from '../components/ConversationAvatar';
+import { StorylineStrip } from '../components/StorylineStrip';
 import { StoryProgress } from '../components/NovelSettings';
 import { resolveObservation } from '../core/selective-observation';
 import { ObservationSummary, useObservation } from '../components/ObservationManager';
@@ -105,6 +106,7 @@ export function Home({
         </div>
         <StoryProgress worldId={worldId} />
         <ObservationSummary worldId={worldId} onEdit={() => onNavigate('observation')} />
+        <StorylineStrip worldId={worldId} onChat={onChat} onNavigate={onNavigate} variant="classic" />
         <Button onClick={() => onNavigate('reports')}>世界报告 · 查看历史与配置</Button>
         <section className="world-hero">
           <div className="hero-copy">
@@ -615,6 +617,8 @@ export function Home({
           })}
         </div>
       </section>
+
+      <StorylineStrip worldId={worldId} onChat={onChat} onNavigate={onNavigate} />
 
       <div className="game-feed-grid">
         <section className="game-panel game-conversations">

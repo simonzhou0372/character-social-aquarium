@@ -120,6 +120,7 @@ npm run test:e2e  # 浏览器回归，使用拦截响应而非付费 API
 - [普通用户说明](docs/USER-GUIDE.md)
 - [东方资料范围、原作出处与更新方式](docs/TOUHOU-PRESET.md)
 - [架构与模拟机制](docs/ARCHITECTURE.md)
+- [线上—线下统一剧情线](docs/STORYLINE.md)
 - [提示词管理与 Provider 协议](docs/PROMPTS-AND-PROVIDERS.md)
 - [游戏化界面、动效与性能降级](docs/GAME-UI.md)
 - [本次关系图与资料更新验证](docs/GRAPH-AND-KNOWLEDGE.md)

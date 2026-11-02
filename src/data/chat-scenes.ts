@@ -2,8 +2,13 @@ import { db, type AquariumDB } from './db';
 import type { Conversation, InPersonScene } from '../core/types';
 export type SceneLink = Pick<
   InPersonScene,
-  'id' | 'eventId' | 'title' | 'start' | 'participants' | 'location'
->;
+  'id' | 'eventId' | 'title' | 'start' | 'end' | 'participants' | 'location'
+> & {
+  /** Event-tagged messages before the scene: the online arrangement. */
+  leadCount: number;
+  /** Event-tagged messages after the scene: the online reaction. */
+  followCount: number;
+};
 export type SceneLinkMode = 'all' | 'mutual' | 'off';
 /** Keep only link metadata; the caller decides whether a group preview may include absent members. */
 export async function sceneLinks(
@@ -41,9 +46,28 @@ export async function sceneLinks(
         eventId: s.eventId,
         title: s.title,
         start: s.start,
+        end: s.end,
         participants: s.participants,
         location: s.location,
+        leadCount: 0,
+        followCount: 0,
       });
     });
+  if (links.length) {
+    const eventIds = links.map((l) => l.eventId);
+    const linked = await d.messages
+      .where('eventId')
+      .anyOf(eventIds)
+      .and((m) => m.simAt <= to)
+      .toArray();
+    for (const link of links) {
+      link.leadCount = linked.filter(
+        (m) => m.eventId === link.eventId && m.simAt < link.start,
+      ).length;
+      link.followCount = linked.filter(
+        (m) => m.eventId === link.eventId && m.simAt >= link.end,
+      ).length;
+    }
+  }
   return links;
 }

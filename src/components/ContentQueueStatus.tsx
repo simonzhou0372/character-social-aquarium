@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../data/db';
 import { retryContent } from '../ai/content-queue';
+import { setFastCatchUp } from '../core/time';
+import { Zap } from 'lucide-react';
 import { Button, Modal, Status } from './ui';
 export function ContentQueueStatus({ worldId }: { worldId: string }) {
   const pendingRanges = () =>
@@ -24,8 +26,16 @@ export function ContentQueueStatus({ worldId }: { worldId: string }) {
       (await Promise.all(pendingRanges().map((r) => r.count()))).reduce((a, b) => a + b, 0),
     [worldId],
   );
+  const cp = useLiveQuery(() => db.checkpoints.get(worldId), [worldId]);
   const [open, setOpen] = useState(false),
     [error, setError] = useState('');
+  async function toggleFast() {
+    try {
+      await setFastCatchUp(worldId, !cp?.fastCatchUp);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '快速补全开关失败');
+    }
+  }
   if (!jobs?.length) return null;
   return (
     <>
@@ -40,6 +50,16 @@ export function ContentQueueStatus({ worldId }: { worldId: string }) {
       {open && (
         <Modal title="生成任务状态" onClose={() => setOpen(false)}>
           <p>世界时钟和生活调度独立运行；内容按原事件时间归档。已通过的场景阶段不会丢失。</p>
+          <div className="queue-fast-toggle">
+            <span>积压较多时，可让一个独立 Agent 一次性集中补全，而不是逐条等待高频请求。</span>
+            <Button
+              variant={cp?.fastCatchUp ? 'primary' : 'default'}
+              onClick={() => void toggleFast()}
+            >
+              <Zap size={15} />
+              {cp?.fastCatchUp ? '已开启单 Agent 快速补全' : '开启单 Agent 快速补全'}
+            </Button>
+          </div>
           {jobs.slice(0, 50).map((j) => (
             <article className="panel" key={j.id}>
               <strong>

@@ -454,6 +454,38 @@ it('samples a necessary first-hop dormant influence without promoting the dorman
   expect(context.memories.some((m) => m.eventId === result!.event.id)).toBe(true);
   expect((await resolveObservation(worldId, d)).activeIds.size).toBe(1);
 });
+it('always answers a dormant first-hop contact without letting that contact start other chats', async () => {
+  await saveObservation(config(['c-nagi']), d);
+  await d.messages.add({
+    id: 'unanswered-first-hop',
+    conversationId: 'conv-nm',
+    senderId: 'c-nagi',
+    text: '你上次说的那家唱片店，我找到了。',
+    seq: 99,
+    realAt: now,
+    simAt: now - 60000,
+    source: 'ai',
+  });
+  await d.settings.update('app', {
+    activity: 'quiet',
+    unlimitedUsage: true,
+    sceneDailyBudget: 0,
+  });
+  await d.checkpoints.update(worldId, { paused: false, mode: 'live', seed: 42 });
+  await runWorld(worldId, { now: now + HOUR, deferContent: true, maxSegments: 5 }, d);
+  const jobs = await d.contentJobs.where('worldId').equals(worldId).toArray();
+  const replies = jobs.filter((j) => j.kind === 'chat' && j.speakerId === 'c-mio');
+  // The active-activity roll is irrelevant: the reply is guaranteed.
+  expect(replies.length).toBeGreaterThan(0);
+  expect(
+    replies.every(
+      (j) => j.conversation?.id === 'conv-nm' && j.conversation.participants.includes('c-nagi'),
+    ),
+  ).toBe(true);
+  // Mio stays dormant in the observation scope instead of becoming an active initiator.
+  expect([...(await resolveObservation(worldId, d)).activeIds]).toEqual(['c-nagi']);
+});
+
 it('selective observation reduces actual queued AI work in the same 100-person world', async () => {
   const { withWorldLock } = await import('../src/data/db'),
     { ProviderError } = await import('../src/ai/provider');

@@ -124,3 +124,13 @@ v10 添加 observationConfigs、observationCoverage、backfillJobs、evolutionRe
 演化结果写入世界 Membership 的 evolved 覆盖层，锁定策略由世界开关与角色 evolutionFields 共同决定。证据必须来自已发生的参与事件；核心身份没有可写路径。记录保存前后值、原因和依赖链，撤销检测后续依赖与手动冲突。历史请求依据演化链及知识的 knownAt／learnedAt 过滤未来状态。
 
 报告周期由整数历法计算，游标分批登记归档，稳定周期 ID 去重；本地事实整理与可选 AI 结构优化分离。AI 仅能选择已给定的来源 ID，正文渲染原事实。长周期复用下级来源，同时保留重要原始事件。报告使用独立提示词，不继承角色聊天排版限制，也不进入角色共享记忆。
+
+## 线上—线下剧情线（无新增数据表）
+
+`core/storyline.ts` 以真实生活事件为锚，把一次线下共同活动与同一 `eventId` 的线上消息串成 `lead → scene → follow`。关联全部来自既有外键（`messages.eventId`、`scenes.eventId`、`scenes.sourceConversationId`），不做时间邻近猜测。
+
+`engine.ts` 在场景被抽样命中时入队三个稳定 ID 的任务：约定聊天、场景、回味聊天；后两者通过 `ContentJob.dependsOn` 串联。约定通常写在活动开始前的上一段，允许回填 `simAt`；共同活动期间 `phone` 很低，因此可发言判断按约定/回味时刻的作息与手机习惯单独计算。约定连续失败 3 次后，场景解除等待，避免永久阻塞；回味必须等待场景完成。
+
+`ai/scenes.ts` 通过 `sceneChatContext()` 读取参与者共同会话中的线上铺垫并注入 `recentChat/linkedChat`；`ai/orchestrator.ts` 的 `dialogueContext()` 通过 `storyPromptContext()` 向线上聊天注入 `happeningNow/justHappened/priorOnline`。提示词契约要求双向承接、禁止各说各的或发明场景细节。
+
+场景每次保存阶段时用 `sceneRecapMemory()` 写入 `memory:${eventId}` 的参与者共享 episode，替换调度器的一行占位记忆；下一次聊天可通过原有记忆检索读到这段共同经历。首页「剧情线」与聊天页场景入口直接消费同一份关联数据。

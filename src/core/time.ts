@@ -452,6 +452,10 @@ export async function rewindWorld(worldId: string, at: number, d: AquariumDB = d
               id: `scene:${eventIds.get(s.eventId)!}`,
               worldId: id,
               eventId: eventIds.get(s.eventId)!,
+              sourceConversationId:
+                s.sourceConversationId && convIds.get(s.sourceConversationId)
+                  ? convIds.get(s.sourceConversationId)
+                  : undefined,
               phases: s.phases.map((p) => ({ ...p, id: uid('phase') })),
             })),
         );
@@ -598,5 +602,18 @@ export async function settleClocks(
         await d.checkpoints.update(cp.id, {
           clockAnchor: { simTime: clockTarget(cp, now, activeSince), realTime: now },
         });
+  });
+}
+/** Opt-in switch for the single catch-up agent; cancels the current tick so it can take over. */
+export async function setFastCatchUp(worldId: string, enabled: boolean, d: AquariumDB = db) {
+  cancelWorld(worldId);
+  await d.transaction('rw', d.checkpoints, async () => {
+    const cp = await d.checkpoints.get(worldId);
+    if (!cp) throw new Error('世界不存在');
+    await d.checkpoints.put({
+      ...cp,
+      fastCatchUp: enabled,
+      controlVersion: (cp.controlVersion ?? 0) + 1,
+    });
   });
 }

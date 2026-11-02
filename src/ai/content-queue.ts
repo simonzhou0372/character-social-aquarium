@@ -136,7 +136,7 @@ export async function drainContent(worldId: string, d: AquariumDB = db, provider
               client,
               job.recovery ? 'recoveryChat' : 'chat',
               task.signal,
-              { state: job.state, event: job.event },
+              { state: job.state, event: job.event, storyRole: job.storyRole },
             );
           if (job.kind === 'major') result = await generateMajor(d, job, client, task.signal);
           if (job.kind === 'life')
@@ -161,6 +161,7 @@ export async function drainContent(worldId: string, d: AquariumDB = db, provider
               client,
               job.recovery,
               task.signal,
+              job,
             );
           }
           await d.transaction('rw', d.tables, async () => {
@@ -190,7 +191,7 @@ export async function drainContent(worldId: string, d: AquariumDB = db, provider
                 job.id,
                 job.event.id,
                 r.offsets,
-                { ...r, backfilled: true },
+                { ...r, backfilled: true, storyRole: job.storyRole },
               );
             }
             if (job.kind === 'scene' && result && (result as any).generationStatus !== 'complete') {

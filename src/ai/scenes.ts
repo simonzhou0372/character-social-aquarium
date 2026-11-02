@@ -3,6 +3,7 @@ import { canParticipate } from '../core/narrative';
 import { generatePlannedScene } from './planned-scenes';
 import type { ContentJob } from '../core/types';
 import { historicalCharacter } from '../core/selective-observation';
+import { noteWorldHasScenes, sceneChatContext, sceneRecapMemory } from '../core/storyline';
 import { sceneDialogueBudget, validateScene } from '../core/scenes';
 export { sceneDialogueBudget, validateScene } from '../core/scenes';
 import { z } from 'zod';
@@ -54,6 +55,7 @@ export async function generateScene(
   recovery = false,
   signal?: AbortSignal,
   plannedJob?: ContentJob,
+  story?: { conversationId?: string },
 ): Promise<InPersonScene> {
   for (const id of event.participants)
     if (!(await canParticipate(event, id, event.start, d)))
@@ -104,19 +106,30 @@ export async function generateScene(
       };
     }),
   );
-  if (plannedJob?.plan)
-    return generatePlannedScene(
+  // The off-line scene must know what the characters already said online about this meeting.
+  const chat = await sceneChatContext(d, event);
+  const chatInput = {
+    recentChat: chat.recentChat,
+    linkedChat: chat.linkedChat,
+    continuity: chat.note,
+  };
+  if (plannedJob?.plan) {
+    const scene = await generatePlannedScene(
       d,
       plannedJob,
       snapshot,
-      { world, relationships: relations, input: { event, actors } },
+      { world, relationships: relations, input: { event, actors, ...chatInput } },
       provider,
       signal,
     );
+    noteWorldHasScenes(d, event.worldId);
+    await rememberScene(d, scene, chat.linkedChat.map((m) => m.text));
+    return scene;
+  }
   const limit = sceneDialogueBudget(event),
     duration = (event.end - event.start) / 1000;
   const task = recovery ? 'offlineScene' : 'inPerson';
-  const contract = `仅返回 JSON {"title":"场景名","phases":[{"title":"阶段名","startOffset":0,"endOffset":60,"participants":["合法角色ID"],"entries":[{"kind":"dialogue","offset":10,"speakerId":"合法角色ID","text":"对白"},{"kind":"activity","offset":20,"text":"活动或环境说明"}]}]}。所有 offset 是相对主事件开始的秒数，范围 0～${duration}；阶段必须按时间有序不重叠，条目属于其阶段，发言者必须在该阶段。生成 2～4 个阶段（极短偶遇可一个），对白总量建议约 ${limit} 条，可根据场景自然调整，每条最多300字。不要求填满时间。不添加、改写地点与主活动事实。禁止 Markdown 和服务式套话；不输出心理活动。活动描写单独放 activity；本任务明确不使用线上1～3条限制。每个角色的 privateMemories 与认知仅能作为该角色的已有知识，不得当作其他人的已知信息。私人记忆不会自动向同场角色公开，只有角色在场景中实际说出的内容才能传播。`;
+  const contract = `仅返回 JSON {"title":"场景名","phases":[{"title":"阶段名","startOffset":0,"endOffset":60,"participants":["合法角色ID"],"entries":[{"kind":"dialogue","offset":10,"speakerId":"合法角色ID","text":"对白"},{"kind":"activity","offset":20,"text":"活动或环境说明"}]}]}。所有 offset 是相对主事件开始的秒数，范围 0～${duration}；阶段必须按时间有序不重叠，条目属于其阶段，发言者必须在该阶段。生成 2～4 个阶段（极短偶遇可一个），对白总量建议约 ${limit} 条，可根据场景自然调整，每条最多300字。不要求填满时间。不添加、改写地点与主活动事实。禁止 Markdown 和服务式套话；不输出心理活动。活动描写单独放 activity；本任务明确不使用线上1～3条限制。每个角色的 privateMemories 与认知仅能作为该角色的已有知识，不得当作其他人的已知信息。私人记忆不会自动向同场角色公开，只有角色在场景中实际说出的内容才能传播。如果 input.recentChat 或 input.linkedChat 中包含参与者见面前的线上约定、地点、情绪或未聊完的话题，这次线下场景必须自然承接：可以兑现约定、提起刚才说过的内容或表现出相应情绪，但不要逐句复述线上原文，也不得与线上已经确认的事实矛盾。`;
   const request = composePrompt(
     task,
     snapshot,
@@ -125,7 +138,12 @@ export async function generateScene(
         ? { name: world.name, description: world.description, rules: world.rules, era: world.era }
         : undefined,
       relationships: relations,
-      input: { event, localStart: world ? formatWorldTime(world, event.start) : '', actors },
+      input: {
+        event,
+        localStart: world ? formatWorldTime(world, event.start) : '',
+        actors,
+        ...chatInput,
+      },
     },
     contract,
   );
@@ -135,6 +153,7 @@ export async function generateScene(
     id: `scene:${event.id}`,
     worldId: event.worldId,
     eventId: event.id,
+    sourceConversationId: plannedJob?.storyConversationId ?? story?.conversationId,
     title: event.description.slice(0, 200),
     location: event.location,
     type: event.sceneType ?? event.type,
@@ -205,7 +224,12 @@ export async function generateScene(
   }
   const save = async () => {
     if (signal?.aborted) throw new ProviderError('cancelled', '任务已取消');
-    if (await d.events.get(event.id)) await d.scenes.put(SceneSchema.parse(scene));
+    if (await d.events.get(event.id)) {
+      await d.scenes.put(SceneSchema.parse(scene));
+      noteWorldHasScenes(d, event.worldId);
+      // The scene becomes shared experience the next time these people chat.
+      await rememberScene(d, scene, chat.linkedChat.map((m) => m.text));
+    }
   };
   await save();
   for (let i = scene.generationCheckpoint ?? scene.phases.length; i < plan.phases.length; i++) {
@@ -226,6 +250,8 @@ export async function generateScene(
                 actors,
                 phase: p,
                 previousPhaseSummary: scene.phases.at(-1)?.entries.slice(-3),
+                recentChat: chat.recentChat.slice(-4),
+                linkedChat: chat.linkedChat.slice(-4),
                 failure,
               },
             },
@@ -330,4 +356,17 @@ export async function generateScene(
   scene = { ...scene, generationStatus: 'complete', generationError: undefined };
   await save();
   return scene;
+}
+
+/**
+ * Write the scene back as a shared episode memory so later online chats can recall it.
+ * Uses the same `memory:${eventId}` id as the scheduler's placeholder, replacing it.
+ */
+async function rememberScene(d: AquariumDB, scene: InPersonScene, leadTexts: string[]) {
+  if (!scene.participants.length) return;
+  const characters = await d.characters.bulkGet(scene.participants);
+  const names = new Map(
+    characters.filter(Boolean).map((c) => [c!.id, c!.name] as [string, string]),
+  );
+  await d.memories.put(sceneRecapMemory(scene, { names, leadTexts }));
 }

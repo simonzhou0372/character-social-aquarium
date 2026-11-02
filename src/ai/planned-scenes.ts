@@ -54,6 +54,7 @@ export async function generatePlannedScene(
     id,
     worldId: event.worldId,
     eventId: event.id,
+    sourceConversationId: job.storyConversationId,
     title: event.description.slice(0, 200),
     location: event.location,
     type: event.sceneType ?? event.type,

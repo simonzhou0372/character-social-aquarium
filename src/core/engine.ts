@@ -32,7 +32,17 @@ import { getPrompts, PromptConfigSchema, type PromptConfig } from '../ai/prompts
 import { describeEvent, generateDialogue, liveProvider, persistDialogue } from '../ai/orchestrator';
 import { type Provider, ProviderError } from '../ai/provider';
 import { planInWorker } from './planner';
-import { random, segmentEnd, socialWeight, topicPolicy, topicDue } from './simulation';
+import { chooseStoryConversation, sceneRecapMemory } from './storyline';
+import {
+  localHour,
+  planSegment,
+  random,
+  scheduledType,
+  segmentEnd,
+  socialWeight,
+  topicPolicy,
+  topicDue,
+} from './simulation';
 import { clockTarget } from './time';
 import {
   HOUR,
@@ -41,6 +51,7 @@ import {
   type Conversation,
   type ActivityEvent,
   type MajorEvent,
+  type RuntimeState,
 } from './types';
 export interface RecoveryProgress {
   worldId: string;
@@ -365,38 +376,67 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
         const tuning = activityFor(settings.activity);
         const end = Math.min(segmentEnd(cp, target), cp.simTime + onlineStep(settings.activity));
         diagnostic(worldId, { phase: 'planning', lastScheduledAt: Date.now() });
-        // Dormant recipients are sampled only for a concrete, unanswered message from an explicitly observed person.
+        // A dormant recipient gets exactly one forced, first-hop reply to a concrete unanswered
+        // message from an explicitly observed person. They are never added to the general
+        // character pool, so they cannot start a topic with anyone else after replying.
+        const dormantReplies: {
+          conversation: Conversation;
+          recipientId: string;
+          after: number;
+          state: RuntimeState;
+          event: ActivityEvent;
+        }[] = [];
         if (observation.config.mode === 'selective') {
+          const sampled = new Set<string>();
           for (const c of allConvs
             .filter(
               (c) =>
-                c.kind === 'direct' && c.participants.some((id) => observation.fullIds.has(id)),
+                c.kind === 'direct' &&
+                c.participants.length === 2 &&
+                c.participants.some((id) => observation.fullIds.has(id)),
             )
             .slice(0, 24)) {
             const history = await schedulerHistory(c);
             const last = history.filter((m) => m.simAt <= end).at(-1);
-            if (!last || !observation.fullIds.has(last.senderId) || end - last.simAt > 6 * HOUR)
+            // One day instead of the normal six-hour reply window: a dormant night owl may
+            // only see the message after waking, and the observed sender still deserves an answer.
+            if (!last || !observation.fullIds.has(last.senderId) || end - last.simAt > 24 * HOUR)
               continue;
             const recipient = c.participants.find((id) => !observation.activeIds.has(id));
-            if (!recipient || characters.some((c) => c.id === recipient)) continue;
+            if (
+              !recipient ||
+              sampled.has(recipient) ||
+              observation.lifeBlocked.has(recipient) ||
+              !observation.members.some((m) => m.characterId === recipient)
+            )
+              continue;
+            if (sampled.size >= 2) break;
             if (
               await d.contentJobs
                 .where('worldId')
                 .equals(worldId)
                 .and(
-                  (j) =>
-                    j.kind === 'chat' &&
-                    j.conversation?.id === c.id &&
-                    j.speakerId === recipient &&
-                    j.status !== 'complete',
+                  (j) => j.kind === 'chat' && j.speakerId === recipient && j.status !== 'complete',
                 )
                 .first()
             )
               continue;
             const actor = await d.characters.get(recipient);
-            if (actor && !actor.deletedAt && actor.entityMode !== 'background')
-              characters.push(actor);
-            if (characters.length >= cachedCharacters.length + 2) break;
+            if (!actor || actor.deletedAt || actor.entityMode === 'background') continue;
+            // Plan this person in isolation: no joint events, no social candidates, no friends.
+            const replyPlan = planSegment(world, [actor], [], cp, end);
+            const state = replyPlan.states.find((s) => s.characterId === recipient);
+            const event = state && replyPlan.events.find((e) => e.id === state.eventId);
+            // Sleeping or unreachable people keep the message unanswered; a later segment can reply.
+            if (!state || !event || state.phone <= 0) continue;
+            sampled.add(recipient);
+            dormantReplies.push({
+              conversation: c,
+              recipientId: recipient,
+              after: last.simAt,
+              state,
+              event,
+            });
           }
         }
         const plan = await planInWorker(world, characters, relations, cp, end, oldStates);
@@ -430,6 +470,18 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
           origin: e.origin ?? 'realtime',
           generatedAt: e.generatedAt ?? Date.now(),
         }));
+        // Add isolated repliers after the main plan so they never take part in joint
+        // events, and after dormant influence so one character cannot get two states.
+        for (const reply of dormantReplies) {
+          if (!plan.events.some((e) => e.id === reply.event.id))
+            plan.events.push({
+              ...reply.event,
+              origin: reply.event.origin ?? 'realtime',
+              generatedAt: reply.event.generatedAt ?? Date.now(),
+            });
+          if (!plan.states.some((s) => s.characterId === reply.recipientId))
+            plan.states.push(reply.state);
+        }
         const majorSchedule = world.majorEventSettings?.enabled
           ? ((await d.majorSchedules.get(worldId)) ??
             nextMajorScheduleFor(worldId, cp.simTime, world.majorEventSettings, 0, ''))
@@ -659,6 +711,28 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             });
           }
         }
+        // The reply is not left to the activity roll or to competition with observed
+        // characters: an unanswered first-hop message always receives one response.
+        for (const reply of dormantReplies) {
+          if (choices.some((pick) => pick.speaker === reply.recipientId)) continue;
+          // The response must be later than the message it answers, even when both were
+          // planned in the same segment.
+          const at = Math.min(
+            end - 61000,
+            Math.max(
+              reply.event.start + Math.max(1000, (end - reply.event.start) * 0.6),
+              reply.after + 45000,
+            ),
+          );
+          if (at <= Math.max(cp.simTime, reply.after)) continue;
+          choices.push({
+            c: reply.conversation,
+            speaker: reply.recipientId,
+            at,
+            eventId: reply.event.id,
+            initiating: false,
+          });
+        }
         if (allMajorPlans.length) {
           const snapshotCrisis = crisisAt(world, end);
           for (const item of allMajorPlans) {
@@ -849,12 +923,159 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
           } else generationSkipped = true;
         }
         const scenes: InPersonScene[] = [];
+        // Skip the per-segment scene query entirely when this world cannot produce one.
+        const mayHaveScenes =
+          (settings.sceneDailyBudget ?? 3) > 0 || plan.events.some((e) => e.type === 'major');
+        const existingScenes = mayHaveScenes
+          ? await d.scenes.where('worldId').equals(worldId).toArray()
+          : [];
+        const sceneEvents = new Set(existingScenes.map((s) => s.eventId));
+        /**
+         * Couple the off-line scene to the online conversation around it:
+         *   lead chat (arranging / anticipating) -> scene -> follow chat (reacting)
+         * The scene job waits for the lead, and the follow-up waits for the scene.
+         * All three share messages.eventId = scene event, so the link survives reloads.
+         */
+        const enqueueStory = async (event: ActivityEvent) => {
+          if (sceneEvents.has(event.id)) return false;
+          const choice = chooseStoryConversation(event.participants, allConvs, relations);
+          if (!choice || !observation.allowsConversation(choice.conversation)) return false;
+          if (choice.conversation.controlledId) return false;
+          const people = event.participants.filter((id) =>
+            choice.conversation.participants.includes(id),
+          );
+          const eligible = people.filter((id) => !controlled.has(id));
+          if (!eligible.length) return false;
+          const stateOf = (id: string) => plan.states.find((s) => s.characterId === id);
+          const habitOf = (id: string) =>
+            characters.find((c) => c.id === id)?.phoneHabit ?? 0;
+          const order = [...eligible].sort(
+            (a, b) =>
+              habitOf(b) - habitOf(a) ||
+              (stateOf(b)?.phone ?? 0) - (stateOf(a)?.phone ?? 0) ||
+              a.localeCompare(b),
+          );
+          // At the joint activity itself everyone is "together", so their phone availability
+          // is intentionally low. For the online lead-up and reaction we look at whether the
+          // person is awake and reachable at that separate time, not at the scene's phone.
+          const canPhone = (id: string, at: number) => {
+            const c = characters.find((x) => x.id === id);
+            if (!c || controlled.has(id) || c.phoneHabit <= 0.02) return false;
+            return scheduledType(c, localHour(at, world.timezone)) !== 'sleep';
+          };
+          const leadId = `chat:story:lead:${event.id}`,
+            sceneJobId = `scene:${event.id}`,
+            followId = `chat:story:follow:${event.id}`;
+          const [leadExisting, sceneExisting, followExisting] = await Promise.all([
+            d.contentJobs.get(leadId),
+            d.contentJobs.get(sceneJobId),
+            d.contentJobs.get(followId),
+          ]);
+          if (sceneExisting && sceneExisting.status !== 'complete') return true;
+          let hash = 0;
+          for (const ch of event.id) hash = (Math.imul(hash, 31) + ch.charCodeAt(0)) >>> 0;
+          // Joint activities are planned exactly on the hour boundary, so the lead-up usually
+          // belongs to the previous segment. It is safe to persist a backfilled message with
+          // an earlier simAt: display order is virtual time, and the scene waits for it.
+          let leadAt = 0;
+          let leadSpeaker = '';
+          if (canPhone(choice.leadSpeaker, event.start)) {
+            leadAt = Math.max(0, event.start - (18 + (hash % 37)) * 60000);
+            if (leadAt >= event.start - 30000) leadAt = 0;
+            if (leadAt) {
+              leadSpeaker =
+                [choice.leadSpeaker, ...order].find((id) => canPhone(id, leadAt)) ?? '';
+              if (!leadSpeaker) leadAt = 0;
+            }
+          }
+          const followAt = event.end + (15 + ((hash >>> 5) % 75)) * 60000;
+          const followSpeaker =
+            [choice.followSpeaker, ...order].find(
+              (id) => id !== leadSpeaker && canPhone(id, followAt),
+            ) ??
+            order.find((id) => canPhone(id, followAt)) ??
+            '';
+          const leadState = leadSpeaker ? stateOf(leadSpeaker) : undefined;
+          const followState = followSpeaker ? stateOf(followSpeaker) : undefined;
+          const jobs: ContentJob[] = [];
+          if (leadAt && !leadExisting)
+            jobs.push({
+              id: leadId,
+              worldId,
+              kind: 'chat',
+              storyRole: 'lead',
+              storyConversationId: choice.conversation.id,
+              plan: contentPlan(
+                'chat',
+                hash,
+                snapshot,
+                event,
+                characters.find((c) => c.id === leadSpeaker),
+              ),
+              createdAt: Date.now(),
+              event,
+              at: leadAt,
+              conversation: { ...choice.conversation, avatar: undefined, plannedHistory: undefined },
+              speakerId: leadSpeaker,
+              state: leadState,
+              snapshot,
+              recovery,
+              status: 'pending',
+              attempts: 0,
+              nextAttemptAt: 0,
+            });
+          const sceneJob: ContentJob = {
+            id: sceneJobId,
+            worldId,
+            kind: 'scene',
+            storyConversationId: choice.conversation.id,
+            plan: contentPlan('scene', hash, snapshot, event),
+            createdAt: Date.now(),
+            event,
+            at: event.start,
+            snapshot,
+            recovery,
+            status: 'pending',
+            attempts: 0,
+            nextAttemptAt: 0,
+            dependsOn: jobs.length ? [leadId] : [],
+          };
+          jobs.push(sceneJob);
+          if (!followExisting && followSpeaker && followState)
+            jobs.push({
+              id: followId,
+              worldId,
+              kind: 'chat',
+              storyRole: 'follow',
+              storyConversationId: choice.conversation.id,
+              plan: contentPlan(
+                'chat',
+                hash >>> 3,
+                snapshot,
+                event,
+                characters.find((c) => c.id === followSpeaker),
+              ),
+              createdAt: Date.now(),
+              event,
+              at: followAt,
+              conversation: { ...choice.conversation, avatar: undefined, plannedHistory: undefined },
+              speakerId: followSpeaker,
+              state: followState,
+              snapshot,
+              recovery,
+              status: 'pending',
+              attempts: 0,
+              nextAttemptAt: 0,
+              dependsOn: [sceneJobId],
+            });
+          queued.push(...jobs);
+          return true;
+        };
         // Scene sampling and budget are independent of online activity presets.
         if (cp.mode === 'live')
           for (const event of plan.events.filter(
             (e) => e.participants.length > 1 && observation.allowsEvent(e),
           )) {
-            const existing = await d.scenes.where('worldId').equals(worldId).toArray();
             const today = calendarDate(world, event.start);
             const reserved = options.deferContent
               ? await d.contentJobs
@@ -870,8 +1091,8 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                   .toArray()
               : [];
             const used =
-              existing.filter((s) => calendarDate(world, s.start) === today).length +
-              reserved.filter((j) => !existing.some((s) => s.eventId === j.event.id)).length +
+              existingScenes.filter((s) => calendarDate(world, s.start) === today).length +
+              reserved.filter((j) => !existingScenes.some((s) => s.eventId === j.event.id)).length +
               queued.filter(
                 (j) =>
                   j.kind === 'scene' &&
@@ -894,7 +1115,8 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               await d.checkpoints.update(worldId, { recoveryRequests: cp.recoveryRequests });
             }
             if (options.deferContent) {
-              enqueue('scene', event);
+              // Prefer the linked chain; fall back to a plain scene if no suitable chat exists.
+              if (!(await enqueueStory(event))) enqueue('scene', event);
               continue;
             }
             provider ??= await liveProvider(d);
@@ -1010,19 +1232,24 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
               const conversation = job.conversation
                 ? await d.conversations.get(job.conversation.id)
                 : undefined;
-              const predecessor = conversation?.plannedHistory?.at(-1);
+              // Story beats carry their own explicit chain; a later normal chat in the same
+              // conversation must not become a prerequisite for the prelude.
+              const predecessor = job.storyRole ? undefined : conversation?.plannedHistory?.at(-1);
               await d.contentJobs.put({
                 ...job,
                 snapshotId,
                 snapshot: { ...snapshot, entries: [] },
                 dependsOn: [
-                  ...(predecessor && (await d.contentJobs.get(predecessor.id))
-                    ? [predecessor.id]
-                    : []),
-                  ...(job.event.type === 'major' && job.kind !== 'major'
-                    ? ['major-content:' + job.event.id]
-                    : []),
-                ],
+                  ...new Set([
+                    ...(job.dependsOn ?? []),
+                    ...(predecessor && (await d.contentJobs.get(predecessor.id))
+                      ? [predecessor.id]
+                      : []),
+                    ...(job.event.type === 'major' && job.kind !== 'major'
+                      ? ['major-content:' + job.event.id]
+                      : []),
+                  ]),
+                ].filter((id) => id !== job.id),
               });
               if (job.kind === 'chat' && job.conversation && job.plan) {
                 const c = await d.conversations.get(job.conversation.id);
@@ -1036,7 +1263,9 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                       count: job.plan.expectedMessages,
                       eventId: job.event.id,
                     },
-                  ].slice(-36),
+                  ]
+                    .sort((a, b) => a.at - b.at)
+                    .slice(-36),
                 });
               }
             }
@@ -1107,7 +1336,10 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                 await d.conversations.update(ended.id, { topicEndedAt: ended.topicEndedAt });
             }
             for (const state of plan.states) {
-              const char = characters.find((c) => c.id === state.characterId)!;
+              // The isolated dormant replier has a state (for its one reply) but is not
+              // part of the general cast, so it has no read/reaction bookkeeping here.
+              const char = characters.find((c) => c.id === state.characterId);
+              if (!char) continue;
               const readRoll = random(seed);
               seed = readRoll.seed;
               if (
@@ -1266,13 +1498,41 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
             }
             await d.states.bulkPut(plan.states);
             // Event memory is private to its actual participants, never global by default.
+            // When a scene already exists, keep its richer recap instead of downgrading it
+            // to the one-line activity description.
             for (const event of plan.events.filter(
               (e) => e.type === 'social' || e.type === 'major',
-            ))
+            )) {
+              if (event.type === 'major' && event.phone === 0) {
+                await d.memories.put({
+                  id: `memory:${event.id}`,
+                  worldId,
+                  owners: [],
+                  content: event.description,
+                  keywords: [event.location],
+                  importance: 0.5,
+                  at: event.end,
+                  eventId: event.id,
+                  kind: 'episode',
+                });
+                continue;
+              }
+              const scene = mayHaveScenes
+                ? (scenes.find((s) => s.eventId === event.id) ??
+                  (await d.scenes.get(`scene:${event.id}`)))
+                : undefined;
+              if (scene) {
+                await d.memories.put(
+                  sceneRecapMemory(scene, {
+                    names: new Map(characters.map((c) => [c.id, c.name])),
+                  }),
+                );
+                continue;
+              }
               await d.memories.put({
                 id: `memory:${event.id}`,
                 worldId,
-                owners: event.type === 'major' && event.phone === 0 ? [] : event.participants,
+                owners: event.participants,
                 content: event.description,
                 keywords: [event.location],
                 importance: 0.5,
@@ -1280,6 +1540,7 @@ export async function runWorld(worldId: string, options: RunOptions = {}, d: Aqu
                 eventId: event.id,
                 kind: 'episode',
               });
+            }
             const done = end >= target;
             const advancedReal = before.realTime + (end - before.simTime) / effectiveRate;
             cp = {
