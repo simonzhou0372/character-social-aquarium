@@ -6,7 +6,13 @@ import { DEFAULT_CONTEXT_BUDGET_TOKENS, MAX_CONTEXT_BUDGET_TOKENS } from '../cor
 import { TouhouPortraitEntry } from '../components/TouhouPortraitManager';
 import { ObservationManager } from '../components/ObservationManager';
 import { AvatarUpload } from '../components/AvatarUpload';
-import { useEffect, useState } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type CompositionEvent as ReactCompositionEvent,
+} from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {
   Plug,
@@ -22,46 +28,148 @@ import {
   Gamepad2,
   Monitor,
   Palette,
+  Plus,
+  Copy,
+  Trash2,
 } from 'lucide-react';
 import { db } from '../data/db';
 import { CompatibleProvider, setSessionKey, validateEndpoint, getKey } from '../ai/provider';
-import { type ApiProfile, type Backup, ProfileSchema } from '../core/types';
+import { type ApiProfile, type Backup, ProfileSchema, uid } from '../core/types';
 import { exportBackup, importBackup, validateBackup, downloadJson } from '../data/backup';
 import { Button, Input, Select, Field, Toggle, Status, Confirm, Textarea } from '../components/ui';
 import { PromptManager } from './PromptManager';
 import { TimeControls } from '../components/TimeControls';
 import { activityModes } from '../core/activity';
+import { profileLabel, uniqueProfileName } from '../data/api-profiles';
 const baseProfile: ApiProfile = {
   id: 'api',
+  name: '默认接口',
   provider: '自定义兼容接口',
   baseUrl: 'https://api.openai.com/v1',
   model: '',
   persistKey: false,
   status: 'untested',
 };
+const newProfile = (): ApiProfile => ({
+  ...baseProfile,
+  id: uid('api'),
+  name: '新接口',
+});
 export function ApiSettings({ onDone }: { onDone?: () => void }) {
-  const stored = useLiveQuery(() => db.profiles.get('api'), []);
-  const [p, setP] = useState(baseProfile),
+  const profiles = useLiveQuery(
+    async () =>
+      (await db.profiles.toArray()).sort((a, b) => {
+        if (a.id === 'api') return -1;
+        if (b.id === 'api') return 1;
+        return profileLabel(a).localeCompare(profileLabel(b), 'zh');
+      }),
+    [],
+  );
+  const settings = useLiveQuery(() => db.settings.get('app'), []);
+  const [p, setP] = useState<ApiProfile>(baseProfile),
     [key, setKey] = useState(''),
+    [selectedId, setSelectedId] = useState(''),
     [notice, setNotice] = useState(''),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
-    [models, setModels] = useState<string[]>([]);
+    [models, setModels] = useState<string[]>([]),
+    [deleteOpen, setDeleteOpen] = useState(false);
+  const loadedId = useRef('');
+  const draft = useRef(false);
   useEffect(() => {
-    if (stored) {
-      setP(stored);
-      setKey(getKey(stored));
+    if (!profiles || !settings) return;
+    // A new, not-yet-saved draft must not be replaced by background updates.
+    if (draft.current) return;
+    const preferred = settings.apiProfileId
+      ? profiles.some((row) => row.id === settings.apiProfileId)
+        ? settings.apiProfileId
+        : undefined
+      : undefined;
+    const id = preferred ?? profiles.find((row) => row.id === 'api')?.id ?? profiles[0]?.id;
+    if (!id) {
+      if (loadedId.current === '__empty__') return;
+      loadedId.current = '__empty__';
+      setSelectedId('');
+      setP(baseProfile);
+      setKey('');
+      return;
     }
-  }, [stored]);
+    if (loadedId.current === id) return;
+    const row = profiles.find((item) => item.id === id)!;
+    loadedId.current = id;
+    setSelectedId(id);
+    setP(row);
+    setKey(getKey(row));
+    setModels([]);
+  }, [profiles, settings]);
   const patch = (v: Partial<ApiProfile>) => setP((s) => ({ ...s, ...v }));
+  function choose(id: string) {
+    const row = profiles?.find((item) => item.id === id);
+    if (!row) return;
+    draft.current = false;
+    loadedId.current = id;
+    setSelectedId(id);
+    setP(row);
+    setKey(getKey(row));
+    setModels([]);
+    setNotice('');
+    setError('');
+    void db.settings
+      .update('app', { apiProfileId: id })
+      .catch((e) => setError(e instanceof Error ? e.message : '切换失败'));
+  }
+  function add() {
+    draft.current = true;
+    loadedId.current = '';
+    const next = newProfile();
+    setSelectedId(next.id);
+    setP(next);
+    setKey('');
+    setModels([]);
+    setNotice('填写接口信息后点击「保存配置」。');
+    setError('');
+  }
+  async function duplicate() {
+    try {
+      const keyValue = key.trim() || getKey(p);
+      const id = uid('api');
+      const next: ApiProfile = {
+        ...p,
+        id,
+        name: uniqueProfileName(
+          `${profileLabel(p)} 副本`,
+          (profiles ?? []).map((row) => profileLabel(row)),
+        ),
+        status: 'untested',
+        key: p.persistKey ? keyValue || undefined : undefined,
+      };
+      setSessionKey(keyValue, id);
+      await db.profiles.put(next);
+      await db.settings.update('app', { apiProfileId: id });
+      draft.current = false;
+      loadedId.current = id;
+      setSelectedId(id);
+      setP(next);
+      setKey(keyValue);
+      setModels([]);
+      setNotice('已复制为新配置，可继续修改后保存。');
+      setError('');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '复制失败');
+    }
+  }
   async function test() {
     setBusy(true);
     setError('');
     setNotice('');
     try {
-      const parsed = ProfileSchema.parse({ ...p, model: p.model.trim() || 'model-list' });
+      const parsed = ProfileSchema.parse({
+        ...p,
+        name: p.name?.trim() || undefined,
+        model: p.model.trim() || 'model-list',
+      });
       validateEndpoint(parsed.baseUrl);
-      const client = new CompatibleProvider(parsed, key || stored?.key || '');
+      const client = new CompatibleProvider(parsed, key.trim() || getKey(parsed));
       if (!p.model.trim()) {
         const list = await client.models();
         setModels(list);
@@ -88,15 +196,47 @@ export function ApiSettings({ onDone }: { onDone?: () => void }) {
   }
   async function save() {
     try {
-      if (!key.trim() && !stored?.key) throw new Error('请先填写 API Key。');
-      ProfileSchema.parse(p);
-      validateEndpoint(p.baseUrl);
-      setSessionKey(key || stored?.key || '');
-      await db.profiles.put({ ...p, key: p.persistKey ? key || stored?.key : undefined });
+      if (!p.model.trim())
+        throw new Error('请先填写模型名称。留空时可以先点击「测试连接」获取模型列表。');
+      const current = p.id ? await db.profiles.get(p.id) : undefined;
+      const keyValue = key.trim() || current?.key || getKey(p);
+      if (!keyValue) throw new Error('请先填写 API Key。');
+      const parsed = ProfileSchema.parse({
+        ...p,
+        name: p.name?.trim() || undefined,
+        model: p.model.trim(),
+      });
+      validateEndpoint(parsed.baseUrl);
+      setSessionKey(keyValue, parsed.id);
+      await db.profiles.put({ ...parsed, key: parsed.persistKey ? keyValue : undefined });
+      await db.settings.update('app', { apiProfileId: parsed.id });
+      draft.current = false;
+      loadedId.current = parsed.id;
+      setSelectedId(parsed.id);
+      setP(parsed);
+      setKey(keyValue);
       setNotice('配置已保存。');
+      setError('');
       onDone?.();
     } catch (e) {
       setError(e instanceof Error ? e.message : '配置无效');
+    }
+  }
+  async function remove() {
+    try {
+      if ((profiles?.length ?? 0) <= 1) throw new Error('至少需要保留一个接口配置。');
+      await db.profiles.delete(p.id);
+      const remaining = (profiles ?? []).filter((row) => row.id !== p.id);
+      const next = remaining.find((row) => row.id === 'api') ?? remaining[0];
+      if (next) await db.settings.update('app', { apiProfileId: next.id });
+      draft.current = false;
+      loadedId.current = '';
+      setDeleteOpen(false);
+      setNotice('已删除该接口配置。');
+      setError('');
+    } catch (e) {
+      setDeleteOpen(false);
+      setError(e instanceof Error ? e.message : '删除失败');
     }
   }
   return (
@@ -109,7 +249,63 @@ export function ApiSettings({ onDone }: { onDone?: () => void }) {
         </div>
         <Plug size={30} />
       </div>
+      {(profiles?.length ?? 0) > 0 && (
+        <div className="api-profile-bar">
+          <span className="api-profile-bar-label">已保存接口</span>
+          <div className="api-profile-chips" role="tablist" aria-label="API 配置">
+            {profiles!.map((row) => (
+              <button
+                key={row.id}
+                type="button"
+                role="tab"
+                aria-selected={row.id === selectedId}
+                className={`api-profile-chip ${row.id === selectedId ? 'selected' : ''}`}
+                onClick={() => choose(row.id)}
+                title={`${profileLabel(row)}${row.model ? ` · ${row.model}` : ''}`}
+              >
+                <i className="api-profile-dot" data-status={row.status} aria-hidden="true" />
+                <span>
+                  <strong>{profileLabel(row)}</strong>
+                  <small>{row.model || '未填写模型'}</small>
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="api-profile-actions">
+            <Button variant="ghost" onClick={add}>
+              <Plus size={15} />
+              新建
+            </Button>
+            <Button variant="ghost" onClick={duplicate}>
+              <Copy size={15} />
+              复制
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setDeleteOpen(true)}
+              disabled={(profiles?.length ?? 0) <= 1}
+            >
+              <Trash2 size={15} />
+              删除
+            </Button>
+          </div>
+        </div>
+      )}
+      {profiles && profiles.length === 0 && (
+        <p className="muted">
+          还没有保存的接口配置。填写下方信息并保存，之后可以随时新建或复制更多配置并快速切换。
+        </p>
+      )}
       <div className="form-grid">
+        <Field label="配置名称" hint="用于在多个接口之间识别；留空则显示服务商名称。">
+          <Input
+            aria-label="配置名称"
+            maxLength={60}
+            placeholder={p.provider}
+            value={p.name ?? ''}
+            onChange={(e) => patch({ name: e.target.value })}
+          />
+        </Field>
         <Field label="服务商">
           <Select
             value={p.provider}
@@ -171,6 +367,24 @@ export function ApiSettings({ onDone }: { onDone?: () => void }) {
             type="url"
             value={p.baseUrl}
             onChange={(e) => patch({ baseUrl: e.target.value, status: 'untested' })}
+          />
+        </Field>
+        <Field
+          label="请求超时（秒）"
+          hint="慢速本地模型的生成可能超过一分钟。留空时自动：本地/内网/回环地址 900 秒，其他地址 180 秒。可设为 15–3600 秒；等待期间可随时取消，超时不会写入半截内容。"
+        >
+          <Input
+            aria-label="请求超时（秒）"
+            type="number"
+            min={15}
+            max={3600}
+            step={15}
+            placeholder="自动"
+            value={p.requestTimeoutSeconds ?? ''}
+            onChange={(e) => {
+              const value = e.target.value.trim();
+              patch({ requestTimeoutSeconds: value ? Number(value) : undefined });
+            }}
           />
         </Field>
         <Field label="结构化输出模式">
@@ -248,6 +462,16 @@ export function ApiSettings({ onDone }: { onDone?: () => void }) {
           保存配置
         </Button>
       </div>
+      {deleteOpen && (
+        <Confirm
+          title="删除这个接口配置？"
+          confirmLabel="确认删除"
+          onClose={() => setDeleteOpen(false)}
+          onConfirm={() => void remove()}
+        >
+          <p>将删除「{profileLabel(p)}」及其保存的密钥。其他接口配置和已生成内容不受影响。</p>
+        </Confirm>
+      )}
     </section>
   );
 }
@@ -607,8 +831,61 @@ function AppearanceSettings() {
     </div>
   );
 }
+/**
+ * Keep IME composition local instead of feeding every intermediate candidate
+ * back into Dexie. The controlled value therefore never lags behind the IME,
+ * which is what made the caret jump around while typing Chinese.
+ */
+function useComposedText(value: string, save: (next: string) => void, allowEmpty = false) {
+  const [draft, setDraft] = useState(value);
+  const composing = useRef(false);
+  const dirty = useRef(false);
+  const committed = useRef(value);
+  useEffect(() => {
+    committed.current = value;
+    if (!dirty.current && !composing.current) setDraft(value);
+  }, [value]);
+  const commit = (next: string) => {
+    if (!allowEmpty && !next.trim()) return;
+    committed.current = next;
+    save(next);
+  };
+  return {
+    value: draft,
+    onChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const next = e.target.value;
+      setDraft(next);
+      dirty.current = true;
+      if (!composing.current) commit(next);
+    },
+    onCompositionStart: () => {
+      composing.current = true;
+    },
+    onCompositionEnd: (e: ReactCompositionEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      composing.current = false;
+      const next = e.currentTarget.value;
+      setDraft(next);
+      dirty.current = true;
+      commit(next);
+    },
+    onBlur: () => {
+      dirty.current = false;
+      if (!allowEmpty && !draft.trim()) setDraft(committed.current);
+    },
+  };
+}
 function UserSettings() {
   const s = useLiveQuery(() => db.settings.get('app'), []);
+  const nickname = useComposedText(s?.nickname ?? '', (nickname) => {
+    void db.settings.update('app', { nickname });
+  });
+  const userBio = useComposedText(
+    s?.userBio ?? '',
+    (userBio) => {
+      void db.settings.update('app', { userBio });
+    },
+    true,
+  );
   if (!s) return null;
   return (
     <section className="panel">
@@ -621,20 +898,14 @@ function UserSettings() {
         />
       </Field>
       <Field label="你的昵称">
-        <Input
-          value={s.nickname}
-          maxLength={40}
-          onChange={(e) =>
-            e.target.value && db.settings.update('app', { nickname: e.target.value })
-          }
-        />
+        <Input aria-label="你的昵称" maxLength={40} {...nickname} />
       </Field>
       <Field label="你在世界中的身份">
-        <Textarea
-          value={s.userBio}
-          onChange={(e) => db.settings.update('app', { userBio: e.target.value })}
-        />
+        <Textarea aria-label="你在世界中的身份" {...userBio} />
       </Field>
+      <p className="muted">
+        输入法组合期间只在本地显示候选，确认后写入；昵称留空会恢复上一次保存的值。
+      </p>
     </section>
   );
 }

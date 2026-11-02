@@ -2,6 +2,7 @@ import { canonical } from './model-policy';
 import { recordValidation } from './usage-ledger';
 import Dexie from 'dexie';
 import type { AquariumDB } from '../data/db';
+import { activeProfile } from '../data/api-profiles';
 import { budgetedCompletion } from './orchestrator';
 import { estimateTokens, type PromptConfig, type TaskKind } from './prompts';
 import { parseStructuredJSON, completedField } from './structured';
@@ -89,7 +90,7 @@ export async function requestUnits(
   if (!units.length) throw new ProviderError('batch-empty', '批次不能为空');
   const cp = await d.checkpoints.get(worldId),
     settings = await d.settings.get('app'),
-    profile = await d.profiles.get('api');
+    profile = await activeProfile(d);
   const previous = await d.taskLogs
     .where('[worldId+task+at]')
     .between([worldId, 'adaptive-metric', Dexie.minKey], [worldId, 'adaptive-metric', Dexie.maxKey])

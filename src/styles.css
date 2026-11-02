@@ -1570,6 +1570,89 @@ small {
 .api-panel .section-title h2 {
   font-size: 24px;
 }
+.api-profile-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border: 1px solid #d1ddc0;
+  background: #f7f8ef;
+}
+.api-profile-bar-label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  font-weight: 800;
+  color: #7c8a68;
+  white-space: nowrap;
+}
+.api-profile-chips {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  min-width: 200px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.api-profile-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #cfd9bf;
+  background: #fffef9;
+  color: #46542f;
+  padding: 6px 10px;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  white-space: nowrap;
+}
+.api-profile-chip:hover {
+  border-color: #a8bf6c;
+}
+.api-profile-chip.selected {
+  border-color: #6f8a38;
+  background: #eef4d8;
+  box-shadow: inset 0 0 0 1px #6f8a38;
+}
+.api-profile-chip > span {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.api-profile-chip strong {
+  font-size: 12px;
+  font-weight: 800;
+}
+.api-profile-chip small {
+  font-size: 10px;
+  color: #8a9a75;
+}
+.api-profile-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #b6c2a8;
+}
+.api-profile-dot[data-status='connected'] {
+  background: #6f9a35;
+}
+.api-profile-dot[data-status='invalid'],
+.api-profile-dot[data-status='error'] {
+  background: #c25a46;
+}
+.api-profile-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.api-profile-actions .button {
+  padding: 5px 9px;
+  font-size: 11px;
+}
 .toggle-label {
   display: flex;
   align-items: center;
@@ -5476,6 +5559,26 @@ html[data-ui-mode='game'] a:focus-visible {
 }
 .game-ui .api-panel {
   max-width: 920px;
+}
+.game-ui .api-profile-bar {
+  border: 1.5px solid var(--g-line);
+  background: #e4ddce;
+  box-shadow: 2px 2px 0 var(--g-line);
+}
+.game-ui .api-profile-chip {
+  border: 1.5px solid #a9a394;
+  background: #f6f1e5;
+  border-radius: 0;
+  color: var(--g-ink);
+}
+.game-ui .api-profile-chip.selected {
+  background: var(--g-ink);
+  border-color: var(--g-line);
+  color: var(--g-lime);
+  box-shadow: 2px 2px 0 var(--g-lime);
+}
+.game-ui .api-profile-chip.selected small {
+  color: #c7d3b4;
 }
 .game-ui .advanced {
   border-top: 1px solid #bbb5a8;

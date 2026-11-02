@@ -107,6 +107,36 @@ export async function exportWorld(worldId: string, d: AquariumDB = db): Promise<
     },
   );
 }
+export async function copyWorld(worldId: string, d: AquariumDB = db) {
+  const pkg = await exportWorld(worldId, d);
+  const used = new Set((await d.worlds.toArray()).map((world) => world.name.trim()));
+  const base = pkg.world.name.trim() || '未命名世界';
+  const suffix = '（副本）';
+  let name = `${base.slice(0, 80 - suffix.length)}${suffix}`;
+  for (let n = 2; used.has(name); n++) {
+    const numbered = `（副本 ${n}）`;
+    name = `${base.slice(0, 80 - numbered.length)}${numbered}`;
+  }
+  // A copy is an independent, user-owned world: drop the built-in preset marker
+  // and restart at the original story date with a fresh checkpoint.
+  const {
+    provenance: _provenance,
+    presetVersion: _presetVersion,
+    calendarAnchor: _calendarAnchor,
+    ...world
+  } = pkg.world;
+  return importWorld(
+    {
+      ...pkg,
+      world: {
+        ...world,
+        name,
+        crisis: pkg.world.crisis ? { ...pkg.world.crisis, startedAt: Date.now() } : undefined,
+      },
+    },
+    d,
+  );
+}
 export async function createWorld(
   world: World,
   characterIds: string[] = [],

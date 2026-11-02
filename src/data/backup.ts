@@ -436,6 +436,10 @@ export async function importBackup(input: unknown, d: AquariumDB = db) {
       j.nextAttemptAt = 0;
     });
     await d.profiles.clear();
+    await d.settings.toCollection().modify((s) => {
+      // Backups never include API profiles, so a restored pointer would dangle.
+      delete s.apiProfileId;
+    });
     await d.taskSnapshots.filter((s) => !s.id.startsWith('content:')).delete();
     await d.taskLogs.clear();
     for (const scene of await d.scenes.toArray()) noteWorldHasScenes(d, scene.worldId);

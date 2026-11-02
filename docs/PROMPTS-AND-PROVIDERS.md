@@ -61,7 +61,9 @@ interface Completion {
 
 `CompatibleProvider` 向用户指定 Base URL 的 `/chat/completions` 发送 POST，使用 Bearer 鉴权。提供商应接受 model/messages/temperature/max_tokens，返回 `choices[0].message.content` 字符串。用量优先使用 usage.prompt_tokens / completion_tokens，否则采用明确标为估算的计数。当前不启用流式输出。
 
-模型列表通过 GET `/models` 获取，不假定任何当前可用模型 ID。连接测试使用极短请求。模型没有返回 JSON 结构时应用不写入无效内容。
+模型列表通过 GET `/models` 获取，不假定任何当前可用模型 ID。连接测试只发送极短请求，但仍按当前配置的超时等待模型回复。模型没有返回 JSON 结构时应用不写入无效内容。
+
+请求超时可在 AI 高级设置中按配置单独调整（15–3600 秒）。留空时自动选择：回环、内网与本地服务商标记为 900 秒，远程接口为 180 秒；本地慢速模型完成一次生成常常超过一分钟，原先 35 秒的总等待会过早中止仍在计算的请求。超时只中止本次等待，不写入半截内容，也不会自动重发；可调高上限后重试，或随时手动取消。
 
 HTTPS 是默认要求，回环地址 localhost / 127.0.0.1 / ::1 允许 HTTP。拒绝包含 URL 凭据、查询参数或片段的端点；禁止重定向鉴权请求；请求不携带站点 Cookie、Referrer。密钥不写入日志、URL、备份或静态构建。
 

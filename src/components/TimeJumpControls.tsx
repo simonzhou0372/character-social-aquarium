@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../data/db';
+import { activeProfile } from '../data/api-profiles';
 import { jumpWorldTime, setFastCatchUp } from '../core/time';
 import { setRunning } from '../core/engine';
 import { getKey } from '../ai/provider';
@@ -31,7 +32,7 @@ export function TimeJumpControls({
     async () => ({
       cp: await db.checkpoints.get(worldId),
       world: await db.worlds.get(worldId),
-      profile: await db.profiles.get('api'),
+      profile: await activeProfile(),
       pendingJobs: await db.contentJobs
         .where('worldId')
         .equals(worldId)

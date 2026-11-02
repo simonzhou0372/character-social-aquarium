@@ -32,6 +32,7 @@ import { z } from 'zod';
 import { packRequest } from './context';
 import { parseStructuredJSON, repairDialogueJSON } from './structured';
 import { db, type AquariumDB, withWorldLock } from '../data/db';
+import { activeProfile, updateActiveProfile } from '../data/api-profiles';
 import {
   type Conversation,
   type Message,
@@ -172,7 +173,7 @@ export async function budgetedCompletion(
 ): Promise<Completion> {
   if (signal?.aborted) throw new ProviderError('cancelled', '任务已取消');
   const usageId = dayKey(Date.now());
-  const profile = await d.profiles.get('api');
+  const profile = await activeProfile(d);
   const packed = packRequest(
     messages,
     task,
@@ -349,11 +350,14 @@ export async function budgetedCompletion(
     ) {
       provider.disableReasoning(row.model);
       if (profile)
-        await d.profiles.update('api', {
-          unsupportedThinkingModels: [
-            ...new Set([...(profile.unsupportedThinkingModels ?? []), row.model]),
-          ].slice(-64),
-        });
+        await updateActiveProfile(
+          {
+            unsupportedThinkingModels: [
+              ...new Set([...(profile.unsupportedThinkingModels ?? []), row.model]),
+            ].slice(-64),
+          },
+          d,
+        );
       return budgetedCompletion(d, provider, messages, worldId, task, snapshot, signal, {
         ...options,
         retryOf: logId,
@@ -362,12 +366,12 @@ export async function budgetedCompletion(
       });
     }
     if (e instanceof ProviderError && e.code === 'invalid')
-      await d.profiles.update('api', { status: 'invalid' });
+      await updateActiveProfile({ status: 'invalid' }, d);
     throw e;
   }
 }
 export async function liveProvider(d: AquariumDB = db): Promise<Provider> {
-  const p = await d.profiles.get('api');
+  const p = await activeProfile(d);
   if (!p) throw new ProviderError('missing', '请先在 AI 设置中配置接口。');
   return new CompatibleProvider(p);
 }
@@ -517,9 +521,7 @@ export async function generateDialogue(
     c,
     speakerId,
     at,
-    current
-      ? { event: current.event as ActivityEvent, role: current.storyRole }
-      : undefined,
+    current ? { event: current.event as ActivityEvent, role: current.storyRole } : undefined,
   );
   if (context.character.entityMode === 'background')
     throw new ProviderError('identity', '背景人物不参与聊天');
@@ -621,7 +623,7 @@ export async function generateDialogue(
         tightContext: true,
         outputBudget: Math.min(
           16000,
-          Math.max(2048, (await d.profiles.get('api'))?.outputBudgetTokens ?? 2048) * 2,
+          Math.max(2048, (await activeProfile(d))?.outputBudgetTokens ?? 2048) * 2,
         ),
       },
     );

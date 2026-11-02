@@ -6,6 +6,7 @@ import { modelPolicy } from '../ai/model-policy';
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../data/db';
+import { activeProfile, updateActiveProfile } from '../data/api-profiles';
 import { DAY } from '../core/types';
 import { ModelPricingSchema, type ModelPricing } from '../core/usage-types';
 import { downloadJson } from '../data/backup';
@@ -47,7 +48,7 @@ export function UsageAnalysis({ onObserve }: { onObserve?: () => void } = {}) {
       worlds: await db.worlds.filter((w) => !w.deletedAt).toArray(),
       rows: await db.usageLedger.toArray(),
       settings: await db.settings.get('app'),
-      profile: await db.profiles.get('api'),
+      profile: await activeProfile(),
       checkpoints: await db.checkpoints.toArray(),
       observation: await db.observationConfigs.toArray(),
     }),
@@ -378,7 +379,7 @@ export function UsageAnalysis({ onObserve }: { onObserve?: () => void } = {}) {
             <Select
               value={p.reasoningPolicy ?? 'auto'}
               onChange={(e) =>
-                void db.profiles.update('api', {
+                void updateActiveProfile({
                   reasoningPolicy: e.target.value as 'auto' | 'user' | 'advanced',
                 })
               }
@@ -394,19 +395,17 @@ export function UsageAnalysis({ onObserve }: { onObserve?: () => void } = {}) {
           <Toggle
             label="启用稳定公共前缀（仅适用已确认的DeepSeek协议）"
             checked={p.stablePrefix !== false}
-            onChange={(stablePrefix) => void db.profiles.update('api', { stablePrefix })}
+            onChange={(stablePrefix) => void updateActiveProfile({ stablePrefix })}
           />
           <Toggle
             label="紧凑聊天协议（保留全部消息、@、引用与表情）"
             checked={p.compactProtocol ?? modelPolicy(p, 'chat').deepSeek}
-            onChange={(compactProtocol) => void db.profiles.update('api', { compactProtocol })}
+            onChange={(compactProtocol) => void updateActiveProfile({ compactProtocol })}
           />
           <Toggle
             label="此兼容代理明确支持DeepSeek参数（仅手动确认后使用）"
             checked={p.deepSeekCompatible === true}
-            onChange={(deepSeekCompatible) =>
-              void db.profiles.update('api', { deepSeekCompatible })
-            }
+            onChange={(deepSeekCompatible) => void updateActiveProfile({ deepSeekCompatible })}
           />
           {p.reasoningPolicy === 'advanced' &&
             (['routine', 'complex', 'story'] as const).map((kind) => (
@@ -415,7 +414,7 @@ export function UsageAnalysis({ onObserve }: { onObserve?: () => void } = {}) {
                   <Input
                     value={p.taskRoutes?.[kind]?.model ?? ''}
                     onChange={(e) =>
-                      void db.profiles.update('api', {
+                      void updateActiveProfile({
                         taskRoutes: {
                           ...p.taskRoutes,
                           [kind]: { ...p.taskRoutes?.[kind], model: e.target.value },
@@ -428,7 +427,7 @@ export function UsageAnalysis({ onObserve }: { onObserve?: () => void } = {}) {
                   <Select
                     value={p.taskRoutes?.[kind]?.thinking ?? (kind === 'routine' ? 'off' : 'on')}
                     onChange={(e) =>
-                      void db.profiles.update('api', {
+                      void updateActiveProfile({
                         taskRoutes: {
                           ...p.taskRoutes,
                           [kind]: {
@@ -448,7 +447,7 @@ export function UsageAnalysis({ onObserve }: { onObserve?: () => void } = {}) {
                   <Select
                     value={p.taskRoutes?.[kind]?.effort ?? (kind === 'complex' ? 'low' : 'high')}
                     onChange={(e) =>
-                      void db.profiles.update('api', {
+                      void updateActiveProfile({
                         taskRoutes: {
                           ...p.taskRoutes,
                           [kind]: {

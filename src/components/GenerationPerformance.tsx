@@ -1,6 +1,7 @@
 import Dexie from 'dexie';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../data/db';
+import { activeProfile } from '../data/api-profiles';
 import { Toggle } from './ui';
 export function GenerationPerformance({ worldId }: { worldId: string }) {
   const data = useLiveQuery(async () => {
@@ -39,7 +40,7 @@ export function GenerationPerformance({ worldId }: { worldId: string }) {
       cp: await db.checkpoints.get(worldId),
       s: await db.settings.get('app'),
       usage: await db.usage.get(new Date().toISOString().slice(0, 10)),
-      profile: await db.profiles.get('api'),
+      profile: await activeProfile(),
     };
   }, [worldId]);
   if (!data) return null;

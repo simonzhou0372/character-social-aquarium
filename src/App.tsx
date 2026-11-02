@@ -40,6 +40,7 @@ import { seed } from './data/seed';
 import { runWorld, setRunning, type RecoveryProgress } from './core/engine';
 import { runFastCatchUp } from './core/fast-catch-up';
 import { getKey } from './ai/provider';
+import { activeProfile } from './data/api-profiles';
 import { Avatar, Button, Modal, Select, Status, OPEN_CHARACTER_EVENT } from './components/ui';
 import { Home } from './pages/Home';
 import { Characters, CharacterEditor } from './pages/Characters';
@@ -124,7 +125,7 @@ export default function App() {
       settings,
       worlds: await db.worlds.filter((w) => !w.deletedAt).toArray(),
       cp: settings ? await db.checkpoints.get(settings.worldId) : undefined,
-      profile: await db.profiles.get('api'),
+      profile: await activeProfile(),
       unread,
     };
   }, []);
@@ -341,7 +342,7 @@ export default function App() {
         await setRunning(worldId, false, cp.mode);
         return;
       }
-      const profile = await db.profiles.get('api');
+      const profile = await activeProfile();
       const live = profile && getKey(profile);
       if (!live && cp.mode === 'live') {
         setApiSetup(true);

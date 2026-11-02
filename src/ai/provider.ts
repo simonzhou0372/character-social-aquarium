@@ -52,12 +52,50 @@ export class ProviderError extends Error {
     this.name = 'ProviderError';
   }
 }
-let sessionKey = '';
-export function setSessionKey(value: string) {
-  sessionKey = value;
+/**
+ * Session-only keys are kept per profile. Without this, switching from one API
+ * profile to another would keep sending the previous profile's key.
+ */
+const sessionKeys = new Map<string, string>();
+let legacySessionKey = '';
+export function setSessionKey(value: string, profileId?: string) {
+  if (profileId) sessionKeys.set(profileId, value);
+  else legacySessionKey = value;
 }
 export function getKey(p: ApiProfile) {
-  return sessionKey || p.key || '';
+  const session = sessionKeys.get(p.id) ?? (p.id === 'api' ? legacySessionKey : '');
+  return session || p.key || '';
+}
+/** Loopback, private-LAN and mDNS endpoints are likely locally hosted models. */
+export function isLocalEndpoint(baseUrl: string) {
+  try {
+    const host = new URL(baseUrl).hostname.replace(/^\[|\]$/g, '').toLowerCase();
+    if (
+      ['localhost', '127.0.0.1', '::1', '0.0.0.0', 'host.docker.internal'].includes(host) ||
+      host.endsWith('.local') ||
+      host.endsWith('.localhost')
+    )
+      return true;
+    const parts = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+    if (!parts) return false;
+    const a = Number(parts[1]),
+      b = Number(parts[2]);
+    return a === 127 || a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
+  } catch {
+    return false;
+  }
+}
+/**
+ * Slow self-hosted models need much longer than cloud chat completion.
+ * A user override always wins; otherwise local endpoints get 15 minutes and
+ * remote endpoints 3 minutes, which still allows cancellation at any time.
+ */
+export function resolvedRequestTimeoutMs(profile: ApiProfile) {
+  const local =
+    isLocalEndpoint(profile.baseUrl) ||
+    /本地|local|ollama|llama|lm.?studio|vllm|kobold/i.test(profile.provider);
+  const seconds = profile.requestTimeoutSeconds ?? (local ? 900 : 180);
+  return Math.max(15, Math.min(3600, Math.round(seconds))) * 1000;
 }
 export function validateEndpoint(baseUrl: string) {
   const u = new URL(baseUrl);
@@ -133,7 +171,9 @@ export class CompatibleProvider implements Provider {
       if (controller.signal.aborted)
         throw new ProviderError(
           signal?.aborted ? 'cancelled' : 'timeout',
-          signal?.aborted ? '操作已取消。' : '连接超时，请检查网络或稍后重试。',
+          signal?.aborted
+            ? '操作已取消。'
+            : `等待模型超过 ${Math.round(timeoutMs / 1000)} 秒仍未返回。本地或较慢的模型可在 AI 高级设置调高「请求超时」，然后重试。`,
         );
       if (e instanceof SyntaxError) throw new ProviderError('json', '服务商返回了无法解析的数据。');
       throw new ProviderError(
@@ -187,9 +227,7 @@ export class CompatibleProvider implements Provider {
           : {}),
       },
       signal,
-      policy.thinking !== 'off' && ['novel', 'major', 'evolution'].includes(options?.task ?? '')
-        ? 120000
-        : 35000,
+      resolvedRequestTimeoutMs(this.profile),
     );
     const content =
       data?.choices?.[0]?.message?.content ??
@@ -244,7 +282,15 @@ export class CompatibleProvider implements Provider {
     unsupportedThinking.add(this.profile.baseUrl + '|' + (model ?? this.describe().model));
   }
   async models() {
-    const data = await this.request('models', 'GET');
+    // Model listing should not hang as long as generation, but local servers may
+    // need time to start up before /models responds.
+    const data = await this.request(
+      'models',
+      'GET',
+      undefined,
+      undefined,
+      Math.min(resolvedRequestTimeoutMs(this.profile), 180000),
+    );
     return (Array.isArray(data.data) ? data.data : [])
       .map((x: { id?: unknown }) => x.id)
       .filter((x: unknown): x is string => typeof x === 'string')

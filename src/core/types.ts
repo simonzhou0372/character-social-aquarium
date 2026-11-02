@@ -403,6 +403,8 @@ export const SettingsSchema = z.object({
   costControls: CostControlsSchema.optional(),
   installedPresets: z.record(z.number().int().positive()).optional(),
   id: z.literal('app'),
+  /** Which saved API profile the simulation and AI tasks should use. */
+  apiProfileId: z.string().max(160).optional(),
   worldId: z.string().max(160),
   activity: z.enum(['quiet', 'standard', 'lively', 'boiling', 'carnival']),
   dailyRequests: z.number().int().min(1).max(5000),
@@ -426,11 +428,19 @@ export const SettingsSchema = z.object({
 });
 export type AppSettings = z.infer<typeof SettingsSchema>;
 export const ProfileSchema = z.object({
-  id: z.literal('api'),
+  /** Stable id so several endpoints can be stored and switched between. */
+  id: z.string().min(1).max(160),
+  /** Human-friendly name shown in the switcher; falls back to the provider. */
+  name: z.string().max(60).optional(),
   provider: z.string().max(60),
   baseUrl: z.string().url(),
   model: z.string().min(1).max(100),
   persistKey: z.boolean(),
+  /**
+   * Total response wait per request. Slow local models often need minutes;
+   * undefined means "auto" (loopback/LAN/local provider: 15 min, cloud: 3 min).
+   */
+  requestTimeoutSeconds: z.number().int().min(15).max(3600).optional(),
   contextBudgetTokens: z.number().int().min(1000).max(MAX_CONTEXT_BUDGET_TOKENS).optional(),
   outputBudgetTokens: z.number().int().min(256).max(16000).optional(),
   structuredOutputMode: z.enum(['auto', 'json', 'off']).optional(),

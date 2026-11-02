@@ -20,7 +20,7 @@ import { realLocalDate } from '../core/calendar';
 import { BackgroundKnowledgeEditor } from '../components/BackgroundKnowledgeEditor';
 import { useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Plus, Globe2, Users, ArrowUpRight, BookOpen, Save } from 'lucide-react';
+import { Plus, Globe2, Users, ArrowUpRight, BookOpen, Save, Copy } from 'lucide-react';
 import { db } from '../data/db';
 import { uid, WorldSchema, type World, type Group, type Character } from '../core/types';
 import {
@@ -43,6 +43,7 @@ import {
   saveGroupMembers,
   exportWorld,
   importWorld,
+  copyWorld,
   validateWorldPackage,
   type WorldPackage,
 } from '../data/worlds';
@@ -81,6 +82,9 @@ export function Worlds({
     [newGroups, setNewGroups] = useState('');
   const [packagePreview, setPackagePreview] = useState<WorldPackage>(),
     [pageError, setPageError] = useState('');
+  const [copyCandidate, setCopyCandidate] = useState<World>(),
+    [copyBusy, setCopyBusy] = useState(false),
+    [copyNotice, setCopyNotice] = useState('');
   const importFile = useRef<HTMLInputElement>(null);
   const [worldDrafts, setWorldDrafts] = useState<CharacterDraft[]>([]),
     [draftGroups, setDraftGroups] = useState<Record<string, string>>({});
@@ -120,6 +124,23 @@ export function Worlds({
       onSelect(w.id);
     } catch (e) {
       setError(e instanceof Error ? e.message : '请检查世界名称、场景和有效时区。');
+    }
+  }
+  async function duplicateWorld() {
+    if (!copyCandidate || copyBusy) return;
+    setCopyBusy(true);
+    setPageError('');
+    try {
+      const name = copyCandidate.name;
+      const id = await copyWorld(copyCandidate.id);
+      setCopyCandidate(undefined);
+      onSelect(id);
+      setCopyNotice(`已复制「${name}」并进入新世界。原世界不受影响。`);
+    } catch (e) {
+      setPageError(e instanceof Error ? e.message : '复制世界失败');
+      setCopyCandidate(undefined);
+    } finally {
+      setCopyBusy(false);
     }
   }
   async function saveGroup() {
@@ -198,6 +219,7 @@ export function Worlds({
         />
       </div>
       {pageError && <Status error>{pageError}</Status>}
+      {copyNotice && <Status>{copyNotice}</Status>}
       {worlds?.some((w) => w.provenance) && (
         <details className="panel preset-intro">
           <summary>内置东方预设 · 资料范围与使用方式</summary>
@@ -281,6 +303,17 @@ export function Worlds({
                       }}
                     >
                       导出世界观
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setPageError('');
+                        setCopyNotice('');
+                        setCopyCandidate(w);
+                      }}
+                    >
+                      <Copy size={15} />
+                      复制世界
                     </Button>
                   </div>
                 </div>
@@ -938,6 +971,25 @@ export function Worlds({
           }}
         >
           <p>保存团体时，所选世界外角色会同时加入当前世界观，保留原有世界和团体身份。</p>
+        </Confirm>
+      )}
+      {copyCandidate && (
+        <Confirm
+          title="复制该世界？"
+          confirmLabel={copyBusy ? '正在复制…' : '复制并进入'}
+          onClose={() => {
+            if (!copyBusy) setCopyCandidate(undefined);
+          }}
+          onConfirm={() => void duplicateWorld()}
+        >
+          <p>
+            将复制「{copyCandidate.name}」的世界设定、角色、团体、关系、背景认知与观察范围，
+            生成一个完全独立的新世界。
+          </p>
+          <p>
+            聊天记录、生活事件与时间进度不会复制；新世界从原故事起点开始并保持暂停。
+            原世界及其历史不受影响。
+          </p>
         </Confirm>
       )}
       {removeCandidate && (

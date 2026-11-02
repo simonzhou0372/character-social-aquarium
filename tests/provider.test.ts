@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CompatibleProvider, validateEndpoint } from '../src/ai/provider';
+import {
+  CompatibleProvider,
+  isLocalEndpoint,
+  resolvedRequestTimeoutMs,
+  validateEndpoint,
+} from '../src/ai/provider';
 import type { ApiProfile } from '../src/core/types';
 const profile: ApiProfile = {
   id: 'api',
@@ -59,10 +64,22 @@ describe('compatible provider HTTP boundary', () => {
         ),
     );
     vi.stubGlobal('fetch', fetchMock);
-    const result = expect(client().complete([])).rejects.toMatchObject({ code: 'timeout' });
-    await vi.advanceTimersByTimeAsync(35001);
+    const timed = new CompatibleProvider({ ...profile, requestTimeoutSeconds: 30 }, 'fixture');
+    const result = expect(timed.complete([])).rejects.toMatchObject({ code: 'timeout' });
+    await vi.advanceTimersByTimeAsync(30001);
     await result;
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+  it('gives local slow models a long default timeout and lets users override it', () => {
+    const local = { ...profile, baseUrl: 'http://127.0.0.1:11434/v1' };
+    expect(isLocalEndpoint(local.baseUrl)).toBe(true);
+    expect(isLocalEndpoint('http://192.168.1.20:8000/v1')).toBe(true);
+    expect(isLocalEndpoint('https://api.example.com/v1')).toBe(false);
+    expect(resolvedRequestTimeoutMs(local)).toBe(900000);
+    expect(resolvedRequestTimeoutMs(profile)).toBe(180000);
+    expect(resolvedRequestTimeoutMs({ ...local, requestTimeoutSeconds: 120 })).toBe(120000);
+    // Out-of-range values are still clamped defensively (schema rejects them on save).
+    expect(resolvedRequestTimeoutMs({ ...profile, requestTimeoutSeconds: 99999 })).toBe(3600000);
   });
   it('sends credentials only in the selected endpoint Authorization header', async () => {
     const mock = vi.fn(

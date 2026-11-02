@@ -1,6 +1,7 @@
 import { recordOutcome, recordValidation } from './usage-ledger';
 import { z } from 'zod';
 import type { AquariumDB } from '../data/db';
+import { activeProfile } from '../data/api-profiles';
 import type { ContentJob, InPersonScene } from '../core/types';
 import { SceneSchema } from '../core/types';
 import { composePrompt, type PromptConfig, type PromptContext } from './prompts';
@@ -75,7 +76,7 @@ export async function generatePlannedScene(
   );
   for (let i = 0; i < count; i++) if (scene.phases[i]) drafts[String(i)] = scene.phases[i].entries;
   const desired = (i: number) => Math.floor(total / count) + (i < total % count ? 1 : 0);
-  const outputLimit = (await d.profiles.get('api'))?.outputBudgetTokens ?? 2048;
+  const outputLimit = (await activeProfile(d))?.outputBudgetTokens ?? 2048;
   const units: BatchUnit[] = [];
   for (let i = 0; i < count; i++) {
     const p = plannedPhases[i],
